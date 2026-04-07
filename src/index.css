@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0a0e1a;
+  --surface: #0f1629;
+  --border: #1e2d4a;
+  --text: #94a3b8;
+  --heading: #f1f5f9;
+  --green: #00ff88;
+  --blue: #3b82f6;
+  --green-dim: rgba(0, 255, 136, 0.1);
+  --blue-dim: rgba(59, 130, 246, 0.1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+.glow-green { text-shadow: 0 0 20px rgba(0, 255, 136, 0.5); }
+.glow-blue  { text-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+
+.btn-primary {
+  background: linear-gradient(135deg, #00ff88, #00cc6a);
+  color: #0a0e1a;
+  font-weight: 700;
+  padding: 12px 28px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: opacity .2s, transform .2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+
+.btn-outline {
+  border: 1px solid var(--green);
+  color: var(--green);
+  padding: 12px 28px;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  transition: background .2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.btn-outline:hover { background: var(--green-dim); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  transition: border-color .2s;
+}
+.card:hover { border-color: var(--green); }
+
+section { padding: 80px 20px; }
+
+.container { max-width: 1100px; margin: 0 auto; }
+
+.section-title {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: var(--heading);
+  text-align: center;
+  margin-bottom: 12px;
+}
+.section-sub {
+  text-align: center;
+  color: var(--text);
+  margin-bottom: 56px;
+  font-size: 1.05rem;
+}
+
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+
+.tag {
+  display: inline-block;
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid rgba(0,255,136,.3);
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .5px;
+  margin-bottom: 16px;
+}
