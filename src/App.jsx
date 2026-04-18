@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
+import { SubscriptionProvider } from './context/SubscriptionContext'
 import Navbar from './Components/Navbar'
 import Footer from './Components/Footer'
 import Landing from './Pages/Landing'
@@ -34,19 +35,21 @@ function ProtectedRoute({ children, adminOnly = false }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<PublicLayout><Landing /></PublicLayout>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={
-          <ProtectedRoute><Dashboard /></ProtectedRoute>
-        } />
-        <Route path="/admin" element={
-          <ProtectedRoute adminOnly><Admin /></ProtectedRoute>
-        } />
-        <Route path="/docs" element={<Docs />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <SubscriptionProvider>
+        <Routes>
+          <Route path="/" element={<PublicLayout><Landing /></PublicLayout>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute><Dashboard /></ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <ProtectedRoute adminOnly><Admin /></ProtectedRoute>
+          } />
+          <Route path="/docs" element={<Docs />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </SubscriptionProvider>
     </BrowserRouter>
   )
 }
