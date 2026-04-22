@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import { API } from '../context/api'
+=======
+import { useState, useEffect, useCallback } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth, API } from '../context/AuthContext'
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
 const card = {
   background: 'var(--surface)', border: '1px solid var(--border)',
@@ -81,13 +87,18 @@ export default function Admin() {
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState(null)
 
+<<<<<<< HEAD
   const authHeaders = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token])
+=======
+  const authHeaders = { Authorization: `Bearer ${token}` }
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
   const apiFetch = useCallback(async (path) => {
     const r = await fetch(`${API}/admin${path}`, { headers: authHeaders })
     if (r.status === 403) { navigate('/login'); return null }
     if (!r.ok) throw new Error(`API error ${r.status}`)
     return r.json()
+<<<<<<< HEAD
   }, [authHeaders, navigate])
 
   const loadOverview = useCallback(async () => {
@@ -137,30 +148,69 @@ export default function Admin() {
       setLoading(false)
     }
   }, [apiFetch])
+=======
+  }, [token])
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
   // Load overview data
   useEffect(() => {
     if (activeTab !== 'overview') return
+<<<<<<< HEAD
     loadOverview()
   }, [activeTab, loadOverview])
+=======
+    setLoading(true)
+    apiFetch('/stats')
+      .then(d => { if (d) { setStatsData(d.stats); setMfaAdoption(d.mfa_adoption) } })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
+  }, [activeTab])
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
   // Load analytics data
   useEffect(() => {
     if (activeTab !== 'analytics') return
+<<<<<<< HEAD
     loadAnalytics()
   }, [activeTab, loadAnalytics])
+=======
+    setLoading(true)
+    apiFetch('/analytics')
+      .then(d => { if (d) setAnalytics(d) })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
+  }, [activeTab])
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
   // Load users
   useEffect(() => {
     if (activeTab !== 'users') return
+<<<<<<< HEAD
     loadUsers()
   }, [activeTab, loadUsers])
+=======
+    setLoading(true)
+    apiFetch(`/users?search=${encodeURIComponent(search)}&per_page=50`)
+      .then(d => { if (d) { setUsers(d.users); setUserTotal(d.total) } })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
+  }, [activeTab, search])
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
   // Load alerts
   useEffect(() => {
     if (activeTab !== 'alerts') return
+<<<<<<< HEAD
     loadAlerts()
   }, [activeTab, loadAlerts])
+=======
+    setLoading(true)
+    apiFetch('/alerts')
+      .then(d => { if (d) setAlerts(d.alerts) })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
+  }, [activeTab])
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
   async function toggleUserStatus(u) {
     const newStatus = u.is_active ? 'inactive' : 'active'

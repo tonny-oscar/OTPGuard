@@ -23,6 +23,7 @@ def create_app(env=None):
     jwt.init_app(app)
     mail.init_app(app)
 
+<<<<<<< HEAD
     # ── CORS — init BEFORE blueprints so it applies to all routes
     cors.init_app(app, resources={
         r'/api/*': {
@@ -62,32 +63,20 @@ def create_app(env=None):
         }
     })
 
+=======
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
     # ── Blueprints ────────────────────────────────────────
     from app.auth.routes  import auth_bp
     from app.mfa.routes   import mfa_bp
     from app.users.routes import users_bp
     from app.admin.routes import admin_bp
+    from app.subscription.routes import subscription_bp
 
     app.register_blueprint(auth_bp,  url_prefix='/api/auth')
     app.register_blueprint(mfa_bp,   url_prefix='/api/mfa')
     app.register_blueprint(users_bp, url_prefix='/api/users')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
-
-    # ── CORS OPTIONS Handler — Ensure preflight requests work ──
-    @app.before_request
-    def handle_preflight():
-        if request.method == 'OPTIONS':
-            response = app.make_default_options_response()
-            response.headers.add('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
-            response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-            response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key')
-            response.headers.add('Access-Control-Max-Age', '3600')
-            return response, 200
-
-    # ── Root + Health check ───────────────────────────────
-    @app.route('/')
-    def root():
-        return {'message': 'OTPGuard API is running', 'version': '1.0', 'docs': '/api/health'}, 200
+    app.register_blueprint(subscription_bp, url_prefix='/api/subscription')
 
     @app.route('/api/health')
     def health():
@@ -97,4 +86,6 @@ def create_app(env=None):
     with app.app_context():
         db.create_all()
 
-    return app
+        # Initialize default subscription plans
+        from app.subscription.service import SubscriptionService
+        SubscriptionService.initialize_default_plans()

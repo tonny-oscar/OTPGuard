@@ -12,12 +12,7 @@
 
 ## 📧 Email Testing
 
-### Prerequisites
-- ✅ Gmail configured in `.env` with:
-  - `MAIL_USERNAME=betttonny26@gmail.com`
-  - `MAIL_PASSWORD=cqvoqkwnbcqccncyruuu`
-  - `MAIL_SERVER=smtp.gmail.com`
-  - `MAIL_PORT=587`
+
 
 ### Test Steps
 

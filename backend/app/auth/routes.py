@@ -3,7 +3,10 @@ from flask_jwt_extended import (
     create_access_token, create_refresh_token,
     jwt_required, get_jwt_identity
 )
+<<<<<<< HEAD
 from sqlalchemy import or_
+=======
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 import bcrypt
 
 from app.extensions import db
@@ -16,6 +19,7 @@ auth_bp = Blueprint("auth", __name__)
 # ── POST /api/auth/register ───────────────────────────────
 @auth_bp.route("/register", methods=["POST"])
 def register():
+<<<<<<< HEAD
     """
     Register a new user account
     ---
@@ -71,10 +75,20 @@ def register():
         return jsonify({"error": "Email or phone number is required"}), 400
     if not password:
         return jsonify({"error": "Password is required"}), 400
+=======
+    data = request.get_json()
+    email     = (data.get("email") or "").strip().lower()
+    password  = data.get("password") or ""
+    full_name = data.get("full_name") or ""
+
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
     if len(password) < 8:
         return jsonify({"error": "Password must be at least 8 characters"}), 400
 
+<<<<<<< HEAD
     if phone and User.query.filter_by(phone=phone).first():
         return jsonify({"error": "Phone number already registered"}), 409
     if email and User.query.filter_by(email=email).first():
@@ -97,6 +111,15 @@ def register():
         mfa_method=mfa_method,
         mfa_enabled=mfa_enabled
     )
+=======
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error": "Email already registered"}), 409
+
+    pw_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    plan    = (data.get('plan') or 'starter').strip().lower()
+    phone   = (data.get('phone') or '').strip()
+    user = User(email=email, password_hash=pw_hash, full_name=full_name, plan=plan, phone=phone)
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
     db.session.add(user)
     db.session.commit()
 
@@ -114,6 +137,7 @@ def register():
 # ── POST /api/auth/login ──────────────────────────────────
 @auth_bp.route("/login", methods=["POST"])
 def login():
+<<<<<<< HEAD
     """
     Login user with email/phone and password
     ---
@@ -173,6 +197,16 @@ def login():
 
     if not user or not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
         return jsonify({"error": "Invalid email, phone number, or password"}), 401
+=======
+    data     = request.get_json()
+    email    = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user or not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
+        return jsonify({"error": "Invalid email or password"}), 401
+>>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
     if not user.is_active:
         return jsonify({"error": "Account is disabled"}), 403

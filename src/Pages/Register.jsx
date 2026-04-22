@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '../context/useAuth'
+import { useAuth } from '../context/AuthContext'
 
 const inputStyle = {
   width: '100%', padding: '12px 16px', borderRadius: 8,
@@ -18,7 +18,7 @@ export default function Register() {
 
   const [form, setForm]     = useState({
     first_name: '', last_name: '', email: '',
-    phone: '', password: '', company: '',
+    password: '', company: '',
     plan: params.get('plan') || 'starter'
   })
   const [error, setError]   = useState('')
@@ -36,7 +36,6 @@ export default function Register() {
     try {
       const data = await register({
         email: form.email.trim().toLowerCase(),
-        phone: form.phone.trim(),
         password: form.password,
         full_name: `${form.first_name} ${form.last_name}`.trim(),
         company: form.company,
@@ -107,16 +106,7 @@ export default function Register() {
             <div>
               <label style={{ fontSize: '.85rem', marginBottom: 6, display: 'block' }}>Email</label>
               <input style={inputStyle} type="email" placeholder="you@company.com"
-                value={form.email} onChange={set('email')} 
-                onFocus={e => e.target.style.borderColor = 'var(--green)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border)'}
-              />
-            </div>
-
-            <div>
-              <label style={{ fontSize: '.85rem', marginBottom: 6, display: 'block' }}>Phone (optional)</label>
-              <input style={inputStyle} type="tel" placeholder="+254700000000"
-                value={form.phone} onChange={set('phone')}
+                value={form.email} onChange={set('email')} required
                 onFocus={e => e.target.style.borderColor = 'var(--green)'}
                 onBlur={e => e.target.style.borderColor = 'var(--border)'}
               />
