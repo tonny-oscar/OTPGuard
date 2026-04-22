@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
+import { useEffect } from 'react'
 
 const inputStyle = {
   width: '100%', padding: '12px 16px', borderRadius: 8,
@@ -10,25 +11,50 @@ const inputStyle = {
 }
 
 export default function Login() {
-  const { login, sendOTP, verifyOTP } = useAuth()
+  const { login, sendOTP, verifyOTP, resendOTP } = useAuth()
   const navigate = useNavigate()
 
-  const [step, setStep]       = useState('login')   // login | otp
-  const [email, setEmail]     = useState('')
+  const [step, setStep]         = useState('login')   // login | otp
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
-  const [otp, setOtp]         = useState('')
+  const [otp, setOtp]           = useState('')
   const [mfaMethod, setMfaMethod] = useState('')
   const [error, setError]     = useState('')
   const [loading, setLoading] = useState(false)
+  const [resendTimer, setResendTimer] = useState(0)
+
+  // Countdown timer for resend button
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [resendTimer])
+
+  async function handleResend() {
+    setError(''); setLoading(true)
+    try {
+      await resendOTP()
+      setResendTimer(60)  // 60 second cooldown
+      setError('')  // Clear any previous errors
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function handleLogin(e) {
     e.preventDefault()
     setError(''); setLoading(true)
     try {
-      const data = await login(email, password)
+      const data = await login(identifier, password)
       if (data.mfa_required) {
         setMfaMethod(data.mfa_method)
-        if (data.mfa_method !== 'totp') await sendOTP()
+        if (data.mfa_method !== 'totp') {
+          await sendOTP()
+          setResendTimer(60)  // 60 second cooldown before first resend
+        }
         setStep('otp')
       } else {
         navigate(data.user?.role === 'admin' ? '/admin' : '/dashboard')
@@ -70,9 +96,9 @@ export default function Login() {
 
               <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
-                  <label style={{ fontSize: '.85rem', marginBottom: 6, display: 'block' }}>Email</label>
-                  <input style={inputStyle} type="email" placeholder="you@example.com"
-                    value={email} onChange={e => setEmail(e.target.value)} required
+                  <label style={{ fontSize: '.85rem', marginBottom: 6, display: 'block' }}>Email or mobile number</label>
+                  <input style={inputStyle} type="text" placeholder="you@example.com or +254700000000"
+                    value={identifier} onChange={e => setIdentifier(e.target.value)} required
                     onFocus={e => e.target.style.borderColor = 'var(--green)'}
                     onBlur={e => e.target.style.borderColor = 'var(--border)'}
                   />
@@ -136,8 +162,32 @@ export default function Login() {
                 <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={loading || otp.length < 6}>
                   {loading ? 'Verifying...' : 'Verify Code →'}
                 </button>
-                <button type="button" onClick={() => { setStep('login'); setOtp(''); setError('') }}
-                  style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', fontSize: '.85rem' }}>
+
+                <div style={{ textAlign: 'center', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+                  <p style={{ fontSize: '.85rem', marginBottom: 12, color: 'var(--text)' }}>
+                    Didn't receive the code?
+                  </p>
+                  <button 
+                    type="button" 
+                    onClick={handleResend}
+                    disabled={resendTimer > 0 || loading}
+                    style={{ 
+                      background: 'none', 
+                      border: '1px solid var(--green)', 
+                      color: 'var(--green)', 
+                      cursor: resendTimer > 0 ? 'not-allowed' : 'pointer', 
+                      padding: '8px 16px',
+                      borderRadius: 6,
+                      fontSize: '.85rem',
+                      opacity: resendTimer > 0 ? 0.5 : 1
+                    }}
+                  >
+                    {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend OTP'}
+                  </button>
+                </div>
+
+                <button type="button" onClick={() => { setStep('login'); setOtp(''); setError(''); setResendTimer(0) }}
+                  style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', fontSize: '.85rem', marginTop: 12 }}>
                   ← Back to login
                 </button>
               </form>

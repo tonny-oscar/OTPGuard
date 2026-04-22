@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from app.extensions import db
 
 
+
+
 # ══════════════════════════════════════════════════════════
 #  SUBSCRIPTION MODELS
 # ══════════════════════════════════════════════════════════
@@ -154,6 +156,7 @@ class UsageSummary(db.Model):
 # ══════════════════════════════════════════════════════════
 
 
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -163,14 +166,21 @@ class User(db.Model):
     full_name     = db.Column(db.String(120))
     phone         = db.Column(db.String(20))
     role          = db.Column(db.String(20), default='user')    # user | admin
+
+    plan          = db.Column(db.String(20), default='starter')
+
     plan          = db.Column(db.String(20), default='starter')  # DEPRECATED: Use subscription relationship
+
     mfa_enabled   = db.Column(db.Boolean, default=False)
     mfa_secret    = db.Column(db.String(64))
     mfa_method    = db.Column(db.String(20), default='email')   # email | sms | totp
     is_active     = db.Column(db.Boolean, default=True)
     created_at    = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
+
+
     # Relationships
+
     otp_logs = db.relationship('OTPLog',  backref='user', lazy=True, cascade='all, delete-orphan')
     devices  = db.relationship('Device',  backref='user', lazy=True, cascade='all, delete-orphan')
     api_keys = db.relationship('APIKey',  backref='user', lazy=True, cascade='all, delete-orphan')
@@ -182,12 +192,18 @@ class User(db.Model):
             'full_name':   self.full_name,
             'phone':       self.phone,
             'role':        self.role,
+
+            'plan':        self.plan,
+
             'plan':        self.plan,  # Keep for backward compatibility
+
             'mfa_enabled': self.mfa_enabled,
             'mfa_method':  self.mfa_method,
             'is_active':   self.is_active,
             'created_at':  self.created_at.isoformat(),
         }
+
+
 
     @property
     def current_subscription(self):
@@ -224,6 +240,7 @@ class User(db.Model):
         return db.session.query(func.count(distinct(OTPLog.user_id))).filter(
             OTPLog.api_key_id.in_([key.id for key in self.api_keys])
         ).scalar() or 0
+
 
 
 class APIKey(db.Model):

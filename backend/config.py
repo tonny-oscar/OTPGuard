@@ -19,11 +19,12 @@ class Config:
     # ── Email (SMTP) ──────────────────────────────────────
     MAIL_SERVER         = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT           = int(os.getenv('MAIL_PORT', 587))
-    MAIL_USE_TLS        = True
-    MAIL_USE_SSL        = False
+    MAIL_USE_TLS        = os.getenv('MAIL_USE_TLS', 'True').lower() in ('true', '1')
+    MAIL_USE_SSL        = False  # Don't use SSL with port 587 (use TLS instead)
     MAIL_USERNAME       = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD       = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', 'noreply@otpguard.co.ke')
+    MAIL_SUPPRESS_SEND  = False  # Set to True to prevent actual sending (testing)
 
     # ── Twilio SMS ────────────────────────────────────────
     TWILIO_ACCOUNT_SID  = os.getenv('TWILIO_ACCOUNT_SID')

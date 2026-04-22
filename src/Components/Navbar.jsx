@@ -36,6 +36,7 @@ export default function Navbar() {
             { label: 'How It Works', href: '/#how-it-works' },
             { label: 'Pricing',      href: '/#pricing' },
             { label: 'Docs',         href: '/docs' },
+            { label: 'API',          href: '/api-docs' },
           ].map(item => (
             <a key={item.label} href={item.href} style={{
               color: 'var(--text)', textDecoration: 'none',

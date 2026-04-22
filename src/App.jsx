@@ -9,7 +9,7 @@ import Register from './Pages/Register'
 import Dashboard from './Pages/Dashboard'
 import Admin from './Pages/Admin'
 import Docs from './Pages/Docs'
-
+import ApiDocs from './Pages/ApiDocs'
 function PublicLayout({ children }) {
   return (
     <>
@@ -47,6 +47,7 @@ export default function App() {
             <ProtectedRoute adminOnly><Admin /></ProtectedRoute>
           } />
           <Route path="/docs" element={<Docs />} />
+          <Route path="/api-docs" element={<ApiDocs />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </SubscriptionProvider>
