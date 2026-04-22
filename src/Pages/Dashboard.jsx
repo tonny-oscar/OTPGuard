@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-<<<<<<< HEAD
-import { useAuth } from '../context/useAuth'
-import { API } from '../context/api'
-=======
 import { useAuth, API } from '../context/AuthContext'
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
 const card = { background:'var(--surface)', border:'1px solid var(--border)', borderRadius:12, padding:24 }
 
@@ -25,11 +20,7 @@ function useApi(endpoint) {
       .finally(() => setLoading(false))
   }, [token, endpoint])
 
-<<<<<<< HEAD
-  useEffect(() => { Promise.resolve().then(load) }, [load])
-=======
   useEffect(() => { load() }, [load])
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
   return { data, loading, error, reload: load }
 }
 
@@ -38,10 +29,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('overview')
   const [codesVisible, setCodesVisible] = useState(false)
-<<<<<<< HEAD
-=======
   const [saving, setSaving] = useState(false)
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
   const [msg, setMsg] = useState('')
   const [newKeyName, setNewKeyName] = useState('')
   const [createdKey, setCreatedKey] = useState(null)
@@ -61,11 +49,7 @@ export default function Dashboard() {
   const statCards = statsData?.stats || []
 
   async function saveMFA(field, value) {
-<<<<<<< HEAD
-    setMsg('')
-=======
     setSaving(true); setMsg('')
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
     try {
       const r = await fetch(`${API}/users/settings/mfa`, {
         method: 'PUT',
@@ -77,10 +61,7 @@ export default function Dashboard() {
       setMsg('Saved ✓')
       reloadProfile()
     } catch (e) { setMsg(e.message) }
-<<<<<<< HEAD
-=======
     finally { setSaving(false) }
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
   }
 
   async function removeDevice(id) {

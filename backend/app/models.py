@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 from app.extensions import db
 
 
-<<<<<<< HEAD
-=======
+
+
 # ══════════════════════════════════════════════════════════
 #  SUBSCRIPTION MODELS
 # ══════════════════════════════════════════════════════════
@@ -156,7 +156,7 @@ class UsageSummary(db.Model):
 # ══════════════════════════════════════════════════════════
 
 
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -166,21 +166,21 @@ class User(db.Model):
     full_name     = db.Column(db.String(120))
     phone         = db.Column(db.String(20))
     role          = db.Column(db.String(20), default='user')    # user | admin
-<<<<<<< HEAD
+
     plan          = db.Column(db.String(20), default='starter')
-=======
+
     plan          = db.Column(db.String(20), default='starter')  # DEPRECATED: Use subscription relationship
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
     mfa_enabled   = db.Column(db.Boolean, default=False)
     mfa_secret    = db.Column(db.String(64))
     mfa_method    = db.Column(db.String(20), default='email')   # email | sms | totp
     is_active     = db.Column(db.Boolean, default=True)
     created_at    = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-<<<<<<< HEAD
-=======
+
+
     # Relationships
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
     otp_logs = db.relationship('OTPLog',  backref='user', lazy=True, cascade='all, delete-orphan')
     devices  = db.relationship('Device',  backref='user', lazy=True, cascade='all, delete-orphan')
     api_keys = db.relationship('APIKey',  backref='user', lazy=True, cascade='all, delete-orphan')
@@ -192,19 +192,19 @@ class User(db.Model):
             'full_name':   self.full_name,
             'phone':       self.phone,
             'role':        self.role,
-<<<<<<< HEAD
+
             'plan':        self.plan,
-=======
+
             'plan':        self.plan,  # Keep for backward compatibility
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
             'mfa_enabled': self.mfa_enabled,
             'mfa_method':  self.mfa_method,
             'is_active':   self.is_active,
             'created_at':  self.created_at.isoformat(),
         }
 
-<<<<<<< HEAD
-=======
+
+
     @property
     def current_subscription(self):
         """Get the user's current active subscription"""
@@ -241,7 +241,7 @@ class User(db.Model):
             OTPLog.api_key_id.in_([key.id for key in self.api_keys])
         ).scalar() or 0
 
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
 
 class APIKey(db.Model):
     __tablename__ = 'api_keys'

@@ -11,7 +11,7 @@ from app.extensions import mail
 def send_email_otp(to_email: str, code: str):
     """Send OTP code via email using configured SMTP."""
     username = current_app.config.get('MAIL_USERNAME', '')
-<<<<<<< HEAD
+
     password = current_app.config.get('MAIL_PASSWORD', '')
     
     # Check if credentials are properly configured
@@ -36,7 +36,7 @@ def send_email_otp(to_email: str, code: str):
         # Fallback: log code for manual use
         current_app.logger.warning(f"[EMAIL] 📧 Fallback - OTP CODE FOR {to_email}: {code}")
         # Don't raise - let testing continue even if email fails
-=======
+
     if not username or username == 'your@gmail.com':
         current_app.logger.warning(f"[EMAIL] MAIL_USERNAME not configured — OTP code for {to_email}: {code}")
         return
@@ -50,7 +50,7 @@ def send_email_otp(to_email: str, code: str):
     except Exception as e:
         current_app.logger.error(f"[EMAIL] Failed to send to {to_email}: {e}")
         # Don't raise — OTP is already saved in DB, user can still verify
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
 
 
 def _email_body(code: str) -> str:
@@ -85,7 +85,7 @@ def send_sms_otp(to_phone: str, code: str):
     message = f"Your OTPGuard code is: {code}. Valid for 5 minutes. Do not share."
 
     cfg = current_app.config
-<<<<<<< HEAD
+
     sent = False
     
     # Try Twilio first
@@ -109,59 +109,47 @@ def send_sms_otp(to_phone: str, code: str):
         current_app.logger.warning(f"[SMS] ⚠️  All SMS providers failed")
         current_app.logger.warning(f"[SMS] 📱 Dev Mode - SMS CODE FOR {to_phone}: {code}")
         current_app.logger.warning(f"[SMS] Valid for 5 minutes. Use code above for testing.")
-=======
+
     if cfg.get("TWILIO_ACCOUNT_SID") and cfg.get("TWILIO_AUTH_TOKEN"):
         _send_twilio(to_phone, message)
     elif cfg.get("AT_API_KEY"):
         _send_africas_talking(to_phone, message)
     else:
         current_app.logger.warning("[SMS] No SMS provider configured — code not sent")
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
 
 
 def _send_twilio(to_phone: str, message: str):
     cfg = current_app.config
     try:
-<<<<<<< HEAD
         current_app.logger.info(f"[TWILIO] Sending SMS to {to_phone}...")
         from twilio.rest import Client
         client = Client(cfg["TWILIO_ACCOUNT_SID"], cfg["TWILIO_AUTH_TOKEN"])
         response = client.messages.create(
-=======
-        from twilio.rest import Client
-        client = Client(cfg["TWILIO_ACCOUNT_SID"], cfg["TWILIO_AUTH_TOKEN"])
-        client.messages.create(
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
             body=message,
             from_=cfg["TWILIO_PHONE_NUMBER"],
             to=to_phone
         )
-<<<<<<< HEAD
         current_app.logger.info(f"[TWILIO] ✅ SMS sent successfully to {to_phone} (SID: {response.sid})")
     except Exception as e:
         error_msg = str(e)
         current_app.logger.error(f"[TWILIO] ❌ Failed to send to {to_phone}: {error_msg}")
-        raise
-=======
-        current_app.logger.info(f"[TWILIO] SMS sent to {to_phone}")
-    except Exception as e:
-        current_app.logger.error(f"[TWILIO] Failed: {e}")
         # Fallback to Africa's Talking
         if current_app.config.get("AT_API_KEY"):
             current_app.logger.info("[TWILIO] Falling back to Africa's Talking")
             _send_africas_talking(to_phone, message)
         else:
             raise
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
 
 
 def _send_africas_talking(to_phone: str, message: str):
     cfg = current_app.config
     try:
-<<<<<<< HEAD
+
         current_app.logger.info(f"[AfricasTalking] Sending SMS to {to_phone}...")
-=======
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
+
         resp = requests.post(
             "https://api.africastalking.com/version1/messaging",
             headers={
@@ -177,14 +165,14 @@ def _send_africas_talking(to_phone: str, message: str):
             timeout=10
         )
         resp.raise_for_status()
-<<<<<<< HEAD
+
         current_app.logger.info(f"[AfricasTalking] ✅ SMS sent successfully to {to_phone}")
     except Exception as e:
         error_msg = str(e)
         current_app.logger.error(f"[AfricasTalking] ❌ Failed to send to {to_phone}: {error_msg}")
-=======
+
         current_app.logger.info(f"[AT] SMS sent to {to_phone}")
     except Exception as e:
         current_app.logger.error(f"[AT] Failed: {e}")
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
         raise

@@ -23,7 +23,6 @@ def create_app(env=None):
     jwt.init_app(app)
     mail.init_app(app)
 
-<<<<<<< HEAD
     # ── CORS — init BEFORE blueprints so it applies to all routes
     cors.init_app(app, resources={
         r'/api/*': {
@@ -63,8 +62,6 @@ def create_app(env=None):
         }
     })
 
-=======
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
     # ── Blueprints ────────────────────────────────────────
     from app.auth.routes  import auth_bp
     from app.mfa.routes   import mfa_bp
@@ -78,9 +75,21 @@ def create_app(env=None):
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(subscription_bp, url_prefix='/api/subscription')
 
+    # ── Root route ────────────────────────────────────────
+    @app.route('/')
+    def index():
+        return {
+            'message': 'OTPGuard API is running',
+            'version': '1.0.0',
+            'docs': '/apidocs',
+            'health': '/api/health'
+        }, 200
+
     @app.route('/api/health')
     def health():
         return {'status': 'ok', 'env': env, 'message': 'OTPGuard API is running'}, 200
+
+    return app
 
     # ── Create tables ─────────────────────────────────────
     with app.app_context():

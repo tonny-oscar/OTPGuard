@@ -1,13 +1,7 @@
-<<<<<<< HEAD
-import { useState, useEffect } from 'react'
-import { AuthContext } from './auth-context'
-import { API } from './api'
-=======
 import { createContext, useContext, useState, useEffect } from 'react'
 
 const AuthContext = createContext(null)
 export const API = `http://${window.location.hostname}:5000/api`
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
 export function AuthProvider({ children }) {
   const [user, setUser]     = useState(null)
@@ -15,17 +9,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-<<<<<<< HEAD
-    Promise.resolve().then(() => {
-      if (!token) { setLoading(false); return }
-      fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(r => r.ok ? r.json() : Promise.reject())
-        .then(d => setUser(d.user))
-        .catch(() => { localStorage.removeItem('token'); setToken(null) })
-        .finally(() => setLoading(false))
-    })
-  }, [token])
-=======
     if (!token) { setLoading(false); return }
     fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : Promise.reject())
@@ -33,7 +16,6 @@ export function AuthProvider({ children }) {
       .catch(() => { localStorage.removeItem('token'); setToken(null) })
       .finally(() => setLoading(false))
   }, [])
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
 
   function saveSession(access, refresh, userData) {
     localStorage.setItem('token', access)
@@ -54,19 +36,11 @@ export function AuthProvider({ children }) {
     return d
   }
 
-<<<<<<< HEAD
-  async function login(identifier, password) {
-    const r = await fetch(`${API}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier, password })
-=======
   async function login(email, password) {
     const r = await fetch(`${API}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
     })
     const d = await r.json()
     if (!r.ok) throw new Error(d.error || 'Login failed')
@@ -103,7 +77,6 @@ export function AuthProvider({ children }) {
     return d
   }
 
-<<<<<<< HEAD
   async function resendOTP() {
     const pre = localStorage.getItem('pre_auth_token')
     const r = await fetch(`${API}/mfa/resend`, {
@@ -115,8 +88,6 @@ export function AuthProvider({ children }) {
     return d
   }
 
-=======
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
   function logout() {
     ['token','refresh_token','pre_auth_token'].forEach(k => localStorage.removeItem(k))
     setToken(null)
@@ -124,17 +95,10 @@ export function AuthProvider({ children }) {
   }
 
   return (
-<<<<<<< HEAD
     <AuthContext.Provider value={{ user, token, loading, register, login, sendOTP, verifyOTP, resendOTP, logout }}>
-=======
-    <AuthContext.Provider value={{ user, token, loading, register, login, sendOTP, verifyOTP, logout }}>
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
       {children}
     </AuthContext.Provider>
   )
 }
 
-<<<<<<< HEAD
-=======
 export const useAuth = () => useContext(AuthContext)
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637

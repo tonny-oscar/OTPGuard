@@ -13,13 +13,13 @@ from flask_jwt_extended import (
 from app.extensions import db
 from app.models import User, OTPLog, APIKey
 from app.notifications.service import send_email_otp, send_sms_otp
-<<<<<<< HEAD
-=======
+
+
 from app.subscription.middleware import (
     require_channel, rate_limit_otp, log_api_usage, check_user_limit
 )
 from app.subscription.service import SubscriptionService
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
 
 mfa_bp = Blueprint('mfa', __name__)
 
@@ -50,11 +50,11 @@ def api_key_required(fn):
 # Business calls this after their user logs in
 @mfa_bp.route('/otp/send', methods=['POST'])
 @api_key_required
-<<<<<<< HEAD
-=======
+
+
 @rate_limit_otp(max_requests=10, window_minutes=5)
 @log_api_usage('email_otp')  # Will be updated based on method
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
 def external_send_otp():
     data   = request.get_json() or {}
     phone  = data.get('phone', '').strip()
@@ -68,8 +68,8 @@ def external_send_otp():
     if method == 'email' and not email:
         return jsonify({'error': 'email is required for email OTP'}), 400
 
-<<<<<<< HEAD
-=======
+
+
     # Check if API key owner's plan allows this channel
     api_key_owner = User.query.get(request.api_key.user_id)
     if not api_key_owner.can_use_channel(method):
@@ -86,7 +86,7 @@ def external_send_otp():
             'code': 'USER_LIMIT_REACHED'
         }), 403
 
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
     # Find or create a shadow user record keyed by phone/email
     identifier = phone if method == 'sms' else email
     user = User.query.filter_by(email=identifier).first()
@@ -100,8 +100,8 @@ def external_send_otp():
         )
         db.session.add(user)
         db.session.commit()
-<<<<<<< HEAD
-=======
+
+
         
         # Log user creation for billing
         SubscriptionService.log_usage(
@@ -110,7 +110,7 @@ def external_send_otp():
             quantity=1,
             extra_data={'external_user_id': user.id, 'identifier': identifier}
         )
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
 
     code   = _generate_code(current_app.config['OTP_LENGTH'])
     expiry = datetime.now(timezone.utc) + timedelta(seconds=current_app.config['OTP_EXPIRY_SECONDS'])
@@ -126,8 +126,8 @@ def external_send_otp():
     db.session.add(log)
     db.session.commit()
 
-<<<<<<< HEAD
-=======
+
+
     # Calculate and log SMS cost if applicable
     cost = 0
     if method == 'sms':
@@ -147,7 +147,7 @@ def external_send_otp():
             extra_data={'email': email, 'external_user_id': user.id}
         )
 
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
     if method == 'email':
         send_email_otp(email, code)
     else:
@@ -157,10 +157,10 @@ def external_send_otp():
         'message':    f'OTP sent via {method}',
         'expires_in': current_app.config['OTP_EXPIRY_SECONDS'],
         'otp_id':     log.id,
-<<<<<<< HEAD
-=======
+
+
         'cost_kes':   cost if method == 'sms' else 0
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
     }), 200
 
 
@@ -197,7 +197,7 @@ def external_verify_otp():
 # ── POST /api/mfa/send ────────────────────────────────────
 @mfa_bp.route('/send', methods=['POST'])
 @jwt_required()
-<<<<<<< HEAD
+
 def send_otp():
     """
     Send OTP code to user's registered email or phone
@@ -225,10 +225,10 @@ def send_otp():
       400:
         description: Invalid request (missing phone/email, TOTP method, etc.)
     """
-=======
+
 @rate_limit_otp(max_requests=5, window_minutes=5)
 def send_otp():
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
     claims = get_jwt()
     if not claims.get('mfa_pending'):
         return jsonify({'error': 'Not a pre-auth token'}), 403
@@ -239,19 +239,19 @@ def send_otp():
     if user.mfa_method == 'totp':
         return jsonify({'error': 'Use your authenticator app'}), 400
 
-<<<<<<< HEAD
+
     if user.mfa_method == 'sms' and not user.phone:
         return jsonify({'error': 'Phone number is required for SMS OTP'}), 400
     if user.mfa_method == 'email' and not user.email:
         return jsonify({'error': 'Email is required for email OTP'}), 400
-=======
+
     # Check if user's plan allows the MFA method
     if not user.can_use_channel(user.mfa_method):
         return jsonify({
             'error': f'Your plan does not support {user.mfa_method} MFA',
             'code': 'CHANNEL_NOT_AVAILABLE'
         }), 403
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
 
     code   = _generate_code(current_app.config['OTP_LENGTH'])
     expiry = datetime.now(timezone.utc) + timedelta(seconds=current_app.config['OTP_EXPIRY_SECONDS'])
@@ -264,7 +264,7 @@ def send_otp():
     db.session.add(log)
     db.session.commit()
 
-<<<<<<< HEAD
+
     try:
         if user.mfa_method == 'email':
             send_email_otp(user.email, code)
@@ -379,7 +379,7 @@ def resend_otp():
         error_msg = str(e)
         current_app.logger.error(f"[RESEND] Failed to resend OTP to user {user.id}: {error_msg}")
         return jsonify({'error': f'Failed to send OTP: {error_msg}'}), 500
-=======
+
     # Log usage and calculate cost
     cost = 0
     if user.mfa_method == 'email':
@@ -409,14 +409,14 @@ def resend_otp():
         'expires_in': current_app.config['OTP_EXPIRY_SECONDS'],
         'cost_kes': cost if user.mfa_method == 'sms' else 0
     }), 200
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
 
 
 # ── POST /api/mfa/verify ──────────────────────────────────
 @mfa_bp.route('/verify', methods=['POST'])
 @jwt_required()
 def verify_otp():
-<<<<<<< HEAD
+
     """
     Verify OTP code and return access/refresh tokens
     ---
@@ -452,8 +452,8 @@ def verify_otp():
       403:
         description: Not a pre-auth token
     """
-=======
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
+
     claims = get_jwt()
     if not claims.get('mfa_pending'):
         return jsonify({'error': 'Not a pre-auth token'}), 403
@@ -485,9 +485,9 @@ def verify_otp():
 @mfa_bp.route('/totp/setup', methods=['POST'])
 @jwt_required()
 def totp_setup():
-<<<<<<< HEAD
+
     user   = User.query.get(int(get_jwt_identity()))
-=======
+
     user = User.query.get(int(get_jwt_identity()))
     
     # Check if user's plan supports TOTP
@@ -497,7 +497,7 @@ def totp_setup():
             'code': 'CHANNEL_NOT_AVAILABLE'
         }), 403
     
->>>>>>> 1f4cbb51fd987e42431dc6d7ec94123832402637
+
     secret = pyotp.random_base32()
     uri    = pyotp.TOTP(secret).provisioning_uri(name=user.email, issuer_name='OTPGuard')
     user.mfa_secret = secret
