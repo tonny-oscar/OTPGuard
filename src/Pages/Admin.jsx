@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth, API } from '../context/AuthContext'
+import BillingReport from '../Components/admin/BillingReport'
+import RevenueAnalytics from '../Components/admin/RevenueAnalytics'
+import ChurnAnalysis from '../Components/admin/ChurnAnalysis'
+import LifecycleAnalytics from '../Components/admin/LifecycleAnalytics'
+import CustomReports from '../Components/admin/CustomReports'
 
 const card = {
   background: 'var(--surface)', border: '1px solid var(--border)',
@@ -200,6 +205,11 @@ export default function Admin() {
     { id: 'overview',  icon: '📊', label: 'Overview' },
     { id: 'users',     icon: '👥', label: 'Users' },
     { id: 'analytics', icon: '📈', label: 'Analytics' },
+    { id: 'billing',   icon: '💳', label: 'Billing' },
+    { id: 'revenue',   icon: '💰', label: 'Revenue' },
+    { id: 'churn',     icon: '📉', label: 'Churn' },
+    { id: 'lifecycle', icon: '🔄', label: 'Lifecycle' },
+    { id: 'reports',   icon: '📋', label: 'Reports' },
     { id: 'alerts',    icon: '🚨', label: 'Alerts', badge: dangerCount || null },
   ]
 
@@ -477,6 +487,21 @@ export default function Admin() {
             )}
           </div>
         )}
+
+        {/* ── BILLING REPORTS ── */}
+        {activeTab === 'billing' && <BillingReport />}
+
+        {/* ── REVENUE ANALYTICS ── */}
+        {activeTab === 'revenue' && <RevenueAnalytics />}
+
+        {/* ── CHURN ANALYSIS ── */}
+        {activeTab === 'churn' && <ChurnAnalysis />}
+
+        {/* ── LIFECYCLE ANALYTICS ── */}
+        {activeTab === 'lifecycle' && <LifecycleAnalytics />}
+
+        {/* ── CUSTOM REPORTS ── */}
+        {activeTab === 'reports' && <CustomReports />}
       </div>
     </div>
   )

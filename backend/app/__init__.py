@@ -26,7 +26,7 @@ def create_app(env=None):
     # ── CORS — init BEFORE blueprints so it applies to all routes
     cors.init_app(app, resources={
         r'/api/*': {
-            'origins': ['http://localhost:5173', 'http://localhost:3000', '*'],
+            'origins': ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', '*'],
             'methods': ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
             'allow_headers': ['Content-Type', 'Authorization', 'X-API-Key'],
             'expose_headers': ['Content-Type', 'Authorization'],

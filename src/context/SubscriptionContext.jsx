@@ -17,6 +17,17 @@ export function SubscriptionProvider({ children }) {
       setLoading(true);
       const token = localStorage.getItem('access_token');
       
+      if (!token) {
+        // No token, set default
+        setSubscription({
+          plan: { name: 'starter' },
+          status: 'active'
+        });
+        setError(null);
+        setLoading(false);
+        return;
+      }
+      
       const response = await axios.get('http://localhost:5000/api/subscription/current', {
         headers: { Authorization: `Bearer ${token}` }
       });

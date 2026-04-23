@@ -334,3 +334,460 @@ def suspicious_activity():
         .order_by(func.count(OTPLog.id).desc()).all()
     )
     return jsonify({'suspicious_ips': [{'ip': ip, 'failed_attempts': c} for ip, c in results]}), 200
+
+
+# ══════════════════════════════════════════════════════════
+#  BILLING & USAGE REPORTS
+# ══════════════════════════════════════════════════════════
+
+# ── GET /api/admin/billing/usage-report ───────────────────
+@admin_bp.route('/billing/usage-report', methods=['GET'])
+@admin_required
+def usage_report():
+    """Get detailed usage and billing report for all users."""
+    days = request.args.get('days', 30, type=int)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    users_with_usage = []
+    for user in User.query.filter_by(role='user', is_active=True).all():
+        logins = OTPLog.query.filter(
+            OTPLog.user_id == user.id,
+            OTPLog.status == 'verified',
+            OTPLog.timestamp >= cutoff
+        ).count()
+        
+        failed = OTPLog.query.filter(
+            OTPLog.user_id == user.id,
+            OTPLog.status == 'failed',
+            OTPLog.timestamp >= cutoff
+        ).count()
+        
+        usage_by_method = (
+            db.session.query(OTPLog.method, func.count(OTPLog.id))
+            .filter(OTPLog.user_id == user.id, OTPLog.timestamp >= cutoff)
+            .group_by(OTPLog.method).all()
+        )
+        
+        users_with_usage.append({
+            'user_id': user.id,
+            'email': user.email,
+            'name': user.full_name,
+            'plan': user.plan,
+            'total_logins': logins,
+            'failed_logins': failed,
+            'success_rate': round(logins / (logins + failed) * 100) if (logins + failed) > 0 else 100,
+            'usage_by_method': [{'method': m, 'count': c} for m, c in usage_by_method],
+            'joined': user.created_at.isoformat(),
+        })
+    
+    total_usage = OTPLog.query.filter(OTPLog.timestamp >= cutoff).count()
+    
+    return jsonify({
+        'period_days': days,
+        'report_date': datetime.now(timezone.utc).isoformat(),
+        'total_active_users': len(users_with_usage),
+        'total_otp_operations': total_usage,
+        'users': users_with_usage
+    }), 200
+
+
+# ── GET /api/admin/billing/monthly-summary ────────────────
+@admin_bp.route('/billing/monthly-summary', methods=['GET'])
+@admin_required
+def monthly_billing_summary():
+    """Get monthly billing summary for all users."""
+    months = request.args.get('months', 6, type=int)
+    
+    summary_data = []
+    now = datetime.now(timezone.utc)
+    
+    for m in range(months - 1, -1, -1):
+        month_start = (now.replace(day=1) - timedelta(days=m * 30)).replace(day=1)
+        month_end = (month_start + timedelta(days=32)).replace(day=1)
+        
+        month_str = month_start.strftime('%Y-%m')
+        
+        logins = OTPLog.query.filter(
+            OTPLog.timestamp >= month_start,
+            OTPLog.timestamp < month_end,
+            OTPLog.status == 'verified'
+        ).count()
+        
+        active_users = db.session.query(func.count(func.distinct(OTPLog.user_id))).filter(
+            OTPLog.timestamp >= month_start,
+            OTPLog.timestamp < month_end
+        ).scalar() or 0
+        
+        summary_data.append({
+            'month': month_str,
+            'active_users': active_users,
+            'total_verifications': logins,
+            'estimated_cost': logins * 0.5  # Mock cost calculation
+        })
+    
+    return jsonify({'summary': summary_data}), 200
+
+
+# ══════════════════════════════════════════════════════════
+#  REVENUE DASHBOARD
+# ══════════════════════════════════════════════════════════
+
+# ── GET /api/admin/revenue/dashboard ──────────────────────
+@admin_bp.route('/revenue/dashboard', methods=['GET'])
+@admin_required
+def revenue_dashboard():
+    """Get revenue analytics and metrics."""
+    now = datetime.now(timezone.utc)
+    day30 = now - timedelta(days=30)
+    day90 = now - timedelta(days=90)
+    
+    # Plans breakdown
+    plan_counts = db.session.query(
+        User.plan, func.count(User.id)
+    ).filter_by(role='user', is_active=True).group_by(User.plan).all()
+    
+    plan_pricing = {
+        'starter': 0,
+        'growth': 99,
+        'business': 299,
+        'enterprise': 999
+    }
+    
+    total_monthly_revenue = 0
+    plan_breakdown = []
+    for plan, count in plan_counts:
+        revenue = count * plan_pricing.get(plan, 0)
+        total_monthly_revenue += revenue
+        plan_breakdown.append({
+            'plan': plan,
+            'users': count,
+            'price': plan_pricing.get(plan, 0),
+            'revenue': revenue,
+            'percentage': None  # Will be calculated
+        })
+    
+    # Calculate percentages
+    for item in plan_breakdown:
+        item['percentage'] = round(item['revenue'] / total_monthly_revenue * 100) if total_monthly_revenue > 0 else 0
+    
+    # Revenue trend (last 7 days)
+    revenue_trend = []
+    for i in range(6, -1, -1):
+        ds = (now - timedelta(days=i)).replace(hour=0, minute=0, second=0, microsecond=0)
+        de = ds + timedelta(days=1)
+        
+        daily_logins = OTPLog.query.filter(
+            OTPLog.timestamp >= ds,
+            OTPLog.timestamp < de,
+            OTPLog.status == 'verified'
+        ).count()
+        
+        revenue_trend.append({
+            'day': ds.strftime('%a'),
+            'revenue': daily_logins * 0.5  # Mock calculation
+        })
+    
+    # Active subscriptions
+    total_users = User.query.filter_by(role='user', is_active=True).count()
+    trial_users = User.query.filter_by(role='user', is_active=True, plan='starter').count()  # Assumption
+    
+    return jsonify({
+        'total_monthly_revenue': total_monthly_revenue,
+        'monthly_revenue_target': 10000,
+        'total_subscriptions': total_users,
+        'trial_subscriptions': trial_users,
+        'paying_subscriptions': total_users - trial_users,
+        'avg_revenue_per_user': round(total_monthly_revenue / total_users) if total_users > 0 else 0,
+        'plan_breakdown': plan_breakdown,
+        'revenue_trend_7d': revenue_trend
+    }), 200
+
+
+# ══════════════════════════════════════════════════════════
+#  CHURN ANALYSIS
+# ══════════════════════════════════════════════════════════
+
+# ── GET /api/admin/churn/analysis ─────────────────────────
+@admin_bp.route('/churn/analysis', methods=['GET'])
+@admin_required
+def churn_analysis():
+    """Analyze user churn patterns and at-risk users."""
+    now = datetime.now(timezone.utc)
+    day30 = now - timedelta(days=30)
+    day60 = now - timedelta(days=60)
+    day90 = now - timedelta(days=90)
+    day180 = now - timedelta(days=180)
+    
+    # Inactive users (no login in last 30 days)
+    inactive_30d = []
+    for user in User.query.filter_by(role='user', is_active=True).all():
+        last_login = db.session.query(func.max(OTPLog.timestamp)).filter(
+            OTPLog.user_id == user.id,
+            OTPLog.status == 'verified'
+        ).scalar()
+        
+        if not last_login or last_login < day30:
+            days_inactive = (now - (last_login or user.created_at)).days
+            inactive_30d.append({
+                'user_id': user.id,
+                'email': user.email,
+                'name': user.full_name,
+                'plan': user.plan,
+                'last_login': last_login.isoformat() if last_login else None,
+                'days_inactive': days_inactive,
+                'joined': user.created_at.isoformat()
+            })
+    
+    # High-risk users (decreasing activity)
+    high_risk = []
+    for user in User.query.filter_by(role='user', is_active=True).all():
+        logins_30d = OTPLog.query.filter(
+            OTPLog.user_id == user.id,
+            OTPLog.timestamp >= day30,
+            OTPLog.status == 'verified'
+        ).count()
+        
+        logins_60_90d = OTPLog.query.filter(
+            OTPLog.user_id == user.id,
+            OTPLog.timestamp >= day90,
+            OTPLog.timestamp < day60,
+            OTPLog.status == 'verified'
+        ).count()
+        
+        if logins_60_90d > 0 and logins_30d < logins_60_90d * 0.5:
+            high_risk.append({
+                'user_id': user.id,
+                'email': user.email,
+                'plan': user.plan,
+                'activity_decline': round((1 - logins_30d / logins_60_90d) * 100),
+                'logins_30d': logins_30d,
+                'logins_prev_30d': logins_60_90d
+            })
+    
+    # Churn rate
+    churned_last_30d = User.query.filter(
+        User.is_active == False,
+        User.updated_at >= day30
+    ).count()
+    
+    total_users = User.query.filter_by(role='user').count()
+    churn_rate = round(churned_last_30d / total_users * 100) if total_users > 0 else 0
+    
+    # Churn trend
+    churn_trend = []
+    for i in range(4):
+        start = now - timedelta(days=(i + 1) * 30)
+        end = now - timedelta(days=i * 30)
+        
+        churned = User.query.filter(
+            User.is_active == False,
+            User.updated_at >= start,
+            User.updated_at < end
+        ).count()
+        
+        churn_trend.append({
+            'period': f'{start.strftime("%b")}-{end.strftime("%b")}',
+            'churned_users': churned
+        })
+    
+    return jsonify({
+        'churn_rate_30d': churn_rate,
+        'at_risk_users': len(high_risk),
+        'inactive_users_30d': len(inactive_30d),
+        'churned_last_30d': churned_last_30d,
+        'inactive_users': inactive_30d[:20],
+        'high_risk_users': high_risk[:20],
+        'churn_trend': churn_trend
+    }), 200
+
+
+# ══════════════════════════════════════════════════════════
+#  USER LIFECYCLE ANALYTICS
+# ══════════════════════════════════════════════════════════
+
+# ── GET /api/admin/lifecycle/analytics ────────────────────
+@admin_bp.route('/lifecycle/analytics', methods=['GET'])
+@admin_required
+def lifecycle_analytics():
+    """Analyze user lifecycle stages and retention."""
+    now = datetime.now(timezone.utc)
+    
+    # User cohorts by signup month
+    cohorts = []
+    for i in range(12):
+        cohort_month_start = (now.replace(day=1) - timedelta(days=i * 30)).replace(day=1)
+        cohort_month_end = (cohort_month_start + timedelta(days=32)).replace(day=1)
+        
+        cohort_users = User.query.filter(
+            User.created_at >= cohort_month_start,
+            User.created_at < cohort_month_end,
+            User.role == 'user'
+        ).count()
+        
+        cohort_active = User.query.filter(
+            User.created_at >= cohort_month_start,
+            User.created_at < cohort_month_end,
+            User.role == 'user',
+            User.is_active == True
+        ).count()
+        
+        if cohort_users > 0:
+            cohorts.append({
+                'month': cohort_month_start.strftime('%Y-%m'),
+                'signups': cohort_users,
+                'active': cohort_active,
+                'retention': round(cohort_active / cohort_users * 100)
+            })
+    
+    # User lifecycle stages
+    day7 = now - timedelta(days=7)
+    day30 = now - timedelta(days=30)
+    day90 = now - timedelta(days=90)
+    day365 = now - timedelta(days=365)
+    
+    new_users = User.query.filter(
+        User.created_at >= day7,
+        User.role == 'user'
+    ).count()
+    
+    active_users = User.query.filter(
+        User.created_at < day7,
+        User.created_at >= day30,
+        User.role == 'user',
+        User.is_active == True
+    ).count()
+    
+    mature_users = User.query.filter(
+        User.created_at < day90,
+        User.created_at >= day30,
+        User.role == 'user',
+        User.is_active == True
+    ).count()
+    
+    loyal_users = User.query.filter(
+        User.created_at < day365,
+        User.role == 'user',
+        User.is_active == True
+    ).count()
+    
+    return jsonify({
+        'lifecycle_stages': {
+            'new_users_7d': new_users,
+            'active_users_30d': active_users,
+            'mature_users_30_90d': mature_users,
+            'loyal_users_1y': loyal_users,
+        },
+        'cohort_analysis': cohorts[:12],
+        'avg_user_lifetime': 180,  # Mock value
+        'onboarding_completion_rate': 78,  # Mock value
+        'feature_adoption_rate': 65,  # Mock value
+    }), 200
+
+
+# ══════════════════════════════════════════════════════════
+#  CUSTOM REPORT BUILDER
+# ══════════════════════════════════════════════════════════
+
+# ── POST /api/admin/reports/custom ────────────────────────
+@admin_bp.route('/reports/custom', methods=['POST'])
+@admin_required
+def create_custom_report():
+    """Create a custom report based on specified filters."""
+    data = request.get_json() or {}
+    
+    report_type = data.get('type')  # 'usage', 'revenue', 'security', 'retention'
+    filters = data.get('filters', {})
+    
+    if report_type == 'usage':
+        query = OTPLog.query
+        if filters.get('status'):
+            query = query.filter_by(status=filters['status'])
+        if filters.get('method'):
+            query = query.filter_by(method=filters['method'])
+        
+        days = filters.get('days', 30)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        query = query.filter(OTPLog.timestamp >= cutoff)
+        
+        logs = query.all()
+        report = {
+            'type': 'usage',
+            'total_operations': len(logs),
+            'by_method': {},
+            'by_status': {},
+            'generated': datetime.now(timezone.utc).isoformat()
+        }
+        
+        for log in logs:
+            report['by_method'][log.method] = report['by_method'].get(log.method, 0) + 1
+            report['by_status'][log.status] = report['by_status'].get(log.status, 0) + 1
+    
+    elif report_type == 'security':
+        day_7 = datetime.now(timezone.utc) - timedelta(days=7)
+        
+        failed_attempts = OTPLog.query.filter(
+            OTPLog.status == 'failed',
+            OTPLog.timestamp >= day_7
+        ).count()
+        
+        suspicious_ips = (
+            db.session.query(OTPLog.ip_address, func.count(OTPLog.id))
+            .filter(OTPLog.status == 'failed', OTPLog.timestamp >= day_7)
+            .group_by(OTPLog.ip_address)
+            .having(func.count(OTPLog.id) >= 3).all()
+        )
+        
+        report = {
+            'type': 'security',
+            'period': '7_days',
+            'failed_attempts': failed_attempts,
+            'suspicious_ips': len(suspicious_ips),
+            'top_ips': [{'ip': ip, 'attempts': c} for ip, c in suspicious_ips[:5]],
+            'generated': datetime.now(timezone.utc).isoformat()
+        }
+    
+    else:
+        report = {'error': 'Invalid report type'}, 400
+    
+    return jsonify(report), 200
+
+
+# ── GET /api/admin/reports/list ───────────────────────────
+@admin_bp.route('/reports/list', methods=['GET'])
+@admin_required
+def list_custom_reports():
+    """List available report templates."""
+    reports = [
+        {
+            'id': 'usage-report',
+            'name': 'Usage Report',
+            'description': 'Detailed usage and billing report',
+            'filters': ['days', 'user_id', 'method']
+        },
+        {
+            'id': 'revenue-report',
+            'name': 'Revenue Report',
+            'description': 'Revenue analytics and subscription breakdown',
+            'filters': ['period', 'plan']
+        },
+        {
+            'id': 'security-report',
+            'name': 'Security Report',
+            'description': 'Security events and suspicious activity',
+            'filters': ['days', 'ip_address', 'status']
+        },
+        {
+            'id': 'churn-report',
+            'name': 'Churn Analysis',
+            'description': 'User churn and retention analysis',
+            'filters': ['days', 'plan']
+        },
+        {
+            'id': 'lifecycle-report',
+            'name': 'Lifecycle Report',
+            'description': 'User lifecycle and cohort analysis',
+            'filters': ['cohort_period']
+        }
+    ]
+    
+    return jsonify({'reports': reports}), 200

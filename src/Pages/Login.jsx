@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/useAuth'
-import { useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 const inputStyle = {
   width: '100%', padding: '12px 16px', borderRadius: 8,
