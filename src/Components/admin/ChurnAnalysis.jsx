@@ -37,13 +37,16 @@ const CATEGORIES = [
   { value: 'by-plan',     label: '📦 By Plan' },
 ]
 
-export default function ChurnAnalysis() {
+export default function ChurnAnalysis({ initialCategory = 'overview' }) {
   const { token } = useAuth()
   const [data, setData]         = useState(null)
   const [loading, setLoading]   = useState(true)
-  const [category, setCategory] = useState('overview')
+  const [category, setCategory] = useState(initialCategory)
   const [days, setDays]         = useState(30)
   const [plan, setPlan]         = useState('')
+
+  // Sync if parent changes the tab
+  useEffect(() => { setCategory(initialCategory) }, [initialCategory])
 
   // Map category to API type param
   const apiType = ['voluntary','involuntary','early'].includes(category) ? category : 'all'

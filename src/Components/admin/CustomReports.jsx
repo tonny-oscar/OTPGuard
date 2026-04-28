@@ -14,15 +14,15 @@ const REPORT_TYPES = [
   { value: 'lifecycle', label: '🔄 Lifecycle Report', desc: 'Cohort retention analysis' },
 ]
 
-export default function CustomReports() {
+export default function CustomReports({ initialType = 'usage' }) {
   const { token } = useAuth()
-  const [reportType, setReportType]         = useState('usage')
+  const [reportType, setReportType]         = useState(initialType)
   const [result, setResult]                 = useState(null)
   const [generating, setGenerating]         = useState(false)
   const [filters, setFilters]               = useState({})
 
-  // Reset result when type changes
-  useEffect(() => { setResult(null); setFilters({}) }, [reportType])
+  // Sync if parent changes the tab
+  useEffect(() => { setReportType(initialType); setResult(null); setFilters({}) }, [initialType])
 
   function setF(k, v) { setFilters(f => ({ ...f, [k]: v || undefined })) }
 
