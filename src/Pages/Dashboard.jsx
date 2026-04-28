@@ -109,7 +109,7 @@ export default function Dashboard() {
       <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--border)', padding:'0 24px' }}>
         <div style={{ maxWidth:1100, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
           <Link to="/" style={{ textDecoration:'none', fontWeight:700, fontSize:'1.1rem', color:'var(--heading)' }}>
-            🔐 OTP<span style={{ color:'var(--green)' }}>Guard</span>
+             OTP<span style={{ color:'var(--green)' }}>Guard</span>
           </Link>
           <div style={{ display:'flex', alignItems:'center', gap:16 }}>
             <span style={{ fontSize:'.85rem', color:'var(--text)' }}>👤 {profile?.email}</span>

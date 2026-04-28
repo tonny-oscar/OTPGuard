@@ -1,35 +1,30 @@
-import { useSubscription } from '../../hooks/useSubscription';
-import { PLAN_COLORS } from '../../utils/planPermissions';
+import { useSubscription } from '../../hooks/useSubscription'
 
-export default function PlanBadge({ showTrial = true, className = '' }) {
-  const { currentPlan, isTrial, trialEnds } = useSubscription();
-  
-  const colorClasses = {
-    blue: 'bg-blue-100 text-blue-800 border-blue-200',
-    green: 'bg-green-100 text-green-800 border-green-200',
-    purple: 'bg-purple-100 text-purple-800 border-purple-200',
-    gold: 'bg-yellow-100 text-yellow-800 border-yellow-200'
-  };
-  
-  const planColor = PLAN_COLORS[currentPlan] || 'blue';
-  const colorClass = colorClasses[planColor];
-  
-  const formatTrialEnd = (date) => {
-    if (!date) return '';
-    const daysLeft = Math.ceil((new Date(date) - new Date()) / (1000 * 60 * 60 * 24));
-    return daysLeft > 0 ? `${daysLeft} days left` : 'Expired';
-  };
-  
+const planColors = {
+  starter: { bg: 'rgba(59,130,246,.15)', color: '#60a5fa', border: 'rgba(59,130,246,.3)' },
+  growth:  { bg: 'var(--green-dim)',     color: 'var(--green)', border: 'rgba(0,255,136,.3)' },
+  business:{ bg: 'rgba(139,92,246,.15)', color: '#a78bfa', border: 'rgba(139,92,246,.3)' },
+  enterprise:{ bg: 'rgba(250,204,21,.15)', color: '#facc15', border: 'rgba(250,204,21,.3)' },
+}
+
+export default function PlanBadge({ showTrial = true }) {
+  const { currentPlan, isTrial, trialEnds } = useSubscription()
+  const c = planColors[currentPlan] || planColors.starter
+
+  const daysLeft = trialEnds
+    ? Math.ceil((new Date(trialEnds) - new Date()) / 86400000)
+    : 0
+
   return (
-    <div className={`inline-flex items-center gap-2 ${className}`}>
-      <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${colorClass}`}>
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <span style={{ background: c.bg, color: c.color, border: `1px solid ${c.border}`, padding: '3px 12px', borderRadius: 20, fontSize: '.75rem', fontWeight: 700 }}>
         {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}
       </span>
       {showTrial && isTrial && (
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
-          Trial • {formatTrialEnd(trialEnds)}
+        <span style={{ background: 'rgba(251,146,60,.15)', color: '#fb923c', border: '1px solid rgba(251,146,60,.3)', padding: '3px 10px', borderRadius: 20, fontSize: '.72rem', fontWeight: 600 }}>
+          Trial{daysLeft > 0 ? ` · ${daysLeft}d left` : ' · Expired'}
         </span>
       )}
     </div>
-  );
+  )
 }

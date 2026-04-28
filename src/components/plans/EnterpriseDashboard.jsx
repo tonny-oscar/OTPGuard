@@ -1,310 +1,143 @@
-import { 
-  UsersIcon, 
-  ServerIcon,
-  ClockIcon,
-  KeyIcon,
-  CurrencyDollarIcon,
-  CheckCircleIcon 
-} from '@heroicons/react/24/outline';
-import MetricCard from '../dashboard/widgets/MetricCard';
-import ActivityTable from '../dashboard/widgets/ActivityTable';
+import MetricCard from '../dashboard/widgets/MetricCard'
+import ActivityTable from '../dashboard/widgets/ActivityTable'
 
 export default function EnterpriseDashboard() {
-  // Mock data - replace with real API calls
-  const metrics = {
-    totalUsers: 125456,
-    uptime: 99.99,
-    avgResponseTime: 45,
-    totalOTPs: 1200000,
-    smsCost: 234567,
-    successRate: 98.2
-  };
-  
+  const metrics = { totalUsers: 125456, uptime: 99.99, avgResponseTime: 45, totalOTPs: 1200000, smsCost: 234567, successRate: 98.2 }
+
   const systemHealth = [
-    { name: 'API Gateway', status: 'healthy', uptime: '99.99%', responseTime: '42ms' },
-    { name: 'Database', status: 'healthy', uptime: '100%', connections: 234 },
-    { name: 'SMS Provider', status: 'healthy', uptime: '99.95%', queue: 12 },
-    { name: 'Email Service', status: 'healthy', uptime: '99.98%', queue: 45 }
-  ];
-  
+    { name: 'API Gateway',   uptime: '99.99%', responseTime: '42ms' },
+    { name: 'Database',      uptime: '100%',   connections: 234 },
+    { name: 'SMS Provider',  uptime: '99.95%', queue: 12 },
+    { name: 'Email Service', uptime: '99.98%', queue: 45 },
+  ]
+
   const slaMetrics = [
-    { metric: 'Uptime', target: '99.9%', actual: '99.99%', status: 'exceeding' },
-    { metric: 'Response Time', target: '<100ms', actual: '45ms', status: 'exceeding' },
-    { metric: 'Error Rate', target: '<0.1%', actual: '0.03%', status: 'meeting' },
-    { metric: 'Support Response', target: '<1hr', actual: '23min', status: 'exceeding' }
-  ];
-  
+    { metric: 'Uptime',          target: '99.9%',  actual: '99.99%', exceeding: true },
+    { metric: 'Response Time',   target: '<100ms', actual: '45ms',   exceeding: true },
+    { metric: 'Error Rate',      target: '<0.1%',  actual: '0.03%',  exceeding: false },
+    { metric: 'Support Response',target: '<1hr',   actual: '23min',  exceeding: true },
+  ]
+
   const teamMembers = [
-    { name: 'John Doe', role: 'Admin', email: 'john@acme.com', lastActive: '5 min ago' },
-    { name: 'Jane Smith', role: 'Developer', email: 'jane@acme.com', lastActive: '2 hrs ago' },
-    { name: 'Bob Johnson', role: 'Viewer', email: 'bob@acme.com', lastActive: '1 day ago' }
-  ];
-  
+    { name: 'John Doe',    role: 'Admin',     email: 'john@acme.com', lastActive: '5 min ago' },
+    { name: 'Jane Smith',  role: 'Developer', email: 'jane@acme.com', lastActive: '2 hrs ago' },
+    { name: 'Bob Johnson', role: 'Viewer',    email: 'bob@acme.com',  lastActive: '1 day ago' },
+  ]
+
   const auditLogs = [
-    { time: '2 min ago', user: 'admin@acme.com', action: 'API Key Created', ip: '197.232.xxx.xxx' },
-    { time: '15 min ago', user: 'dev@acme.com', action: 'Settings Updated', ip: '197.232.xxx.xxx' },
-    { time: '1 hour ago', user: 'admin@acme.com', action: 'User Role Changed', ip: '197.232.xxx.xxx' },
-    { time: '3 hours ago', user: 'dev@acme.com', action: 'Integration Added', ip: '197.232.xxx.xxx' }
-  ];
-  
+    { time: '2 min ago',   user: 'admin@acme.com', action: 'API Key Created',   ip: '197.232.xxx.xxx' },
+    { time: '15 min ago',  user: 'dev@acme.com',   action: 'Settings Updated',  ip: '197.232.xxx.xxx' },
+    { time: '1 hour ago',  user: 'admin@acme.com', action: 'User Role Changed', ip: '197.232.xxx.xxx' },
+    { time: '3 hours ago', user: 'dev@acme.com',   action: 'Integration Added', ip: '197.232.xxx.xxx' },
+  ]
+
+  const card = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }
+
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Enterprise Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          Mission-critical MFA infrastructure monitoring and management
-        </p>
+        <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>Enterprise Dashboard</h1>
+        <p style={{ fontSize: '.88rem' }}>Mission-critical MFA infrastructure monitoring and management</p>
       </div>
-      
-      {/* Executive KPI Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-        <MetricCard
-          title="Total Users"
-          value={metrics.totalUsers.toLocaleString()}
-          icon={UsersIcon}
-          trend="+2,345 this month"
-          trendUp={true}
-          color="blue"
-          size="large"
-        />
-        
-        <MetricCard
-          title="Uptime"
-          value={`${metrics.uptime}%`}
-          icon={ServerIcon}
-          subtitle="SLA: 99.9%"
-          badge="✓ On Track"
-          color="green"
-        />
-        
-        <MetricCard
-          title="Avg Response Time"
-          value={`${metrics.avgResponseTime}ms`}
-          icon={ClockIcon}
-          trend="-5ms"
-          trendUp={true}
-          color="purple"
-        />
-        
-        <MetricCard
-          title="Total OTPs"
-          value={`${(metrics.totalOTPs / 1000000).toFixed(1)}M`}
-          icon={KeyIcon}
-          subtitle="This month"
-          color="indigo"
-        />
-        
-        <MetricCard
-          title="SMS Cost"
-          value={`${metrics.smsCost.toLocaleString()} KES`}
-          icon={CurrencyDollarIcon}
-          trend="+12%"
-          trendUp={false}
-          color="amber"
-        />
-        
-        <MetricCard
-          title="Success Rate"
-          value={`${metrics.successRate}%`}
-          icon={CheckCircleIcon}
-          trend="+0.5%"
-          trendUp={true}
-          color="emerald"
-        />
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 16 }}>
+        <MetricCard title="Total Users"       value={metrics.totalUsers.toLocaleString()} icon="👥" trend="+2,345 this month" trendUp color="blue" />
+        <MetricCard title="Uptime"            value={`${metrics.uptime}%`} icon="🖥️" subtitle="SLA: 99.9%" badge="✓ On Track" color="green" />
+        <MetricCard title="Avg Response"      value={`${metrics.avgResponseTime}ms`} icon="⚡" trend="-5ms" trendUp color="purple" />
+        <MetricCard title="Total OTPs"        value={`${(metrics.totalOTPs / 1000000).toFixed(1)}M`} icon="🔑" subtitle="This month" color="indigo" />
+        <MetricCard title="SMS Cost"          value={`${metrics.smsCost.toLocaleString()} KES`} icon="💳" trend="+12%" trendUp={false} color="amber" />
+        <MetricCard title="Success Rate"      value={`${metrics.successRate}%`} icon="✅" trend="+0.5%" trendUp color="emerald" />
       </div>
-      
-      {/* System Health Monitoring */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Infrastructure Status</h3>
-          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            All Systems Operational
+
+      {/* System Health */}
+      <div style={card}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h3 style={{ color: 'var(--heading)', fontWeight: 600 }}>Infrastructure Status</h3>
+          <span style={{ background: 'rgba(0,255,136,.12)', color: 'var(--green)', padding: '4px 12px', borderRadius: 10, fontSize: '.75rem', fontWeight: 700 }}>
+            ● All Systems Operational
           </span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {systemHealth.map((service) => (
-            <div key={service.name} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium text-gray-900">{service.name}</h4>
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12 }}>
+          {systemHealth.map(s => (
+            <div key={s.name} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ fontSize: '.88rem', color: 'var(--heading)', fontWeight: 600 }}>{s.name}</span>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green)', display: 'inline-block', marginTop: 4 }} />
               </div>
-              <div className="space-y-1">
-                <p className="text-xs text-gray-600">Uptime: <span className="font-semibold text-gray-900">{service.uptime}</span></p>
-                {service.responseTime && (
-                  <p className="text-xs text-gray-600">Response: <span className="font-semibold text-gray-900">{service.responseTime}</span></p>
-                )}
-                {service.connections && (
-                  <p className="text-xs text-gray-600">Connections: <span className="font-semibold text-gray-900">{service.connections}</span></p>
-                )}
-                {service.queue !== undefined && (
-                  <p className="text-xs text-gray-600">Queue: <span className="font-semibold text-gray-900">{service.queue}</span></p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-xs text-blue-800">
-            ℹ️ Scheduled maintenance: Sunday 2AM-4AM EAT
-          </p>
-        </div>
-      </div>
-      
-      {/* SLA Compliance Dashboard */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">SLA Performance (Last 30 Days)</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {slaMetrics.map((metric) => (
-            <div key={metric.metric} className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium text-gray-900 mb-2">{metric.metric}</p>
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl font-bold text-gray-900">{metric.actual}</span>
-                <span className="text-xs text-gray-500">/ {metric.target}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                {metric.status === 'exceeding' ? (
-                  <>
-                    <span className="text-xs font-medium text-green-600">↗ Exceeding</span>
-                    <CheckCircleIcon className="w-4 h-4 text-green-500" />
-                  </>
-                ) : (
-                  <>
-                    <span className="text-xs font-medium text-blue-600">✓ Meeting</span>
-                    <CheckCircleIcon className="w-4 h-4 text-blue-500" />
-                  </>
-                )}
-              </div>
+              <div style={{ fontSize: '.75rem', color: 'var(--text)' }}>Uptime: <strong style={{ color: 'var(--heading)' }}>{s.uptime}</strong></div>
+              {s.responseTime && <div style={{ fontSize: '.75rem', color: 'var(--text)' }}>Response: <strong style={{ color: 'var(--heading)' }}>{s.responseTime}</strong></div>}
+              {s.connections  && <div style={{ fontSize: '.75rem', color: 'var(--text)' }}>Connections: <strong style={{ color: 'var(--heading)' }}>{s.connections}</strong></div>}
+              {s.queue !== undefined && <div style={{ fontSize: '.75rem', color: 'var(--text)' }}>Queue: <strong style={{ color: 'var(--heading)' }}>{s.queue}</strong></div>}
             </div>
           ))}
         </div>
       </div>
-      
-      {/* Team Management Panel */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Team & Roles</h3>
-          <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">
-            + Add Member
-          </button>
-        </div>
-        <div className="space-y-3">
-          {teamMembers.map((member, index) => (
-            <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-semibold text-indigo-600">
-                    {member.name.split(' ').map(n => n[0]).join('')}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{member.name}</p>
-                  <p className="text-xs text-gray-500">{member.email}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                  {member.role}
-                </span>
-                <span className="text-xs text-gray-500">{member.lastActive}</span>
-              </div>
+
+      {/* SLA */}
+      <div style={card}>
+        <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>SLA Performance (Last 30 Days)</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12 }}>
+          {slaMetrics.map(m => (
+            <div key={m.metric} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: 16 }}>
+              <div style={{ fontSize: '.82rem', color: 'var(--text)', marginBottom: 6 }}>{m.metric}</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--heading)' }}>{m.actual}</div>
+              <div style={{ fontSize: '.72rem', color: 'var(--text)', marginBottom: 6 }}>target: {m.target}</div>
+              <span style={{ fontSize: '.72rem', fontWeight: 700, color: m.exceeding ? 'var(--green)' : 'var(--blue)' }}>
+                {m.exceeding ? '↗ Exceeding' : '✓ Meeting'}
+              </span>
             </div>
           ))}
         </div>
       </div>
-      
-      {/* Audit Log Viewer */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Security Audit Log</h3>
-          <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-            Export All →
-          </button>
+
+      {/* Team */}
+      <div style={card}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h3 style={{ color: 'var(--heading)', fontWeight: 600 }}>Team & Roles</h3>
+          <button className="btn-primary" style={{ padding: '8px 16px', fontSize: '.82rem' }}>+ Add Member</button>
         </div>
-        <ActivityTable
-          title=""
-          columns={['Time', 'User', 'Action', 'IP Address']}
-          data={auditLogs}
-          searchable={true}
-          exportable={true}
-          pagination={true}
-        />
+        {teamMembers.map((m, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--bg)', borderRadius: 8, marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(99,102,241,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8', fontWeight: 700, fontSize: '.85rem' }}>
+                {m.name.split(' ').map(n => n[0]).join('')}
+              </div>
+              <div>
+                <div style={{ fontSize: '.88rem', color: 'var(--heading)', fontWeight: 500 }}>{m.name}</div>
+                <div style={{ fontSize: '.75rem' }}>{m.email}</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ background: 'rgba(139,92,246,.15)', color: '#a78bfa', padding: '3px 10px', borderRadius: 10, fontSize: '.75rem', fontWeight: 600 }}>{m.role}</span>
+              <span style={{ fontSize: '.75rem', opacity: .6 }}>{m.lastActive}</span>
+            </div>
+          </div>
+        ))}
       </div>
-      
-      {/* White-Label Configuration */}
-      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">🏷️</span>
-              <h3 className="text-lg font-semibold text-gray-900">White-Label Active</h3>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              Your custom domain: <span className="font-mono font-semibold text-gray-900">auth.acme.com</span>
-            </p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              <span className="px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-700 border border-gray-200">
-                ✓ Custom Domain
-              </span>
-              <span className="px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-700 border border-gray-200">
-                ✓ No OTPGuard Branding
-              </span>
-              <span className="px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-700 border border-gray-200">
-                ✓ Custom Email Templates
-              </span>
-              <span className="px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-700 border border-gray-200">
-                ✓ Custom SMS Sender ID
-              </span>
-            </div>
-            <a
-              href="/white-label"
-              className="inline-flex items-center text-sm text-yellow-700 hover:text-yellow-800 font-medium"
-            >
-              Manage White-Label Settings →
-            </a>
-          </div>
+
+      {/* Audit Log */}
+      <div style={card}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h3 style={{ color: 'var(--heading)', fontWeight: 600 }}>Security Audit Log</h3>
+          <button style={{ background: 'none', border: 'none', color: 'var(--green)', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600 }}>Export All →</button>
         </div>
+        <ActivityTable title="" columns={['Time','User','Action','IP Address']} data={auditLogs} searchable exportable pagination />
       </div>
-      
-      {/* Custom Integrations */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Custom Integrations</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">💬</span>
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            </div>
-            <h4 className="text-sm font-medium text-gray-900 mb-1">Slack Notifications</h4>
-            <p className="text-xs text-gray-600">Active</p>
-          </div>
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">🔗</span>
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            </div>
-            <h4 className="text-sm font-medium text-gray-900 mb-1">Webhook Endpoints</h4>
-            <p className="text-xs text-gray-600">3 configured</p>
-          </div>
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">🔐</span>
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            </div>
-            <h4 className="text-sm font-medium text-gray-900 mb-1">SAML SSO</h4>
-            <p className="text-xs text-gray-600">Okta</p>
-          </div>
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">⚡</span>
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            </div>
-            <h4 className="text-sm font-medium text-gray-900 mb-1">Custom API</h4>
-            <p className="text-xs text-gray-600">v2</p>
-          </div>
+
+      {/* White-Label */}
+      <div style={{ background: 'rgba(250,204,21,.07)', border: '1px solid rgba(250,204,21,.25)', borderRadius: 12, padding: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <span style={{ fontSize: '1.3rem' }}>🏷️</span>
+          <h3 style={{ color: 'var(--heading)', fontWeight: 600 }}>White-Label Active</h3>
         </div>
+        <p style={{ fontSize: '.85rem', marginBottom: 12 }}>Your custom domain: <code style={{ color: 'var(--heading)', fontWeight: 700 }}>auth.acme.com</code></p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+          {['Custom Domain','No OTPGuard Branding','Custom Email Templates','Custom SMS Sender ID'].map(f => (
+            <span key={f} style={{ background: 'rgba(255,255,255,.06)', color: 'var(--heading)', padding: '3px 12px', borderRadius: 20, fontSize: '.75rem', fontWeight: 600 }}>✓ {f}</span>
+          ))}
+        </div>
+        <a href="/white-label" style={{ color: '#facc15', fontSize: '.85rem', textDecoration: 'none', fontWeight: 600 }}>Manage White-Label Settings →</a>
       </div>
     </div>
-  );
+  )
 }

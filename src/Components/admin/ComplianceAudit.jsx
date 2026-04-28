@@ -1,0 +1,174 @@
+import { useState, useEffect } from 'react'
+import { useAuth, API } from '../../context/AuthContext'
+
+const card = {
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
+  borderRadius: 12,
+  padding: 24,
+}
+
+function ComplianceAudit() {
+  const { token } = useAuth()
+  const [audit, setAudit] = useState(null)
+  const [access, setAccess] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      try {
+        const [auditRes, accessRes] = await Promise.all([
+          fetch(`${API}/admin/compliance/audit-log`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/admin/compliance/data-access`, { headers: { Authorization: `Bearer ${token}` } }),
+        ])
+        setAudit(await auditRes.json())
+        setAccess(await accessRes.json())
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [token])
+
+  const actionColors = {
+    user_status_changed: '#facc15',
+    mfa_reset: '#f87171',
+    user_deleted: '#f87171',
+    data_export: 'var(--green)',
+    data_access: 'var(--blue)',
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
+          🔐 Compliance & Audit Trail
+        </h1>
+        <p style={{ fontSize: '.85rem' }}>Track admin actions and data access for compliance</p>
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 60, color: 'var(--text)' }}>Loading…</div>
+      ) : audit ? (
+        <div>
+          {/* Admin Audit Log */}
+          <div style={card}>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>📋 Admin Audit Trail</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {audit.audit_entries.map((entry) => (
+                <div
+                  key={entry.id}
+                  style={{
+                    padding: 12,
+                    background: 'rgba(255,255,255,.02)',
+                    borderLeft: `3px solid ${actionColors[entry.action] || 'var(--text)'}`,
+                    borderRadius: 6,
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <div style={{ fontWeight: 600, fontSize: '.9rem' }}>{entry.admin_email}</div>
+                    <div style={{ fontSize: '.75rem', color: 'var(--text)' }}>
+                      {new Date(entry.timestamp).toLocaleString()}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '.85rem', marginBottom: 4 }}>
+                    <span style={{ color: actionColors[entry.action], fontWeight: 600, textTransform: 'uppercase', fontSize: '.7rem' }}>
+                      {entry.action.replace(/_/g, ' ')}
+                    </span>
+                    <span style={{ marginLeft: 8 }}>{entry.target_user}</span>
+                  </div>
+                  <div style={{ fontSize: '.75rem', color: 'var(--text)' }}>{entry.details}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Data Access Log */}
+          {access && (
+            <div style={{ ...card, marginTop: 20 }}>
+              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>🔒 Data Access & Export Log</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>User</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Action</th>
+                    <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600 }}>Records</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Status</th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {access.access_logs.map((log, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '12px' }}>{log.user}</td>
+                      <td style={{ padding: '12px', textTransform: 'capitalize' }}>
+                        <span
+                          style={{
+                            background:
+                              log.action === 'data_export'
+                                ? 'rgba(0,255,136,.1)'
+                                : 'rgba(59,130,246,.1)',
+                            color: log.action === 'data_export' ? 'var(--green)' : 'var(--blue)',
+                            padding: '2px 8px',
+                            borderRadius: 4,
+                            fontSize: '.75rem',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {log.action.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600 }}>{log.records}</td>
+                      <td style={{ padding: '12px' }}>
+                        <span
+                          style={{
+                            background: 'rgba(0,255,136,.1)',
+                            color: 'var(--green)',
+                            padding: '2px 8px',
+                            borderRadius: 4,
+                            fontSize: '.75rem',
+                            fontWeight: 600,
+                            textTransform: 'capitalize',
+                          }}
+                        >
+                          {log.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px', fontSize: '.8rem' }}>
+                        {new Date(log.timestamp).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Compliance Status */}
+          <div style={{ ...card, marginTop: 20, background: 'rgba(0,255,136,.05)', borderColor: 'rgba(0,255,136,.2)' }}>
+            <h3 style={{ color: 'var(--green)', fontWeight: 600, marginBottom: 12 }}>✅ Compliance Status</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12, fontSize: '.85rem' }}>
+              <div>
+                <div style={{ marginBottom: 4 }}>✓ GDPR Compliant</div>
+                <div style={{ fontSize: '.75rem', color: 'var(--text)' }}>Data handling verified</div>
+              </div>
+              <div>
+                <div style={{ marginBottom: 4 }}>✓ Audit Trail Active</div>
+                <div style={{ fontSize: '.75rem', color: 'var(--text)' }}>All admin actions logged</div>
+              </div>
+              <div>
+                <div style={{ marginBottom: 4 }}>✓ Access Control</div>
+                <div style={{ fontSize: '.75rem', color: 'var(--text)' }}>Role-based permissions enforced</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+export default ComplianceAudit

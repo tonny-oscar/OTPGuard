@@ -1,114 +1,87 @@
-import { Fragment } from 'react';
-import { Menu, Transition } from '@headlessui/react';
-import { Bars3Icon, BellIcon, UserCircleIcon } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
-import { useSubscription } from '../../hooks/useSubscription';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { useSubscription } from '../../hooks/useSubscription'
 
 export default function TopBar({ onMenuClick }) {
-  const navigate = useNavigate();
-  const { currentPlan } = useSubscription();
-  
-  const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    navigate('/login');
-  };
-  
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
+  const { currentPlan } = useSubscription()
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  function handleLogout() {
+    logout()
+    navigate('/')
+  }
+
   return (
-    <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-      {/* Mobile menu button */}
-      <button
-        type="button"
-        className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
-        onClick={onMenuClick}
-      >
-        <span className="sr-only">Open sidebar</span>
-        <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-      </button>
-      
-      {/* Separator */}
-      <div className="h-6 w-px bg-gray-200 lg:hidden" aria-hidden="true" />
-      
-      <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-        <div className="flex flex-1 items-center">
-          {/* You can add search or breadcrumbs here */}
-        </div>
-        
-        <div className="flex items-center gap-x-4 lg:gap-x-6">
-          {/* Notifications */}
-          <button
-            type="button"
-            className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
-          >
-            <span className="sr-only">View notifications</span>
-            <BellIcon className="h-6 w-6" aria-hidden="true" />
+    <div style={{
+      position: 'sticky', top: 0, zIndex: 50,
+      background: 'var(--surface)', borderBottom: '1px solid var(--border)',
+      padding: '0 24px', height: 60,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    }}>
+      {/* Mobile hamburger */}
+      <button onClick={onMenuClick} className="mobile-menu-btn" style={{
+        display: 'none', background: 'none', border: 'none',
+        color: 'var(--heading)', fontSize: '1.3rem', cursor: 'pointer',
+      }}>☰</button>
+
+      <div style={{ flex: 1 }} />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, position: 'relative' }}>
+        {/* Plan badge */}
+        <span style={{ fontSize: '.75rem', background: 'var(--green-dim)', color: 'var(--green)', padding: '3px 10px', borderRadius: 10, border: '1px solid rgba(0,255,136,.3)', fontWeight: 700 }}>
+          {currentPlan.toUpperCase()}
+        </span>
+
+        {/* Avatar + dropdown */}
+        <div style={{ position: 'relative' }}>
+          <button onClick={() => setMenuOpen(o => !o)} style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'none', border: 'none', cursor: 'pointer',
+          }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--green-dim)', border: '1px solid rgba(0,255,136,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--green)', fontWeight: 700, fontSize: '.85rem' }}>
+              {(user?.full_name || user?.email || 'U').charAt(0).toUpperCase()}
+            </div>
           </button>
-          
-          {/* Separator */}
-          <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" aria-hidden="true" />
-          
-          {/* Profile dropdown */}
-          <Menu as="div" className="relative">
-            <Menu.Button className="-m-1.5 flex items-center p-1.5">
-              <span className="sr-only">Open user menu</span>
-              <UserCircleIcon className="h-8 w-8 text-gray-400" />
-              <span className="hidden lg:flex lg:items-center">
-                <span className="ml-4 text-sm font-semibold leading-6 text-gray-900" aria-hidden="true">
-                  {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)} Plan
-                </span>
-              </span>
-            </Menu.Button>
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <Menu.Items className="absolute right-0 z-10 mt-2.5 w-48 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={() => navigate('/settings')}
-                      className={`${
-                        active ? 'bg-gray-50' : ''
-                      } block w-full text-left px-3 py-1 text-sm leading-6 text-gray-900`}
-                    >
-                      Settings
-                    </button>
-                  )}
-                </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={() => navigate('/upgrade')}
-                      className={`${
-                        active ? 'bg-gray-50' : ''
-                      } block w-full text-left px-3 py-1 text-sm leading-6 text-gray-900`}
-                    >
-                      Upgrade Plan
-                    </button>
-                  )}
-                </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={handleLogout}
-                      className={`${
-                        active ? 'bg-gray-50' : ''
-                      } block w-full text-left px-3 py-1 text-sm leading-6 text-gray-900`}
-                    >
-                      Sign out
-                    </button>
-                  )}
-                </Menu.Item>
-              </Menu.Items>
-            </Transition>
-          </Menu>
+
+          {menuOpen && (
+            <div style={{
+              position: 'absolute', right: 0, top: 40, width: 180,
+              background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.4)', zIndex: 100,
+              overflow: 'hidden',
+            }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '.8rem', color: 'var(--heading)', fontWeight: 600 }}>{user?.full_name || 'User'}</div>
+                <div style={{ fontSize: '.72rem', color: 'var(--text)', marginTop: 2 }}>{user?.email}</div>
+              </div>
+              {[
+                { label: '⚙️ Settings', action: () => { navigate('/settings'); setMenuOpen(false) } },
+                { label: '↑ Upgrade Plan', action: () => { navigate('/#pricing'); setMenuOpen(false) } },
+                { label: '🚪 Sign out', action: handleLogout, red: true },
+              ].map(item => (
+                <button key={item.label} onClick={item.action} style={{
+                  width: '100%', textAlign: 'left', padding: '10px 16px',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: '.85rem', color: item.red ? '#f87171' : 'var(--text)',
+                  transition: 'background .15s',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.04)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) { .mobile-menu-btn { display: block !important; } }
+      `}</style>
     </div>
-  );
+  )
 }

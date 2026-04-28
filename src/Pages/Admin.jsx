@@ -6,6 +6,8 @@ import RevenueAnalytics from '../Components/admin/RevenueAnalytics'
 import ChurnAnalysis from '../Components/admin/ChurnAnalysis'
 import LifecycleAnalytics from '../Components/admin/LifecycleAnalytics'
 import CustomReports from '../Components/admin/CustomReports'
+import ComplianceAudit from '../Components/admin/ComplianceAudit'
+import FeatureUsage from '../Components/admin/FeatureUsage'
 
 const card = {
   background: 'var(--surface)', border: '1px solid var(--border)',
@@ -214,16 +216,16 @@ export default function Admin() {
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex' }} className="admin-layout">
       {/* Sidebar */}
-      <aside style={{
+      <aside className="admin-sidebar" style={{
         width: 220, background: 'var(--surface)', borderRight: '1px solid var(--border)',
         padding: '24px 0', display: 'flex', flexDirection: 'column', flexShrink: 0,
         position: 'sticky', top: 0, height: '100vh',
       }}>
-        <div style={{ padding: '0 20px 24px', borderBottom: '1px solid var(--border)' }}>
+        <div className="sidebar-logo" style={{ padding: '0 20px 24px', borderBottom: '1px solid var(--border)' }}>
           <Link to="/" style={{ textDecoration: 'none', fontWeight: 700, fontSize: '1.1rem', color: 'var(--heading)' }}>
-            🔐 OTP<span style={{ color: 'var(--green)' }}>Guard</span>
+             OTP<span style={{ color: 'var(--green)' }}>Guard</span>
           </Link>
           <div style={{ fontSize: '.7rem', color: 'var(--green)', marginTop: 4, fontWeight: 600, letterSpacing: 1 }}>ADMIN PANEL</div>
         </div>
@@ -247,7 +249,7 @@ export default function Admin() {
             </button>
           ))}
         </nav>
-        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)' }}>
+        <div className="sidebar-footer" style={{ padding: '16px 20px', borderTop: '1px solid var(--border)' }}>
           <div style={{ fontSize: '.8rem', marginBottom: 4, color: 'var(--heading)' }}>{user?.full_name || 'Admin'}</div>
           <div style={{ fontSize: '.75rem' }}>{user?.email}</div>
           <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
@@ -329,7 +331,7 @@ export default function Admin() {
             </div>
 
             {loading ? <Spinner /> : (
-              <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
+              <div className="table-wrap" style={{ ...card, padding: 0, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,.02)' }}>
@@ -502,6 +504,14 @@ export default function Admin() {
 
         {/* ── CUSTOM REPORTS ── */}
         {activeTab === 'reports' && <CustomReports />}
+
+        {/* ── COMPLIANCE & AUDIT ── */}
+        {activeTab === 'compliance' && <ComplianceAudit />}
+
+        {/* ── FEATURE USAGE ANALYTICS ── */}
+        {activeTab === 'feature-usage' && <FeatureUsage />}   
+
+        
       </div>
     </div>
   )

@@ -1,209 +1,143 @@
-import { Fragment } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import {
-  HomeIcon,
-  ChartBarIcon,
-  KeyIcon,
-  EnvelopeIcon,
-  DevicePhoneMobileIcon,
-  ShieldCheckIcon,
-  DocumentDuplicateIcon,
-  CurrencyDollarIcon,
-  ClipboardDocumentListIcon,
-  PaintBrushIcon,
-  Cog6ToothIcon,
-  ArrowUpIcon,
-  LockClosedIcon,
-  ServerIcon,
-  UsersIcon,
-  PuzzlePieceIcon
-} from '@heroicons/react/24/outline';
-import { useSubscription } from '../../hooks/useSubscription';
-import { usePlanAccess } from '../../hooks/useSubscription';
-import PlanBadge from '../shared/PlanBadge';
+import { Link, useLocation } from 'react-router-dom'
+import { useSubscription } from '../../hooks/useSubscription'
+import PlanBadge from '../shared/PlanBadge'
 
-export default function Sidebar({ open, onClose, mobile = false }) {
-  const location = useLocation();
-  const { currentPlan } = useSubscription();
-  
-  // Define navigation based on plan
-  const getNavigation = () => {
-    const baseNav = [
-      { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, plans: ['starter', 'growth', 'business', 'enterprise'] },
-      { name: 'Analytics', href: '/analytics', icon: ChartBarIcon, plans: ['growth', 'business', 'enterprise'], locked: ['starter'] },
-      { name: 'System Health', href: '/system-health', icon: ServerIcon, plans: ['enterprise'], locked: ['starter', 'growth', 'business'] },
-      { name: 'Devices', href: '/devices', icon: DevicePhoneMobileIcon, plans: ['business', 'enterprise'], locked: ['starter', 'growth'] },
-      { name: 'Team', href: '/team', icon: UsersIcon, plans: ['enterprise'], locked: ['starter', 'growth', 'business'] },
-    ];
-    
-    const otpNav = [
-      { name: 'API Keys', href: '/api-keys', icon: KeyIcon, plans: ['starter', 'growth', 'business', 'enterprise'] },
-      { name: 'Email OTP', href: '/email-otp', icon: EnvelopeIcon, plans: ['starter', 'growth', 'business', 'enterprise'] },
-      { name: 'SMS OTP', href: '/sms-otp', icon: DevicePhoneMobileIcon, plans: ['growth', 'business', 'enterprise'], locked: ['starter'] },
-      { name: 'Authenticator', href: '/authenticator', icon: ShieldCheckIcon, plans: ['business', 'enterprise'], locked: ['starter', 'growth'] },
-      { name: 'Backup Codes', href: '/backup-codes', icon: DocumentDuplicateIcon, plans: ['business', 'enterprise'], locked: ['starter', 'growth'] },
-    ];
-    
-    const settingsNav = [
-      { name: 'Usage & Billing', href: '/usage', icon: CurrencyDollarIcon, plans: ['growth', 'business', 'enterprise'], locked: ['starter'] },
-      { name: 'Activity Logs', href: '/logs', icon: ClipboardDocumentListIcon, plans: ['starter', 'growth', 'business', 'enterprise'] },
-      { name: 'Audit Logs', href: '/audit-logs', icon: ClipboardDocumentListIcon, plans: ['enterprise'], locked: ['starter', 'growth', 'business'] },
-      { name: 'Branding', href: '/branding', icon: PaintBrushIcon, plans: ['business', 'enterprise'], locked: ['starter', 'growth'] },
-      { name: 'White-Label', href: '/white-label', icon: PaintBrushIcon, plans: ['enterprise'], locked: ['starter', 'growth', 'business'] },
-      { name: 'Integrations', href: '/integrations', icon: PuzzlePieceIcon, plans: ['enterprise'], locked: ['starter', 'growth', 'business'] },
-      { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, plans: ['starter', 'growth', 'business', 'enterprise'] },
-    ];
-    
-    return { baseNav, otpNav, settingsNav };
-  };
-  
-  const { baseNav, otpNav, settingsNav } = getNavigation();
-  
-  const isActive = (href) => location.pathname === href;
-  const isAccessible = (item) => item.plans.includes(currentPlan);
-  const isLocked = (item) => item.locked?.includes(currentPlan);
-  
-  const NavItem = ({ item }) => {
-    const active = isActive(item.href);
-    const accessible = isAccessible(item);
-    const locked = isLocked(item);
-    
-    const baseClasses = "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors";
-    const activeClasses = active 
-      ? "bg-blue-50 text-blue-600" 
-      : "text-gray-700 hover:bg-gray-50";
-    const lockedClasses = locked ? "opacity-50 cursor-not-allowed" : "";
-    
-    const content = (
-      <>
-        <item.icon className={`mr-3 h-5 w-5 flex-shrink-0 ${active ? 'text-blue-600' : 'text-gray-400'}`} />
-        <span className="flex-1">{item.name}</span>
-        {locked && <LockClosedIcon className="h-4 w-4 text-gray-400" />}
-      </>
-    );
-    
-    if (locked) {
-      return (
-        <div className={`${baseClasses} ${lockedClasses}`} title={`Upgrade to unlock ${item.name}`}>
-          {content}
-        </div>
-      );
-    }
-    
-    return (
-      <Link to={item.href} className={`${baseClasses} ${activeClasses}`}>
-        {content}
-      </Link>
-    );
-  };
-  
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200">
+const navGroups = [
+  {
+    label: null,
+    items: [
+      { href: '/dashboard', icon: '🏠', label: 'Dashboard', plans: ['starter','growth','business','enterprise'] },
+      { href: '/analytics', icon: '📈', label: 'Analytics', plans: ['growth','business','enterprise'], locked: ['starter'] },
+      { href: '/devices',   icon: '💻', label: 'Devices',   plans: ['business','enterprise'], locked: ['starter','growth'] },
+      { href: '/team',      icon: '👥', label: 'Team',      plans: ['enterprise'], locked: ['starter','growth','business'] },
+    ]
+  },
+  {
+    label: 'OTP Methods',
+    items: [
+      { href: '/api-keys',      icon: '🔑', label: 'API Keys',      plans: ['starter','growth','business','enterprise'] },
+      { href: '/email-otp',     icon: '📧', label: 'Email OTP',     plans: ['starter','growth','business','enterprise'] },
+      { href: '/sms-otp',       icon: '📱', label: 'SMS OTP',       plans: ['growth','business','enterprise'], locked: ['starter'] },
+      { href: '/authenticator', icon: '🔐', label: 'Authenticator', plans: ['business','enterprise'], locked: ['starter','growth'] },
+      { href: '/backup-codes',  icon: '🗝️', label: 'Backup Codes',  plans: ['business','enterprise'], locked: ['starter','growth'] },
+    ]
+  },
+  {
+    label: 'Settings',
+    items: [
+      { href: '/usage',      icon: '💳', label: 'Usage & Billing', plans: ['growth','business','enterprise'], locked: ['starter'] },
+      { href: '/logs',       icon: '📋', label: 'Activity Logs',   plans: ['starter','growth','business','enterprise'] },
+      { href: '/audit-logs', icon: '🔍', label: 'Audit Logs',      plans: ['enterprise'], locked: ['starter','growth','business'] },
+      { href: '/branding',   icon: '🎨', label: 'Branding',        plans: ['business','enterprise'], locked: ['starter','growth'] },
+      { href: '/settings',   icon: '⚙️', label: 'Settings',        plans: ['starter','growth','business','enterprise'] },
+    ]
+  }
+]
+
+function SidebarContent({ onClose, mobile }) {
+  const location = useLocation()
+  const { currentPlan } = useSubscription()
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--surface)', borderRight: '1px solid var(--border)' }}>
       {/* Logo */}
-      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-        <Link to="/dashboard" className="flex items-center">
-          <span className="text-xl font-bold text-blue-600">OTPGuard</span>
+      <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Link to="/dashboard" style={{ textDecoration: 'none', fontWeight: 700, fontSize: '1.1rem', color: 'var(--heading)' }}>
+          🔐 OTP<span style={{ color: 'var(--green)' }}>Guard</span>
         </Link>
         {mobile && (
-          <button onClick={onClose} className="lg:hidden">
-            <XMarkIcon className="h-6 w-6 text-gray-400" />
-          </button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
         )}
       </div>
-      
+
       {/* Plan Badge */}
-      <div className="px-4 py-3 border-b border-gray-200">
+      <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)' }}>
         <PlanBadge />
       </div>
-      
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
-        {/* Main Navigation */}
-        <div>
-          <div className="space-y-1">
-            {baseNav.map((item) => (
-              <NavItem key={item.name} item={item} />
-            ))}
+
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '12px', overflowY: 'auto' }}>
+        {navGroups.map((group, gi) => (
+          <div key={gi} style={{ marginBottom: 20 }}>
+            {group.label && (
+              <div style={{ fontSize: '.7rem', fontWeight: 700, color: 'var(--text)', letterSpacing: 1, padding: '0 10px', marginBottom: 6, textTransform: 'uppercase' }}>
+                {group.label}
+              </div>
+            )}
+            {group.items.map(item => {
+              const accessible = item.plans.includes(currentPlan)
+              const locked = item.locked?.includes(currentPlan)
+              const active = location.pathname === item.href
+
+              return (
+                <div key={item.href}>
+                  {locked ? (
+                    <div title={`Upgrade to unlock ${item.label}`} style={{
+                      display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px',
+                      borderRadius: 8, opacity: 0.45, cursor: 'not-allowed', marginBottom: 2,
+                      color: 'var(--text)', fontSize: '.88rem',
+                    }}>
+                      <span>{item.icon}</span>
+                      <span style={{ flex: 1 }}>{item.label}</span>
+                      <span style={{ fontSize: '.7rem' }}>🔒</span>
+                    </div>
+                  ) : (
+                    <Link to={item.href} onClick={mobile ? onClose : undefined} style={{
+                      display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px',
+                      borderRadius: 8, textDecoration: 'none', marginBottom: 2, transition: 'all .15s',
+                      background: active ? 'var(--green-dim)' : 'transparent',
+                      color: active ? 'var(--green)' : 'var(--text)',
+                      fontWeight: active ? 600 : 400, fontSize: '.88rem',
+                      border: active ? '1px solid rgba(0,255,136,.2)' : '1px solid transparent',
+                    }}>
+                      <span>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </Link>
+                  )}
+                </div>
+              )
+            })}
           </div>
-        </div>
-        
-        {/* OTP Methods */}
-        <div>
-          <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            OTP Methods
-          </h3>
-          <div className="mt-2 space-y-1">
-            {otpNav.map((item) => (
-              <NavItem key={item.name} item={item} />
-            ))}
-          </div>
-        </div>
-        
-        {/* Settings */}
-        <div>
-          <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            Settings
-          </h3>
-          <div className="mt-2 space-y-1">
-            {settingsNav.map((item) => (
-              <NavItem key={item.name} item={item} />
-            ))}
-          </div>
-        </div>
+        ))}
       </nav>
-      
+
       {/* Upgrade CTA */}
       {currentPlan !== 'enterprise' && (
-        <div className="p-4 border-t border-gray-200">
-          <Link
-            to="/upgrade"
-            className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-colors"
-          >
-            <ArrowUpIcon className="h-4 w-4 mr-2" />
-            Upgrade Plan
+        <div style={{ padding: '16px', borderTop: '1px solid var(--border)' }}>
+          <Link to="/#pricing" style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            padding: '10px', borderRadius: 8, textDecoration: 'none', fontWeight: 600,
+            fontSize: '.85rem', background: 'var(--green)', color: '#0a0e1a',
+          }}>
+            ↑ Upgrade Plan
           </Link>
         </div>
       )}
     </div>
-  );
-  
-  if (mobile) {
-    return (
-      <Transition.Root show={open} as={Fragment}>
-        <Dialog as="div" className="relative z-50 lg:hidden" onClose={onClose}>
-          <Transition.Child
-            as={Fragment}
-            enter="transition-opacity ease-linear duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transition-opacity ease-linear duration-300"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-gray-900/80" />
-          </Transition.Child>
-          
-          <div className="fixed inset-0 flex">
-            <Transition.Child
-              as={Fragment}
-              enter="transition ease-in-out duration-300 transform"
-              enterFrom="-translate-x-full"
-              enterTo="translate-x-0"
-              leave="transition ease-in-out duration-300 transform"
-              leaveFrom="translate-x-0"
-              leaveTo="-translate-x-full"
-            >
-              <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1">
-                <SidebarContent />
-              </Dialog.Panel>
-            </Transition.Child>
+  )
+}
+
+export default function Sidebar({ open, onClose }) {
+  return (
+    <>
+      {/* Desktop */}
+      <div style={{ width: 220, flexShrink: 0, position: 'sticky', top: 0, height: '100vh' }} className="desktop-sidebar">
+        <SidebarContent mobile={false} />
+      </div>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.6)' }} onClick={onClose} />
+          <div style={{ position: 'relative', width: 240, zIndex: 201 }}>
+            <SidebarContent mobile onClose={onClose} />
           </div>
-        </Dialog>
-      </Transition.Root>
-    );
-  }
-  
-  return <SidebarContent />;
+        </div>
+      )}
+
+      <style>{`
+        @media (max-width: 768px) { .desktop-sidebar { display: none !important; } }
+      `}</style>
+    </>
+  )
 }

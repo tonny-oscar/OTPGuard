@@ -1,67 +1,37 @@
-import { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import { createContext, useState, useEffect, useContext } from 'react'
+import { API } from './AuthContext'
 
-export const SubscriptionContext = createContext();
+export const SubscriptionContext = createContext(null)
 
 export function SubscriptionProvider({ children }) {
-  const [subscription, setSubscription] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
+  const [subscription, setSubscription] = useState(null)
+  const [loading, setLoading]           = useState(true)
+
   useEffect(() => {
-    fetchSubscription();
-  }, []);
-  
-  const fetchSubscription = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('access_token');
-      
-      if (!token) {
-        // No token, set default
-        setSubscription({
-          plan: { name: 'starter' },
-          status: 'active'
-        });
-        setError(null);
-        setLoading(false);
-        return;
-      }
-      
-      const response = await axios.get('http://localhost:5000/api/subscription/current', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setSubscription(response.data);
-      setError(null);
-    } catch (err) {
-      console.error('Failed to fetch subscription:', err);
-      setError(err.message);
-      // Default to starter if no subscription
-      setSubscription({
-        plan: { name: 'starter' },
-        status: 'active'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  const value = {
-    subscription,
-    currentPlan: subscription?.plan?.name || 'starter',
-    planDetails: subscription?.plan,
-    isActive: subscription?.is_active || false,
-    isTrial: subscription?.is_trial || false,
-    trialEnds: subscription?.trial_ends,
-    loading,
-    error,
-    refetch: fetchSubscription
-  };
-  
+    const token = localStorage.getItem('token')
+    if (!token) { setLoading(false); return }
+
+    fetch(`${API}/subscription/current`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setSubscription(d))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
-    <SubscriptionContext.Provider value={value}>
+    <SubscriptionContext.Provider value={{
+      subscription,
+      currentPlan:  subscription?.plan?.name || 'starter',
+      planDetails:  subscription?.plan,
+      isTrial:      subscription?.is_trial || false,
+      trialEnds:    subscription?.trial_ends,
+      loading,
+    }}>
       {children}
     </SubscriptionContext.Provider>
-  );
+  )
 }
+
+export const useSubscription = () => useContext(SubscriptionContext)
