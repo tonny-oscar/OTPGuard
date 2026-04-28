@@ -1,12 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
+import { generatePDF, pdfKpiGrid, pdfTable, pdfSection, pdfBar } from '../../utils/pdfExport'
 
-const card = {
-  background: 'var(--surface)',
-  border: '1px solid var(--border)',
-  borderRadius: 12,
-  padding: 24,
-}
+const card = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }
 
 function LifecycleAnalytics() {
   const { token } = useAuth()
@@ -14,30 +10,54 @@ function LifecycleAnalytics() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      try {
-        const res = await fetch(`${API}/admin/lifecycle/analytics`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        const json = await res.json()
-        setData(json)
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
+    fetch(`${API}/admin/lifecycle/analytics`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(setData).catch(console.error).finally(() => setLoading(false))
   }, [token])
+
+  function exportPDF() {
+    if (!data) return
+    const s = data.lifecycle_stages
+    const html =
+      pdfSection('Lifecycle Stages', pdfKpiGrid([
+        { val: s.new_users_7d,        label: 'New Users (7d)' },
+        { val: s.active_users_30d,    label: 'Active Users (30d)' },
+        { val: s.mature_users_30_90d, label: 'Mature Users (30-90d)' },
+        { val: s.loyal_users_1y,      label: 'Loyal Users (1y+)' },
+      ])) +
+      pdfSection('Key Metrics', pdfKpiGrid([
+        { val: `${data.avg_user_lifetime} days`, label: 'Avg User Lifetime' },
+        { val: `${data.onboarding_completion_rate}%`, label: 'Onboarding Completion' },
+        { val: `${data.feature_adoption_rate}%`, label: 'Feature Adoption' },
+      ])) +
+      pdfSection('Cohort Retention Analysis', pdfTable(
+        ['Month', 'Signups', 'Active', 'Retention %'],
+        data.cohort_analysis.map(c => [
+          c.month, c.signups, c.active,
+          `<span class="badge ${c.retention >= 80 ? 'badge-green' : c.retention >= 50 ? 'badge-yellow' : 'badge-red'}">${c.retention}%</span>`,
+        ])
+      )) +
+      `<div class="tip">Onboarding: ${data.onboarding_completion_rate}% complete setup · Feature adoption: ${data.feature_adoption_rate}% · Avg lifetime: ${data.avg_user_lifetime} days</div>`
+    generatePDF('User Lifecycle Analytics Report', html)
+  }
 
   return (
     <div>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          🔄 User Lifecycle Analytics
-        </h1>
-        <p style={{ fontSize: '.85rem' }}>Track user journey and lifecycle stages</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
+            🔄 User Lifecycle Analytics
+          </h1>
+          <p style={{ fontSize: '.85rem' }}>Track user journey and lifecycle stages</p>
+        </div>
+        <button onClick={exportPDF} disabled={!data} style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '8px 16px', borderRadius: 8, border: 'none',
+          background: data ? 'var(--green)' : 'var(--border)',
+          color: data ? '#0a0e1a' : 'var(--text)',
+          fontWeight: 700, cursor: data ? 'pointer' : 'not-allowed', fontSize: '.85rem',
+        }}>
+          📄 Export PDF
+        </button>
       </div>
 
       {loading ? (

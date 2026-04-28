@@ -1,12 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
+import { generatePDF, pdfKpiGrid, pdfTable, pdfSection, pdfBar } from '../../utils/pdfExport'
 
-const card = {
-  background: 'var(--surface)',
-  border: '1px solid var(--border)',
-  borderRadius: 12,
-  padding: 24,
-}
+const card = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }
 
 function RevenueAnalytics() {
   const { token } = useAuth()
@@ -14,40 +10,61 @@ function RevenueAnalytics() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      try {
-        const res = await fetch(`${API}/admin/revenue/dashboard`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        const json = await res.json()
-        setData(json)
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
+    fetch(`${API}/admin/revenue/dashboard`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(setData).catch(console.error).finally(() => setLoading(false))
   }, [token])
 
-  const progressBarStyles = (value, max) => {
-    return {
-      background: 'var(--border)',
-      borderRadius: 4,
-      height: 8,
-      overflow: 'hidden',
-      marginTop: 8,
-    }
+  function exportPDF() {
+    if (!data) return
+    const html =
+      pdfSection('Revenue Summary', pdfKpiGrid([
+        { val: `$${data.total_monthly_revenue}`, label: 'Monthly Revenue' },
+        { val: `$${data.monthly_revenue_target}`, label: 'Revenue Target' },
+        { val: data.total_subscriptions, label: 'Active Subscriptions' },
+        { val: `$${data.avg_revenue_per_user}`, label: 'ARPU' },
+        { val: data.paying_subscriptions, label: 'Paying Users' },
+        { val: data.trial_subscriptions, label: 'Trial Users' },
+      ])) +
+      pdfSection('Plan Distribution',
+        data.plan_breakdown.map(p =>
+          pdfBar(`${p.plan} — ${p.users} users × $${p.price}/mo = $${p.revenue}`, p.percentage)
+        ).join('') +
+        pdfTable(
+          ['Plan', 'Users', 'Price/mo', 'Revenue', 'Share'],
+          data.plan_breakdown.map(p => [
+            `<span class="badge badge-green">${p.plan}</span>`,
+            p.users, `$${p.price}`, `$${p.revenue}`,
+            `<span class="badge badge-blue">${p.percentage}%</span>`,
+          ])
+        )
+      ) +
+      pdfSection('7-Day Revenue Trend',
+        pdfTable(
+          ['Day', 'Revenue ($)'],
+          data.revenue_trend_7d.map(d => [d.day, `$${d.revenue}`])
+        )
+      )
+    generatePDF('Revenue Analytics Report', html, `Monthly target: $${data.monthly_revenue_target}`)
   }
 
   return (
     <div>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          💰 Revenue Dashboard
-        </h1>
-        <p style={{ fontSize: '.85rem' }}>Monitor revenue metrics and subscription breakdown</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
+            💰 Revenue Dashboard
+          </h1>
+          <p style={{ fontSize: '.85rem' }}>Monitor revenue metrics and subscription breakdown</p>
+        </div>
+        <button onClick={exportPDF} disabled={!data} style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '8px 16px', borderRadius: 8, border: 'none',
+          background: data ? 'var(--green)' : 'var(--border)',
+          color: data ? '#0a0e1a' : 'var(--text)',
+          fontWeight: 700, cursor: data ? 'pointer' : 'not-allowed', fontSize: '.85rem',
+        }}>
+          📄 Export PDF
+        </button>
       </div>
 
       {loading ? (

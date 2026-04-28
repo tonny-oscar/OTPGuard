@@ -15,7 +15,7 @@ export function SubscriptionProvider({ children }) {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.ok ? r.json() : null)
-      .then(d => setSubscription(d))
+      .then(d => { if (d) setSubscription(d) })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])

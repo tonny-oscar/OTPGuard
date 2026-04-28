@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
+import { generatePDF, pdfKpiGrid, pdfTable, pdfSection } from '../../utils/pdfExport'
 
 const card = {
   background: 'var(--surface)',
@@ -32,30 +33,60 @@ function BillingReport() {
     fetchData()
   }, [days, token])
 
+  function exportPDF() {
+    if (!data) return
+    const html =
+      pdfSection('Summary', pdfKpiGrid([
+        { val: data.total_active_users,   label: 'Active Users' },
+        { val: data.total_otp_operations, label: 'Total OTP Operations' },
+        { val: Math.round(data.total_otp_operations / (data.total_active_users || 1)), label: 'Avg Ops / User' },
+      ])) +
+      pdfSection('Per-User Usage', pdfTable(
+        ['User', 'Email', 'Plan', 'Logins', 'Failed', 'Success %', 'Primary Method'],
+        data.users.map(u => [
+          u.name || '—',
+          u.email,
+          `<span class="badge badge-green">${u.plan}</span>`,
+          u.total_logins,
+          `<span class="badge badge-red">${u.failed_logins}</span>`,
+          `<span class="badge badge-green">${u.success_rate}%</span>`,
+          u.usage_by_method.length > 0
+            ? u.usage_by_method.reduce((a, b) => a.count > b.count ? a : b).method
+            : 'N/A',
+        ])
+      ))
+    generatePDF('Billing & Usage Report', html, `Last ${days} days · ${data.total_active_users} active users`)
+  }
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
             💳 Billing & Usage Reports
           </h1>
           <p style={{ fontSize: '.85rem' }}>Detailed usage and billing analysis for all users</p>
         </div>
-        <select
-          value={days}
-          onChange={(e) => setDays(parseInt(e.target.value))}
-          style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            padding: '8px 12px',
-            color: 'var(--text)',
-          }}
-        >
-          <option value={7}>Last 7 days</option>
-          <option value={30}>Last 30 days</option>
-          <option value={90}>Last 90 days</option>
-        </select>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <select
+            value={days}
+            onChange={(e) => setDays(parseInt(e.target.value))}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 12px', color: 'var(--text)', outline: 'none' }}
+          >
+            <option value={7}>Last 7 days</option>
+            <option value={30}>Last 30 days</option>
+            <option value={90}>Last 90 days</option>
+          </select>
+          <button onClick={exportPDF} disabled={!data} style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '8px 16px', borderRadius: 8, border: 'none',
+            background: data ? 'var(--green)' : 'var(--border)',
+            color: data ? '#0a0e1a' : 'var(--text)',
+            fontWeight: 700, cursor: data ? 'pointer' : 'not-allowed', fontSize: '.85rem',
+          }}>
+            📄 Export PDF
+          </button>
+        </div>
       </div>
 
       {loading ? (

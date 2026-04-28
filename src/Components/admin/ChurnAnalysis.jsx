@@ -1,268 +1,362 @@
 import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
+import { generatePDF, pdfKpiGrid, pdfTable, pdfSection, pdfBar } from '../../utils/pdfExport'
 
-const card = {
-  background: 'var(--surface)',
-  border: '1px solid var(--border)',
-  borderRadius: 12,
-  padding: 24,
-}
+const card = { background: 'var(--surface)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 16, padding: 24 }
+const sel  = { background: 'var(--bg)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '8px 12px', color: 'var(--heading)', fontSize: '.85rem', outline: 'none', cursor: 'pointer' }
+const th   = { padding: '11px 16px', textAlign: 'left', fontWeight: 700, fontSize: '.72rem', color: 'var(--text)', textTransform: 'uppercase', letterSpacing: .8, borderBottom: '2px solid rgba(0,255,136,.12)' }
+const td   = { padding: '12px 16px', fontSize: '.85rem', borderBottom: '1px solid rgba(255,255,255,.04)', color: 'var(--heading)' }
 
-const alertColors = {
-  danger: { bg: 'rgba(248,113,113,.08)', border: 'rgba(248,113,113,.3)', color: '#f87171' },
-  warning: { bg: 'rgba(250,204,21,.08)', border: 'rgba(250,204,21,.3)', color: '#facc15' },
-}
-
-function ChurnAnalysis() {
-  const { token } = useAuth()
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [expandedTab, setExpandedTab] = useState('inactive')
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      try {
-        const res = await fetch(`${API}/admin/churn/analysis`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        const json = await res.json()
-        setData(json)
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [token])
-
+function KpiCard({ icon, label, val, color, sub }) {
   return (
-    <div>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          📉 Churn Analysis
-        </h1>
-        <p style={{ fontSize: '.85rem' }}>Monitor user churn and identify at-risk customers</p>
+    <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ width: 48, height: 48, borderRadius: 12, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>
+        {icon}
       </div>
-
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: 'var(--text)' }}>Loading…</div>
-      ) : data ? (
-        <div>
-          {/* KPI Cards */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))',
-              gap: 20,
-              marginBottom: 28,
-            }}
-          >
-            {[
-              { icon: '📊', label: 'Churn Rate (30d)', val: `${data.churn_rate_30d}%`, color: 'var(--red)' },
-              { icon: '⚠️', label: 'At-Risk Users', val: data.at_risk_users, color: '#facc15' },
-              { icon: '🚪', label: 'Inactive (30d)', val: data.inactive_users_30d, color: '#f87171' },
-              { icon: '📉', label: 'Churned Last 30d', val: data.churned_last_30d, color: '#f87171' },
-            ].map((stat, i) => (
-              <div key={i} style={card}>
-                <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>{stat.icon}</div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: 4 }}>
-                  <span style={{ color: stat.color }}>{stat.val}</span>
-                </div>
-                <div style={{ fontSize: '.8rem' }}>{stat.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Churn Trend */}
-          <div style={card}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}>Churn Trend (Last 4 Months)</h3>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, height: 140 }}>
-              {data.churn_trend.map((month, i) => {
-                const maxChurned = Math.max(...data.churn_trend.map((m) => m.churned_users)) || 1
-                return (
-                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                    <div
-                      style={{
-                        width: '100%',
-                        height: `${(month.churned_users / maxChurned) * 120}%`,
-                        background: 'linear-gradient(180deg, #f87171, #facc15)',
-                        borderRadius: '3px 3px 0 0',
-                        minHeight: month.churned_users ? 3 : 0,
-                      }}
-                    />
-                    <span style={{ fontSize: '.7rem', color: 'var(--text)', textAlign: 'center' }}>
-                      {month.period.split('-')[0]}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Tabs for inactive and at-risk users */}
-          <div style={{ marginTop: 20 }}>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-              {[
-                { id: 'inactive', label: '🚪 Inactive Users', count: data.inactive_users_30d },
-                { id: 'at-risk', label: '⚠️ At-Risk Users', count: data.at_risk_users },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setExpandedTab(tab.id)}
-                  style={{
-                    padding: '10px 16px',
-                    borderRadius: 8,
-                    border: 'none',
-                    background: expandedTab === tab.id ? 'var(--green-dim)' : 'var(--border)',
-                    color: expandedTab === tab.id ? 'var(--green)' : 'var(--text)',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                    fontSize: '.9rem',
-                    transition: 'all .2s',
-                  }}
-                >
-                  {tab.label}
-                  <span
-                    style={{
-                      marginLeft: 8,
-                      background: expandedTab === tab.id ? 'var(--green)' : 'var(--text)',
-                      color: expandedTab === tab.id ? 'var(--surface)' : 'var(--bg)',
-                      borderRadius: 12,
-                      padding: '2px 8px',
-                      fontSize: '.75rem',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {tab.count}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Inactive Users Table */}
-            {expandedTab === 'inactive' && data.inactive_users.length > 0 && (
-              <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem' }}>
-                  <thead>
-                    <tr style={{ background: 'rgba(255,255,255,.02)', borderBottom: '1px solid var(--border)' }}>
-                      {['User', 'Plan', 'Last Login', 'Days Inactive', 'Joined'].map((h) => (
-                        <th key={h} style={{ padding: '12px 24px', textAlign: 'left', fontWeight: 600 }}>
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.inactive_users.slice(0, 15).map((user, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '12px 24px' }}>
-                          <div style={{ fontWeight: 600, color: 'var(--heading)' }}>{user.name || '—'}</div>
-                          <div style={{ fontSize: '.75rem', marginTop: 2 }}>{user.email}</div>
-                        </td>
-                        <td style={{ padding: '12px 24px', textTransform: 'capitalize' }}>
-                          <span
-                            style={{
-                              background: 'var(--green-dim)',
-                              color: 'var(--green)',
-                              borderRadius: 6,
-                              padding: '2px 8px',
-                              fontSize: '.75rem',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {user.plan}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px 24px', fontSize: '.85rem' }}>
-                          {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
-                        </td>
-                        <td style={{ padding: '12px 24px', fontWeight: 600, color: '#f87171' }}>
-                          {user.days_inactive} days
-                        </td>
-                        <td style={{ padding: '12px 24px', fontSize: '.85rem' }}>
-                          {new Date(user.joined).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* At-Risk Users Table */}
-            {expandedTab === 'at-risk' && data.high_risk_users.length > 0 && (
-              <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem' }}>
-                  <thead>
-                    <tr style={{ background: 'rgba(255,255,255,.02)', borderBottom: '1px solid var(--border)' }}>
-                      {['User', 'Plan', 'Activity Decline', 'Last 30d', 'Prev 30d'].map((h) => (
-                        <th key={h} style={{ padding: '12px 24px', textAlign: 'left', fontWeight: 600 }}>
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.high_risk_users.slice(0, 15).map((user, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '12px 24px' }}>
-                          <div style={{ fontWeight: 600, color: 'var(--heading)' }}>{user.email}</div>
-                        </td>
-                        <td style={{ padding: '12px 24px', textTransform: 'capitalize' }}>
-                          <span
-                            style={{
-                              background: 'var(--green-dim)',
-                              color: 'var(--green)',
-                              borderRadius: 6,
-                              padding: '2px 8px',
-                              fontSize: '.75rem',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {user.plan}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px 24px', fontWeight: 600, color: '#f87171' }}>
-                          {user.activity_decline}%
-                        </td>
-                        <td style={{ padding: '12px 24px' }}>{user.logins_30d}</td>
-                        <td style={{ padding: '12px 24px', color: 'var(--text)' }}>{user.logins_prev_30d}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {expandedTab === 'inactive' && data.inactive_users.length === 0 && (
-              <div style={{ ...card, textAlign: 'center', color: 'var(--text)' }}>
-                ✅ No inactive users
-              </div>
-            )}
-
-            {expandedTab === 'at-risk' && data.high_risk_users.length === 0 && (
-              <div style={{ ...card, textAlign: 'center', color: 'var(--text)' }}>
-                ✅ No at-risk users
-              </div>
-            )}
-          </div>
-
-          {/* Retention Tips */}
-          <div style={{ ...card, marginTop: 20, background: alertColors.warning.bg, border: `1px solid ${alertColors.warning.border}` }}>
-            <h3 style={{ color: alertColors.warning.color, fontWeight: 600, marginBottom: 12 }}>💡 Retention Recommendations</h3>
-            <ul style={{ fontSize: '.85rem', color: 'var(--text)', paddingLeft: 20, lineHeight: 1.6 }}>
-              <li>Send re-engagement emails to inactive users</li>
-              <li>Offer special promotions to at-risk customers</li>
-              <li>Review pricing for users with declining activity</li>
-              <li>Schedule personal check-ins with high-value accounts</li>
-            </ul>
-          </div>
-        </div>
-      ) : null}
+      <div>
+        <div style={{ fontSize: '1.8rem', fontWeight: 800, color, letterSpacing: '-.02em' }}>{val}</div>
+        <div style={{ fontSize: '.78rem', color: 'var(--text)', marginTop: 2 }}>{label}</div>
+        {sub && <div style={{ fontSize: '.72rem', color: 'var(--text)', opacity: .6, marginTop: 2 }}>{sub}</div>}
+      </div>
     </div>
   )
 }
 
-export default ChurnAnalysis
+function planBadge(plan) {
+  return <span style={{ background: 'rgba(0,255,136,.1)', color: 'var(--green)', borderRadius: 20, padding: '2px 10px', fontSize: '.72rem', fontWeight: 700, textTransform: 'capitalize', border: '1px solid rgba(0,255,136,.2)' }}>{plan}</span>
+}
+
+const CATEGORIES = [
+  { value: 'overview',    label: '📊 Overview' },
+  { value: 'inactive',    label: '🚪 Inactive Users' },
+  { value: 'at-risk',     label: '⚠️ At-Risk Users' },
+  { value: 'voluntary',   label: '🚶 Voluntary Churn (60d+)' },
+  { value: 'involuntary', label: '⚡ Involuntary Churn (<60d)' },
+  { value: 'early',       label: '🌱 Early Churn (joined <30d)' },
+  { value: 'retention',   label: '💚 Retention Analysis' },
+  { value: 'by-plan',     label: '📦 By Plan' },
+]
+
+export default function ChurnAnalysis() {
+  const { token } = useAuth()
+  const [data, setData]         = useState(null)
+  const [loading, setLoading]   = useState(true)
+  const [category, setCategory] = useState('overview')
+  const [days, setDays]         = useState(30)
+  const [plan, setPlan]         = useState('')
+
+  // Map category to API type param
+  const apiType = ['voluntary','involuntary','early'].includes(category) ? category : 'all'
+
+  useEffect(() => {
+    setLoading(true)
+    const params = new URLSearchParams({ type: apiType, days })
+    if (plan) params.set('plan', plan)
+    fetch(`${API}/admin/churn/analysis?${params}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(setData).catch(console.error).finally(() => setLoading(false))
+  }, [token, apiType, days, plan])
+
+  function exportPDF() {
+    if (!data) return
+    const html =
+      pdfSection('Churn Summary', pdfKpiGrid([
+        { val: `${data.churn_rate_30d}%`, label: 'Churn Rate' },
+        { val: data.at_risk_users,        label: 'At-Risk Users' },
+        { val: data.inactive_users_30d,   label: 'Inactive Users' },
+        { val: data.churned_last_30d,     label: 'Churned' },
+        { val: `${Math.max(0, 100 - data.churn_rate_30d)}%`, label: 'Retention Rate' },
+      ])) +
+      pdfSection('Churn Trend', pdfTable(['Period','Churned'], data.churn_trend.map(m => [m.period, m.churned_users]))) +
+      (data.inactive_users?.length ? pdfSection('Inactive Users', pdfTable(
+        ['User','Email','Plan','Last Login','Days Inactive'],
+        data.inactive_users.map(u => [u.name||'—', u.email, u.plan, u.last_login ? new Date(u.last_login).toLocaleDateString() : 'Never', u.days_inactive+'d'])
+      )) : '') +
+      (data.high_risk_users?.length ? pdfSection('At-Risk Users', pdfTable(
+        ['Email','Plan','Decline','Last 30d','Prev 30d'],
+        data.high_risk_users.map(u => [u.email, u.plan, u.activity_decline+'%', u.logins_30d, u.logins_prev_30d])
+      )) : '')
+    generatePDF('Churn Analysis Report', html, `${CATEGORIES.find(c=>c.value===category)?.label} · Last ${days} days${plan?' · '+plan:''}`)
+  }
+
+  const retentionRate = data ? Math.max(0, 100 - data.churn_rate_30d) : 0
+  const maxChurned    = data ? Math.max(...(data.churn_trend||[]).map(m=>m.churned_users), 1) : 1
+  const planColors    = { starter:'#60a5fa', growth:'var(--green)', business:'#a78bfa', enterprise:'#facc15' }
+
+  // Filter displayed users based on category
+  const displayedInactive = data?.inactive_users || []
+  const displayedAtRisk   = data?.high_risk_users || []
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:12, marginBottom:20 }}>
+        <div>
+          <h1 style={{ color:'var(--heading)', fontSize:'1.6rem', fontWeight:800, letterSpacing:'-.02em', marginBottom:4 }}>📉 Churn Analysis</h1>
+          <p style={{ fontSize:'.85rem', color:'var(--text)' }}>Monitor churn, identify at-risk users, and track retention</p>
+        </div>
+        <button onClick={exportPDF} disabled={!data} style={{ padding:'8px 18px', borderRadius:8, border:'none', background: data?'var(--green)':'var(--border)', color: data?'#0a0e1a':'var(--text)', fontWeight:700, cursor: data?'pointer':'not-allowed', fontSize:'.85rem' }}>
+          📄 Export PDF
+        </button>
+      </div>
+
+      {/* Controls */}
+      <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:20, padding:'14px 16px', background:'var(--surface)', border:'1px solid rgba(255,255,255,.06)', borderRadius:12 }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+          <label style={{ fontSize:'.72rem', fontWeight:700, color:'var(--text)', textTransform:'uppercase', letterSpacing:.8 }}>Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} style={{ ...sel, minWidth:220 }}>
+            {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+          <label style={{ fontSize:'.72rem', fontWeight:700, color:'var(--text)', textTransform:'uppercase', letterSpacing:.8 }}>Period</label>
+          <select value={days} onChange={e => setDays(Number(e.target.value))} style={sel}>
+            <option value={7}>Last 7 days</option>
+            <option value={14}>Last 14 days</option>
+            <option value={30}>Last 30 days</option>
+            <option value={60}>Last 60 days</option>
+            <option value={90}>Last 90 days</option>
+          </select>
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+          <label style={{ fontSize:'.72rem', fontWeight:700, color:'var(--text)', textTransform:'uppercase', letterSpacing:.8 }}>Plan</label>
+          <select value={plan} onChange={e => setPlan(e.target.value)} style={sel}>
+            <option value="">All Plans</option>
+            <option value="starter">Starter</option>
+            <option value="growth">Growth</option>
+            <option value="business">Business</option>
+            <option value="enterprise">Enterprise</option>
+          </select>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:80, gap:16 }}>
+          <div style={{ width:36, height:36, borderRadius:'50%', border:'3px solid rgba(0,255,136,.15)', borderTopColor:'var(--green)', animation:'spin .8s linear infinite' }} />
+          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        </div>
+      ) : !data ? null : (
+        <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+
+          {/* ── OVERVIEW ── */}
+          {category === 'overview' && <>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:16 }}>
+              <KpiCard icon="📊" label="Churn Rate"     val={`${data.churn_rate_30d}%`}  color="#f87171" />
+              <KpiCard icon="⚠️" label="At-Risk Users"  val={data.at_risk_users}          color="#facc15" sub="Declining activity" />
+              <KpiCard icon="🚪" label="Inactive Users" val={data.inactive_users_30d}     color="#fb923c" sub="No login in period" />
+              <KpiCard icon="📉" label="Churned"        val={data.churned_last_30d}       color="#f87171" />
+            </div>
+            <div style={{ ...card, background:'linear-gradient(135deg,rgba(0,255,136,.05),rgba(0,255,136,.02))', border:'1px solid rgba(0,255,136,.12)' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                <h3 style={{ color:'var(--heading)', fontWeight:700 }}>Retention Health</h3>
+                <span style={{ fontWeight:800, fontSize:'1.4rem', color: retentionRate>=80?'var(--green)':retentionRate>=60?'#facc15':'#f87171' }}>{retentionRate}%</span>
+              </div>
+              <div style={{ background:'rgba(255,255,255,.06)', borderRadius:8, height:12, overflow:'hidden', marginBottom:8 }}>
+                <div style={{ width:`${retentionRate}%`, height:'100%', borderRadius:8, background: retentionRate>=80?'linear-gradient(90deg,var(--green),#00cc6a)':retentionRate>=60?'linear-gradient(90deg,#facc15,#fb923c)':'linear-gradient(90deg,#f87171,#ef4444)', transition:'width .6s ease' }} />
+              </div>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.75rem', color:'var(--text)' }}>
+                <span>🔴 Poor (&lt;60%)</span><span>🟡 Fair (60–80%)</span><span>🟢 Good (&gt;80%)</span>
+              </div>
+            </div>
+            <div style={card}>
+              <h3 style={{ color:'var(--heading)', fontWeight:700, marginBottom:20 }}>Churn Trend</h3>
+              <div style={{ display:'flex', alignItems:'flex-end', gap:12, height:120 }}>
+                {data.churn_trend.map((m,i) => (
+                  <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
+                    <span style={{ fontSize:'.72rem', color:'var(--text)', fontWeight:600 }}>{m.churned_users}</span>
+                    <div style={{ width:'100%', borderRadius:'4px 4px 0 0', height:`${Math.max((m.churned_users/maxChurned)*90, m.churned_users?6:0)}px`, background: i===data.churn_trend.length-1?'linear-gradient(180deg,#f87171,#ef4444)':'linear-gradient(180deg,rgba(248,113,113,.5),rgba(248,113,113,.2))' }} />
+                    <span style={{ fontSize:'.72rem', color:'var(--text)' }}>{m.period.split('-')[0]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ ...card, background:'rgba(250,204,21,.05)', border:'1px solid rgba(250,204,21,.15)' }}>
+              <h3 style={{ color:'#facc15', fontWeight:700, marginBottom:12 }}>💡 Recommendations</h3>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:10 }}>
+                {[{icon:'📧',text:'Re-engagement emails to inactive users'},{icon:'🎁',text:'Promotions for at-risk customers'},{icon:'💬',text:'Check-ins with high-value accounts'},{icon:'📊',text:'Review pricing for declining users'}].map((r,i)=>(
+                  <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background:'rgba(255,255,255,.03)', borderRadius:8 }}>
+                    <span>{r.icon}</span><span style={{ fontSize:'.83rem', color:'var(--text)', lineHeight:1.5 }}>{r.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>}
+
+          {/* ── INACTIVE / VOLUNTARY / INVOLUNTARY / EARLY ── */}
+          {['inactive','voluntary','involuntary','early'].includes(category) && (
+            <div style={{ ...card, padding:0, overflow:'hidden' }}>
+              <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,.06)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(0,255,136,.03)' }}>
+                <h3 style={{ color:'var(--heading)', fontWeight:700 }}>{CATEGORIES.find(c=>c.value===category)?.label}</h3>
+                <span style={{ fontSize:'.8rem', color:'var(--text)' }}>{displayedInactive.length} users</span>
+              </div>
+              {displayedInactive.length === 0 ? (
+                <div style={{ padding:48, textAlign:'center', color:'var(--text)', opacity:.5 }}>✅ No users in this category</div>
+              ) : (
+                <div style={{ overflowX:'auto' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                    <thead style={{ background:'rgba(0,255,136,.03)' }}>
+                      <tr><th style={th}>User</th><th style={th}>Plan</th><th style={th}>Last Login</th><th style={th}>Days Inactive</th><th style={th}>Type</th><th style={th}>Joined</th></tr>
+                    </thead>
+                    <tbody>
+                      {displayedInactive.map((u,i) => (
+                        <tr key={i}>
+                          <td style={td}><div style={{ fontWeight:600 }}>{u.name||'—'}</div><div style={{ fontSize:'.72rem', color:'var(--text)', marginTop:2 }}>{u.email}</div></td>
+                          <td style={td}>{planBadge(u.plan)}</td>
+                          <td style={{ ...td, color:'var(--text)' }}>{u.last_login ? new Date(u.last_login).toLocaleDateString() : <span style={{ color:'#f87171' }}>Never</span>}</td>
+                          <td style={td}><span style={{ fontWeight:700, color: u.days_inactive>60?'#f87171':u.days_inactive>30?'#facc15':'var(--text)' }}>{u.days_inactive}d</span></td>
+                          <td style={td}><span style={{ background: u.churn_type==='early'?'rgba(99,102,241,.15)':u.churn_type==='voluntary'?'rgba(248,113,113,.15)':'rgba(250,204,21,.15)', color: u.churn_type==='early'?'#818cf8':u.churn_type==='voluntary'?'#f87171':'#facc15', padding:'2px 8px', borderRadius:20, fontSize:'.72rem', fontWeight:700, textTransform:'capitalize' }}>{u.churn_type||'—'}</span></td>
+                          <td style={{ ...td, color:'var(--text)' }}>{new Date(u.joined).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── AT-RISK ── */}
+          {category === 'at-risk' && (
+            <div style={{ ...card, padding:0, overflow:'hidden' }}>
+              <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,.06)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(250,204,21,.03)' }}>
+                <h3 style={{ color:'var(--heading)', fontWeight:700 }}>⚠️ At-Risk Users — Declining Activity</h3>
+                <span style={{ fontSize:'.8rem', color:'var(--text)' }}>{displayedAtRisk.length} users</span>
+              </div>
+              {displayedAtRisk.length === 0 ? (
+                <div style={{ padding:48, textAlign:'center', color:'var(--text)', opacity:.5 }}>✅ No at-risk users</div>
+              ) : (
+                <div style={{ overflowX:'auto' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                    <thead style={{ background:'rgba(250,204,21,.03)' }}>
+                      <tr><th style={th}>User</th><th style={th}>Plan</th><th style={th}>Activity Decline</th><th style={th}>Last 30d</th><th style={th}>Prev 30d</th><th style={th}>Risk</th></tr>
+                    </thead>
+                    <tbody>
+                      {displayedAtRisk.map((u,i) => {
+                        const risk = u.activity_decline>75?'critical':u.activity_decline>50?'high':'medium'
+                        const rc   = {critical:'#f87171',high:'#fb923c',medium:'#facc15'}[risk]
+                        return (
+                          <tr key={i}>
+                            <td style={td}><div style={{ fontWeight:600 }}>{u.email}</div></td>
+                            <td style={td}>{planBadge(u.plan)}</td>
+                            <td style={td}>
+                              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                <div style={{ flex:1, background:'rgba(255,255,255,.06)', borderRadius:4, height:6, maxWidth:80 }}>
+                                  <div style={{ width:`${u.activity_decline}%`, height:'100%', background:rc, borderRadius:4 }} />
+                                </div>
+                                <span style={{ fontWeight:700, color:rc, fontSize:'.82rem' }}>{u.activity_decline}%</span>
+                              </div>
+                            </td>
+                            <td style={td}>{u.logins_30d}</td>
+                            <td style={{ ...td, color:'var(--text)' }}>{u.logins_prev_30d}</td>
+                            <td style={td}><span style={{ background:`${rc}20`, color:rc, padding:'2px 8px', borderRadius:20, fontSize:'.72rem', fontWeight:700, textTransform:'capitalize' }}>{risk}</span></td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── RETENTION ── */}
+          {category === 'retention' && (
+            <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:16 }}>
+                <KpiCard icon="💚" label="Retention Rate" val={`${retentionRate}%`}       color="var(--green)" sub="Inverse of churn" />
+                <KpiCard icon="📉" label="Churned"        val={data.churned_last_30d}     color="#f87171" sub="Last period" />
+                <KpiCard icon="⚠️" label="At-Risk"        val={data.at_risk_users}        color="#facc15" />
+                <KpiCard icon="🚪" label="Inactive"       val={data.inactive_users_30d}   color="#fb923c" />
+              </div>
+              <div style={card}>
+                <h3 style={{ color:'var(--heading)', fontWeight:700, marginBottom:20 }}>Monthly Churn vs Retention</h3>
+                <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                  {data.churn_trend.map((m,i) => {
+                    const churnPct = Math.min(m.churned_users*5, 100)
+                    const retPct   = 100 - churnPct
+                    return (
+                      <div key={i}>
+                        <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.8rem', marginBottom:6 }}>
+                          <span style={{ fontWeight:600, color:'var(--heading)' }}>{m.period}</span>
+                          <span style={{ color:'var(--text)' }}>{m.churned_users} churned</span>
+                        </div>
+                        <div style={{ display:'flex', height:10, borderRadius:6, overflow:'hidden' }}>
+                          <div style={{ width:`${retPct}%`, background:'var(--green)', transition:'width .5s' }} />
+                          <div style={{ width:`${churnPct}%`, background:'#f87171', transition:'width .5s' }} />
+                        </div>
+                        <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.72rem', marginTop:4 }}>
+                          <span style={{ color:'var(--green)' }}>Retained {retPct}%</span>
+                          <span style={{ color:'#f87171' }}>Churned {churnPct}%</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── BY PLAN ── */}
+          {category === 'by-plan' && (
+            <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+              <div style={card}>
+                <h3 style={{ color:'var(--heading)', fontWeight:700, marginBottom:20 }}>Inactive Users by Plan</h3>
+                {Object.keys(data.plan_breakdown||{}).length === 0 ? (
+                  <div style={{ textAlign:'center', padding:32, color:'var(--text)', opacity:.5 }}>No data</div>
+                ) : (
+                  <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                    {Object.entries(data.plan_breakdown).sort((a,b)=>b[1]-a[1]).map(([p,count]) => {
+                      const total = Object.values(data.plan_breakdown).reduce((a,b)=>a+b,0)||1
+                      const pct   = Math.round(count/total*100)
+                      const color = planColors[p]||'var(--text)'
+                      return (
+                        <div key={p}>
+                          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6, fontSize:'.88rem' }}>
+                            <span style={{ fontWeight:600, textTransform:'capitalize', color:'var(--heading)' }}>{p}</span>
+                            <span style={{ color, fontWeight:700 }}>{count} users ({pct}%)</span>
+                          </div>
+                          <div style={{ background:'rgba(255,255,255,.06)', borderRadius:6, height:10, overflow:'hidden' }}>
+                            <div style={{ width:`${pct}%`, height:'100%', background:color, borderRadius:6, transition:'width .5s' }} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+              <div style={card}>
+                <h3 style={{ color:'var(--heading)', fontWeight:700, marginBottom:20 }}>At-Risk Users by Plan</h3>
+                {Object.keys(data.plan_breakdown||{}).length === 0 ? (
+                  <div style={{ textAlign:'center', padding:32, color:'var(--text)', opacity:.5 }}>No data</div>
+                ) : (() => {
+                  const rb = (data.high_risk_users||[]).reduce((acc,u)=>{ acc[u.plan]=(acc[u.plan]||0)+1; return acc },{})
+                  const rt = Object.values(rb).reduce((a,b)=>a+b,0)||1
+                  return Object.keys(rb).length === 0 ? (
+                    <div style={{ textAlign:'center', padding:32, color:'var(--text)', opacity:.5 }}>✅ No at-risk users</div>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                      {Object.entries(rb).sort((a,b)=>b[1]-a[1]).map(([p,count]) => {
+                        const pct = Math.round(count/rt*100)
+                        return (
+                          <div key={p}>
+                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6, fontSize:'.88rem' }}>
+                              <span style={{ fontWeight:600, textTransform:'capitalize', color:'var(--heading)' }}>{p}</span>
+                              <span style={{ color:'#facc15', fontWeight:700 }}>{count} at-risk ({pct}%)</span>
+                            </div>
+                            <div style={{ background:'rgba(255,255,255,.06)', borderRadius:6, height:10, overflow:'hidden' }}>
+                              <div style={{ width:`${pct}%`, height:'100%', background:'#facc15', borderRadius:6, transition:'width .5s' }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
+              </div>
+            </div>
+          )}
+
+        </div>
+      )}
+    </div>
+  )
+}

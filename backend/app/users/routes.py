@@ -12,6 +12,14 @@ users_bp = Blueprint('users', __name__)
 @users_bp.route('/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
+    """
+    Get current user profile
+    ---
+    tags: [User Settings]
+    security: [{ Bearer: [] }]
+    responses:
+      200: { description: User profile data }
+    """
     user = User.query.get(int(get_jwt_identity()))
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -49,6 +57,22 @@ def change_password():
 @users_bp.route('/settings/mfa', methods=['GET', 'PUT'])
 @jwt_required()
 def mfa_settings():
+    """
+    Get or update MFA settings
+    ---
+    tags: [User Settings]
+    security: [{ Bearer: [] }]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          properties:
+            mfa_enabled: { type: boolean }
+            mfa_method:  { type: string, enum: [email, sms, totp] }
+    responses:
+      200: { description: MFA settings }
+    """
     user = User.query.get(int(get_jwt_identity()))
     if request.method == 'GET':
         return jsonify({'mfa_enabled': user.mfa_enabled, 'mfa_method': user.mfa_method}), 200
@@ -117,6 +141,22 @@ def list_api_keys():
 @users_bp.route('/api-keys', methods=['POST'])
 @jwt_required()
 def create_api_key():
+    """
+    Create a new API key
+    ---
+    tags: [API Keys]
+    security: [{ Bearer: [] }]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          properties:
+            name: { type: string, example: Production }
+    responses:
+      201: { description: API key created (shown once) }
+      403: { description: Plan limit reached }
+    """
     user   = User.query.get(int(get_jwt_identity()))
     limits = {'starter': 1, 'growth': 3, 'business': 10}
     limit  = limits.get(user.plan, 1)

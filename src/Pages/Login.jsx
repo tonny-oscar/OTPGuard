@@ -13,7 +13,7 @@ export default function Login() {
   const { login, sendOTP, verifyOTP, resendOTP } = useAuth()
   const navigate = useNavigate()
 
-  const [step, setStep]         = useState('login')   // login | otp
+  const [step, setStep]         = useState('login')   // this is where there is login | otp
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [otp, setOtp]           = useState('')

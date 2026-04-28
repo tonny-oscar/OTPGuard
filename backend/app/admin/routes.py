@@ -26,6 +26,15 @@ def admin_required(fn):
 @admin_bp.route('/stats', methods=['GET'])
 @admin_required
 def stats():
+    """
+    Get admin dashboard stats
+    ---
+    tags: [Admin]
+    security: [{ Bearer: [] }]
+    responses:
+      200: { description: Stats and MFA adoption data }
+      403: { description: Admin access required }
+    """
     now  = datetime.now(timezone.utc)
     day1 = now - timedelta(days=1)
     prev = now - timedelta(days=2)
@@ -64,6 +73,14 @@ def stats():
 @admin_bp.route('/analytics', methods=['GET'])
 @admin_required
 def analytics():
+    """
+    Get login analytics for last 7 days
+    ---
+    tags: [Admin - Analytics]
+    security: [{ Bearer: [] }]
+    responses:
+      200: { description: Analytics data including chart, OTP methods, locations }
+    """
     now  = datetime.now(timezone.utc)
     day7 = now - timedelta(days=7)
     day1 = now - timedelta(days=1)
@@ -226,6 +243,18 @@ def reset_user_mfa(user_id):
 @admin_bp.route('/users', methods=['GET'])
 @admin_required
 def list_users():
+    """
+    List all users with search and pagination
+    ---
+    tags: [Admin]
+    security: [{ Bearer: [] }]
+    parameters:
+      - { in: query, name: search,   type: string }
+      - { in: query, name: page,     type: integer, default: 1 }
+      - { in: query, name: per_page, type: integer, default: 20 }
+    responses:
+      200: { description: Paginated user list }
+    """
     page     = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     search   = request.args.get('search', '')
@@ -511,93 +540,132 @@ def revenue_dashboard():
 @admin_bp.route('/churn/analysis', methods=['GET'])
 @admin_required
 def churn_analysis():
-    """Analyze user churn patterns and at-risk users."""
-    now = datetime.now(timezone.utc)
-    day30 = now - timedelta(days=30)
-    day60 = now - timedelta(days=60)
-    day90 = now - timedelta(days=90)
-    day180 = now - timedelta(days=180)
-    
-    # Inactive users (no login in last 30 days)
+    """
+    Analyze user churn with filters
+    ---
+    tags: [Admin - Analytics]
+    security: [{ Bearer: [] }]
+    parameters:
+      - { in: query, name: type, type: string, enum: [all, voluntary, involuntary, early], default: all }
+      - { in: query, name: days, type: integer, default: 30 }
+      - { in: query, name: plan, type: string, enum: [starter, growth, business, enterprise] }
+    responses:
+      200: { description: Churn analysis data }
+    """
+    """Analyze user churn patterns. ?type=voluntary|involuntary|early|plan&days=30"""
+    now       = datetime.now(timezone.utc)
+    days      = request.args.get('days', 30, type=int)
+    churn_type = request.args.get('type', 'all')  # all | voluntary | involuntary | early | plan
+    plan_filter = request.args.get('plan', None)
+
+    cutoff  = now - timedelta(days=days)
+    day60   = now - timedelta(days=60)
+    day90   = now - timedelta(days=90)
+
+    # ── Base inactive query ──────────────────────────────
     inactive_30d = []
-    for user in User.query.filter_by(role='user', is_active=True).all():
+    all_active = User.query.filter_by(role='user', is_active=True)
+    if plan_filter:
+        all_active = all_active.filter_by(plan=plan_filter)
+
+    for user in all_active.all():
         last_login = db.session.query(func.max(OTPLog.timestamp)).filter(
-            OTPLog.user_id == user.id,
-            OTPLog.status == 'verified'
+            OTPLog.user_id == user.id, OTPLog.status == 'verified'
         ).scalar()
-        
-        if not last_login or last_login < day30:
+        if not last_login or last_login < cutoff:
             days_inactive = (now - (last_login or user.created_at)).days
+            # Classify churn type
+            if churn_type == 'early' and (now - user.created_at).days > 30:
+                continue
+            if churn_type == 'voluntary' and days_inactive < 60:
+                continue
+            if churn_type == 'involuntary' and days_inactive >= 60:
+                continue
             inactive_30d.append({
-                'user_id': user.id,
-                'email': user.email,
-                'name': user.full_name,
-                'plan': user.plan,
-                'last_login': last_login.isoformat() if last_login else None,
+                'user_id':      user.id,
+                'email':        user.email,
+                'name':         user.full_name,
+                'plan':         user.plan,
+                'last_login':   last_login.isoformat() if last_login else None,
                 'days_inactive': days_inactive,
-                'joined': user.created_at.isoformat()
+                'joined':       user.created_at.isoformat(),
+                'churn_type':   'early' if (now - user.created_at).days <= 30 else
+                                'voluntary' if days_inactive >= 60 else 'involuntary',
             })
-    
-    # High-risk users (decreasing activity)
+
+    # ── At-risk users ────────────────────────────────────
     high_risk = []
     for user in User.query.filter_by(role='user', is_active=True).all():
+        if plan_filter and user.plan != plan_filter:
+            continue
         logins_30d = OTPLog.query.filter(
-            OTPLog.user_id == user.id,
-            OTPLog.timestamp >= day30,
+            OTPLog.user_id == user.id, OTPLog.timestamp >= cutoff,
             OTPLog.status == 'verified'
         ).count()
-        
-        logins_60_90d = OTPLog.query.filter(
+        logins_prev = OTPLog.query.filter(
             OTPLog.user_id == user.id,
-            OTPLog.timestamp >= day90,
-            OTPLog.timestamp < day60,
+            OTPLog.timestamp >= day90, OTPLog.timestamp < day60,
             OTPLog.status == 'verified'
         ).count()
-        
-        if logins_60_90d > 0 and logins_30d < logins_60_90d * 0.5:
+        if logins_prev > 0 and logins_30d < logins_prev * 0.5:
             high_risk.append({
-                'user_id': user.id,
-                'email': user.email,
-                'plan': user.plan,
-                'activity_decline': round((1 - logins_30d / logins_60_90d) * 100),
-                'logins_30d': logins_30d,
-                'logins_prev_30d': logins_60_90d
+                'user_id':          user.id,
+                'email':            user.email,
+                'plan':             user.plan,
+                'activity_decline': round((1 - logins_30d / logins_prev) * 100),
+                'logins_30d':       logins_30d,
+                'logins_prev_30d':  logins_prev,
             })
-    
-    # Churn rate
-    churned_last_30d = User.query.filter(
-        User.is_active == False,
-        User.updated_at >= day30
-    ).count()
-    
+
+    # ── Churned count ────────────────────────────────────
+    churned_q = User.query.filter(User.is_active == False, User.created_at >= cutoff)
+    if plan_filter:
+        churned_q = churned_q.filter_by(plan=plan_filter)
+    churned_last = churned_q.count()
+
     total_users = User.query.filter_by(role='user').count()
-    churn_rate = round(churned_last_30d / total_users * 100) if total_users > 0 else 0
-    
-    # Churn trend
+    churn_rate  = round(churned_last / total_users * 100, 1) if total_users else 0
+
+    # ── Churn trend (4 periods) ──────────────────────────
     churn_trend = []
     for i in range(4):
         start = now - timedelta(days=(i + 1) * 30)
-        end = now - timedelta(days=i * 30)
-        
-        churned = User.query.filter(
-            User.is_active == False,
-            User.updated_at >= start,
-            User.updated_at < end
-        ).count()
-        
+        end   = now - timedelta(days=i * 30)
+        q = User.query.filter(User.is_active == False, User.created_at >= start, User.created_at < end)
+        if plan_filter:
+            q = q.filter_by(plan=plan_filter)
         churn_trend.append({
-            'period': f'{start.strftime("%b")}-{end.strftime("%b")}',
-            'churned_users': churned
+            'period':        f'{start.strftime("%b")}-{end.strftime("%b")}',
+            'churned_users': q.count(),
         })
-    
+
+    # ── Plan breakdown of inactive ───────────────────────
+    plan_breakdown = {}
+    for u in inactive_30d:
+        plan_breakdown[u['plan']] = plan_breakdown.get(u['plan'], 0) + 1
+
+    # ── Method breakdown of churned users ────────────────
+    method_breakdown = {}
+    for u in inactive_30d:
+        uid = u['user_id']
+        top = db.session.query(OTPLog.method, func.count(OTPLog.id)).filter_by(user_id=uid)\
+            .group_by(OTPLog.method).order_by(func.count(OTPLog.id).desc()).first()
+        if top:
+            method_breakdown[top[0]] = method_breakdown.get(top[0], 0) + 1
+
     return jsonify({
-        'churn_rate_30d': churn_rate,
-        'at_risk_users': len(high_risk),
+        'churn_type':         churn_type,
+        'period_days':        days,
+        'plan_filter':        plan_filter,
+        'churn_rate_30d':     churn_rate,
+        'at_risk_users':      len(high_risk),
         'inactive_users_30d': len(inactive_30d),
-        'churned_last_30d': churned_last_30d,
-        'inactive_users': inactive_30d[:20],
-        'high_risk_users': high_risk[:20],
-        'churn_trend': churn_trend
+        'churned_last_30d':   churned_last,
+        'inactive_users':     sorted(inactive_30d, key=lambda x: x['days_inactive'], reverse=True)[:25],
+        'high_risk_users':    sorted(high_risk, key=lambda x: x['activity_decline'], reverse=True)[:25],
+        'churn_trend':        churn_trend,
+        'plan_breakdown':     plan_breakdown,
+        'method_breakdown':   method_breakdown,
     }), 200
 
 
@@ -692,6 +760,22 @@ def lifecycle_analytics():
 @admin_bp.route('/reports/custom', methods=['POST'])
 @admin_required
 def create_custom_report():
+    """
+    Generate a custom report
+    ---
+    tags: [Admin - Reports]
+    security: [{ Bearer: [] }]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          properties:
+            type:    { type: string, enum: [usage, security, churn, lifecycle] }
+            filters: { type: object }
+    responses:
+      200: { description: Generated report data }
+    """
     """Create a custom report based on specified filters."""
     data = request.get_json() or {}
     
@@ -746,8 +830,48 @@ def create_custom_report():
             'generated': datetime.now(timezone.utc).isoformat()
         }
     
+    elif report_type == 'churn':
+        days    = filters.get('days', 30)
+        plan    = filters.get('plan')
+        cutoff  = datetime.now(timezone.utc) - timedelta(days=days)
+        inactive = []
+        for user in User.query.filter_by(role='user', is_active=True).all():
+            if plan and user.plan != plan:
+                continue
+            last = db.session.query(func.max(OTPLog.timestamp)).filter(
+                OTPLog.user_id == user.id, OTPLog.status == 'verified'
+            ).scalar()
+            if not last or last < cutoff:
+                inactive.append({'email': user.email, 'plan': user.plan,
+                                  'days_inactive': (datetime.now(timezone.utc) - (last or user.created_at)).days})
+        report = {
+            'type': 'churn',
+            'period_days': days,
+            'plan_filter': plan,
+            'inactive_count': len(inactive),
+            'inactive_users': inactive[:20],
+            'generated': datetime.now(timezone.utc).isoformat()
+        }
+
+    elif report_type == 'lifecycle':
+        now = datetime.now(timezone.utc)
+        cohorts = []
+        for i in range(6):
+            ms = (now.replace(day=1) - timedelta(days=i*30)).replace(day=1)
+            me = (ms + timedelta(days=32)).replace(day=1)
+            total  = User.query.filter(User.created_at >= ms, User.created_at < me, User.role == 'user').count()
+            active = User.query.filter(User.created_at >= ms, User.created_at < me, User.role == 'user', User.is_active == True).count()
+            if total:
+                cohorts.append({'month': ms.strftime('%Y-%m'), 'signups': total, 'active': active,
+                                'retention': round(active/total*100)})
+        report = {
+            'type': 'lifecycle',
+            'cohorts': cohorts,
+            'generated': datetime.now(timezone.utc).isoformat()
+        }
+
     else:
-        report = {'error': 'Invalid report type'}, 400
+        return jsonify({'error': 'Invalid report type. Use: usage, security, churn, lifecycle'}), 400
     
     return jsonify(report), 200
 
@@ -756,38 +880,44 @@ def create_custom_report():
 @admin_bp.route('/reports/list', methods=['GET'])
 @admin_required
 def list_custom_reports():
+    """
+    List available report templates
+    ---
+    tags: [Admin - Reports]
+    security: [{ Bearer: [] }]
+    responses:
+      200: { description: List of report templates }
+    """
     """List available report templates."""
     reports = [
         {
             'id': 'usage-report',
-            'name': 'Usage Report',
-            'description': 'Detailed usage and billing report',
-            'filters': ['days', 'user_id', 'method']
-        },
-        {
-            'id': 'revenue-report',
-            'name': 'Revenue Report',
-            'description': 'Revenue analytics and subscription breakdown',
-            'filters': ['period', 'plan']
+            'name': '📊 Usage Report',
+            'description': 'Detailed OTP usage and billing per user',
+            'type': 'usage',
+            'filters': ['days', 'method', 'status']
         },
         {
             'id': 'security-report',
-            'name': 'Security Report',
-            'description': 'Security events and suspicious activity',
-            'filters': ['days', 'ip_address', 'status']
+            'name': '🔒 Security Report',
+            'description': 'Failed logins, suspicious IPs, brute force attempts',
+            'type': 'security',
+            'filters': ['days']
         },
         {
             'id': 'churn-report',
-            'name': 'Churn Analysis',
-            'description': 'User churn and retention analysis',
+            'name': '📉 Churn Report',
+            'description': 'Inactive users and churn analysis by plan',
+            'type': 'churn',
             'filters': ['days', 'plan']
         },
         {
             'id': 'lifecycle-report',
-            'name': 'Lifecycle Report',
-            'description': 'User lifecycle and cohort analysis',
-            'filters': ['cohort_period']
-        }
+            'name': '🔄 Lifecycle Report',
+            'description': 'User cohort retention and lifecycle stages',
+            'type': 'lifecycle',
+            'filters': []
+        },
     ]
     
     return jsonify({'reports': reports}), 200

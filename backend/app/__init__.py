@@ -1,11 +1,12 @@
 import os
-from flask import Flask
+from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 from config import config
-from app.extensions import db, jwt, mail, cors
+from app.extensions import db, jwt, mail
+from flask_cors import CORS
 from flasgger import Swagger
 
-BASE_DIR   = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR    = os.path.abspath(os.path.dirname(__file__))
 DOTENV_PATH = os.path.join(BASE_DIR, '..', '.env')
 load_dotenv(DOTENV_PATH)
 
@@ -20,16 +21,32 @@ def create_app(env=None):
     jwt.init_app(app)
     mail.init_app(app)
 
-    cors.init_app(app, resources={
-        r'/api/*': {
-            'origins': ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', '*'],
-            'methods': ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-            'allow_headers': ['Content-Type', 'Authorization', 'X-API-Key'],
-            'expose_headers': ['Content-Type', 'Authorization'],
-            'supports_credentials': True,
-            'max_age': 3600,
-        }
-    })
+    # ── CORS: wildcard for dev, no credentials needed ──────────────
+    CORS(app,
+         resources={r'/api/*': {'origins': '*'}},
+         supports_credentials=False,
+         allow_headers=['Content-Type', 'Authorization', 'X-API-Key'],
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+         max_age=600)
+
+    # ── Guarantee CORS headers on EVERY response (incl. 4xx/5xx) ──
+    @app.after_request
+    def _add_cors(response):
+        response.headers['Access-Control-Allow-Origin']  = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-API-Key'
+        return response
+
+    # ── Handle OPTIONS preflight BEFORE any JWT/auth checks ────────
+    @app.before_request
+    def _handle_preflight():
+        if request.method == 'OPTIONS':
+            resp = jsonify({'ok': True})
+            resp.headers['Access-Control-Allow-Origin']  = '*'
+            resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+            resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-API-Key'
+            resp.headers['Access-Control-Max-Age']       = '600'
+            return resp, 200
 
     Swagger(app, template={
         "swagger": "2.0",
@@ -72,7 +89,6 @@ def create_app(env=None):
     def health():
         return {'status': 'ok', 'env': env}, 200
 
-    # Create tables and seed default plans
     with app.app_context():
         db.create_all()
         from app.subscription.service import SubscriptionService

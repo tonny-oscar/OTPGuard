@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 export default function ApiDocs() {
-  const apiUrl = `http://${window.location.hostname}:5000`
+  const apiUrl = window.location.origin
 
   const endpoints = [
     {

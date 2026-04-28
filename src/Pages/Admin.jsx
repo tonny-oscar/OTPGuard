@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth, API } from '../context/AuthContext'
+import ThemeToggle from '../Components/shared/ThemeToggle'
+import { sound } from '../utils/sound'
 import BillingReport from '../Components/admin/BillingReport'
 import RevenueAnalytics from '../Components/admin/RevenueAnalytics'
 import ChurnAnalysis from '../Components/admin/ChurnAnalysis'
@@ -8,10 +10,11 @@ import LifecycleAnalytics from '../Components/admin/LifecycleAnalytics'
 import CustomReports from '../Components/admin/CustomReports'
 import ComplianceAudit from '../Components/admin/ComplianceAudit'
 import FeatureUsage from '../Components/admin/FeatureUsage'
+import LocationMap from '../Components/admin/LocationMap'
 
 const card = {
-  background: 'var(--surface)', border: '1px solid var(--border)',
-  borderRadius: 12, padding: 24,
+  background: 'var(--surface)', border: '1px solid rgba(255,255,255,.06)',
+  borderRadius: 16, padding: 24,
 }
 
 const alertColors = {
@@ -22,7 +25,13 @@ const alertColors = {
 }
 
 function Spinner() {
-  return <div style={{ textAlign: 'center', padding: 60, color: 'var(--text)' }}>Loading…</div>
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 80, gap: 16 }}>
+      <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid rgba(0,255,136,.15)', borderTopColor: 'var(--green)', animation: 'spin 0.8s linear infinite' }} />
+      <span style={{ color: 'var(--text)', fontSize: '.85rem' }}>Loading…</span>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  )
 }
 
 function BarChart({ data }) {
@@ -76,6 +85,7 @@ export default function Admin() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('overview')
   const [search, setSearch] = useState('')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Data state
   const [statsData, setStatsData]     = useState(null)
@@ -204,63 +214,101 @@ export default function Admin() {
   const dangerCount = alerts.filter(a => a.type === 'danger').length
 
   const navItems = [
-    { id: 'overview',  icon: '📊', label: 'Overview' },
-    { id: 'users',     icon: '👥', label: 'Users' },
-    { id: 'analytics', icon: '📈', label: 'Analytics' },
-    { id: 'billing',   icon: '💳', label: 'Billing' },
-    { id: 'revenue',   icon: '💰', label: 'Revenue' },
-    { id: 'churn',     icon: '📉', label: 'Churn' },
-    { id: 'lifecycle', icon: '🔄', label: 'Lifecycle' },
-    { id: 'reports',   icon: '📋', label: 'Reports' },
-    { id: 'alerts',    icon: '🚨', label: 'Alerts', badge: dangerCount || null },
+    { id: 'overview',      icon: '📊', label: 'Overview' },
+    { id: 'users',         icon: '👥', label: 'Users' },
+    { id: 'analytics',     icon: '📈', label: 'Analytics' },
+    { id: 'billing',       icon: '💳', label: 'Billing' },
+    { id: 'revenue',       icon: '💰', label: 'Revenue' },
+    { id: 'churn',         icon: '📉', label: 'Churn' },
+    { id: 'lifecycle',     icon: '🔄', label: 'Lifecycle' },
+    { id: 'reports',       icon: '📋', label: 'Reports' },
+    { id: 'compliance',    icon: '🔐', label: 'Compliance' },
+    { id: 'feature-usage', icon: '🎮', label: 'Features' },
+    { id: 'alerts',        icon: '🚨', label: 'Alerts', badge: dangerCount || null },
   ]
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex' }} className="admin-layout">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div onClick={() => setSidebarOpen(false)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 99,
+        }} />
+      )}
+
       {/* Sidebar */}
       <aside className="admin-sidebar" style={{
-        width: 220, background: 'var(--surface)', borderRight: '1px solid var(--border)',
-        padding: '24px 0', display: 'flex', flexDirection: 'column', flexShrink: 0,
+        width: 240, background: 'linear-gradient(180deg,#0d1117 0%,#0f1629 100%)',
+        borderRight: '1px solid rgba(0,255,136,.08)',
+        padding: '0', display: 'flex', flexDirection: 'column', flexShrink: 0,
         position: 'sticky', top: 0, height: '100vh',
+        boxShadow: '4px 0 24px rgba(0,0,0,.3)',
       }}>
-        <div className="sidebar-logo" style={{ padding: '0 20px 24px', borderBottom: '1px solid var(--border)' }}>
-          <Link to="/" style={{ textDecoration: 'none', fontWeight: 700, fontSize: '1.1rem', color: 'var(--heading)' }}>
-             OTP<span style={{ color: 'var(--green)' }}>Guard</span>
+        <div className="sidebar-logo" style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(255,255,255,.06)', background: 'rgba(0,255,136,.03)' }}>
+          <Link to="/" style={{ textDecoration: 'none', fontWeight: 800, fontSize: '1.15rem', color: 'var(--heading)', letterSpacing: '-.01em' }}>
+            🔐 OTP<span style={{ color: 'var(--green)' }}>Guard</span>
           </Link>
-          <div style={{ fontSize: '.7rem', color: 'var(--green)', marginTop: 4, fontWeight: 600, letterSpacing: 1 }}>ADMIN PANEL</div>
+          <div style={{ fontSize: '.68rem', color: 'var(--green)', marginTop: 6, fontWeight: 700, letterSpacing: 2, opacity: .8 }}>ADMIN PANEL</div>
         </div>
-        <nav style={{ padding: '16px 12px', flex: 1 }}>
+        <nav style={{ padding: '12px', flex: 1, overflowY: 'auto' }}>
           {navItems.map(item => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)} style={{
+            <button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); sound.tab() }} style={{
               width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-              padding: '10px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: activeTab === item.id ? 'var(--green-dim)' : 'transparent',
+              padding: '10px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
+              background: activeTab === item.id
+                ? 'linear-gradient(135deg,rgba(0,255,136,.15),rgba(0,255,136,.05))'
+                : 'transparent',
               color: activeTab === item.id ? 'var(--green)' : 'var(--text)',
-              fontSize: '.9rem', fontWeight: activeTab === item.id ? 600 : 400,
-              marginBottom: 4, transition: 'all .2s', textAlign: 'left',
-            }}>
-              <span>{item.icon}</span>
+              fontSize: '.875rem', fontWeight: activeTab === item.id ? 700 : 400,
+              marginBottom: 2, transition: 'all .18s', textAlign: 'left',
+              borderLeft: activeTab === item.id ? '3px solid var(--green)' : '3px solid transparent',
+            }}
+              onMouseEnter={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
+              onMouseLeave={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
+            >
+              <span style={{ fontSize: '1rem', width: 20, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
               <span style={{ flex: 1 }}>{item.label}</span>
               {item.badge && (
-                <span style={{ background: '#f87171', color: '#fff', borderRadius: 10, fontSize: '.7rem', padding: '1px 7px', fontWeight: 700 }}>
+                <span style={{ background: '#ef4444', color: '#fff', borderRadius: 20, fontSize: '.65rem', padding: '2px 7px', fontWeight: 800, letterSpacing: .3 }}>
                   {item.badge}
                 </span>
               )}
             </button>
           ))}
         </nav>
-        <div className="sidebar-footer" style={{ padding: '16px 20px', borderTop: '1px solid var(--border)' }}>
-          <div style={{ fontSize: '.8rem', marginBottom: 4, color: 'var(--heading)' }}>{user?.full_name || 'Admin'}</div>
-          <div style={{ fontSize: '.75rem' }}>{user?.email}</div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-            <Link to="/" style={{ fontSize: '.75rem', color: 'var(--green)', textDecoration: 'none' }}>← Back to site</Link>
-            <button onClick={logout} style={{ fontSize: '.75rem', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Logout</button>
+        <div className="sidebar-footer" style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,.06)', background: 'rgba(0,0,0,.2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg,var(--green),#00cc6a)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0a0e1a', fontWeight: 800, fontSize: '.9rem', flexShrink: 0 }}>
+              {(user?.full_name || user?.email || 'A').charAt(0).toUpperCase()}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.full_name || 'Admin'}</div>
+              <div style={{ fontSize: '.72rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
+            </div>
           </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+            <Link to="/" style={{ fontSize: '.75rem', color: 'var(--green)', textDecoration: 'none', fontWeight: 600 }}>← Site</Link>
+            <button onClick={logout} style={{ fontSize: '.75rem', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 600 }}>Logout</button>
+          </div>
+          <ThemeToggle />
         </div>
       </aside>
 
       {/* Main */}
-      <div style={{ flex: 1, padding: '32px 28px', overflowY: 'auto' }}>
+      <div style={{ flex: 1, padding: '28px 32px', overflowY: 'auto', minWidth: 0, background: 'var(--bg)' }}>
+        {/* Mobile topbar */}
+        <div className="admin-mobile-bar" style={{
+          display: 'none', alignItems: 'center', gap: 12,
+          marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,.06)',
+        }}>
+          <button onClick={() => setSidebarOpen(true)} style={{
+            background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 10,
+            color: 'var(--heading)', fontSize: '1.1rem', cursor: 'pointer', padding: '8px 12px',
+          }}>☰</button>
+          <span style={{ fontWeight: 800, color: 'var(--heading)', fontSize: '1rem', letterSpacing: '-.01em' }}>
+            🔐 OTP<span style={{ color: 'var(--green)' }}>Guard</span>
+          </span>
+        </div>
         {error && (
           <div style={{ ...alertColors.danger, background: alertColors.danger.bg, border: `1px solid ${alertColors.danger.border}`, borderRadius: 8, padding: '12px 16px', marginBottom: 20, color: alertColors.danger.color }}>
             {error} — <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'underline' }}>dismiss</button>
@@ -271,40 +319,46 @@ export default function Admin() {
         {activeTab === 'overview' && (
           loading ? <Spinner /> : (
             <div>
-              <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>Dashboard Overview</h1>
-              <p style={{ fontSize: '.85rem', marginBottom: 28 }}>Welcome back. Here's what's happening today.</p>
+              <h1 style={{ color: 'var(--heading)', fontSize: '1.6rem', fontWeight: 800, marginBottom: 4, letterSpacing: '-.02em' }}>Dashboard Overview</h1>
+              <p style={{ fontSize: '.85rem', marginBottom: 28, color: 'var(--text)' }}>Welcome back. Here’s what’s happening today.</p>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 20, marginBottom: 28 }}>
-                {statsData?.map(s => (
-                  <div key={s.label} style={card}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <span style={{ fontSize: '1.5rem' }}>{s.icon}</span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16, marginBottom: 28 }}>
+                {statsData?.map((s, i) => (
+                  <div key={s.label} className="admin-stat-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(0,255,136,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>
+                        {s.icon}
+                      </div>
                       {s.change && (
                         <span style={{
-                          fontSize: '.75rem', fontWeight: 600, padding: '2px 8px', borderRadius: 10,
-                          background: s.up ? 'rgba(0,255,136,.1)' : 'rgba(248,113,113,.1)',
+                          fontSize: '.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
+                          background: s.up ? 'rgba(0,255,136,.12)' : 'rgba(248,113,113,.12)',
                           color: s.up ? 'var(--green)' : '#f87171',
+                          border: `1px solid ${s.up ? 'rgba(0,255,136,.2)' : 'rgba(248,113,113,.2)'}`,
                         }}>{s.change}</span>
                       )}
                     </div>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--heading)', margin: '12px 0 4px' }}>{s.val}</div>
-                    <div style={{ fontSize: '.8rem' }}>{s.label}</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--heading)', marginBottom: 4, letterSpacing: '-.02em' }}>{s.val}</div>
+                    <div style={{ fontSize: '.78rem', color: 'var(--text)', fontWeight: 500 }}>{s.label}</div>
                   </div>
                 ))}
               </div>
 
               {mfaAdoption && (
-                <div style={card}>
+                <div style={{ ...card, background: 'linear-gradient(135deg,rgba(0,255,136,.05),rgba(0,255,136,.02))', border: '1px solid rgba(0,255,136,.12)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <h3 style={{ color: 'var(--heading)', fontWeight: 600 }}>MFA Adoption Rate</h3>
-                    <span style={{ color: 'var(--green)', fontWeight: 700, fontSize: '1.1rem' }}>{mfaAdoption.pct}%</span>
+                    <div>
+                      <h3 style={{ color: 'var(--heading)', fontWeight: 700, marginBottom: 2 }}>MFA Adoption Rate</h3>
+                      <p style={{ fontSize: '.78rem', color: 'var(--text)' }}>Users with multi-factor authentication enabled</p>
+                    </div>
+                    <span style={{ color: 'var(--green)', fontWeight: 800, fontSize: '1.6rem', letterSpacing: '-.02em' }}>{mfaAdoption.pct}%</span>
                   </div>
-                  <div style={{ background: 'var(--border)', borderRadius: 4, height: 10, overflow: 'hidden' }}>
-                    <div style={{ width: `${mfaAdoption.pct}%`, height: '100%', background: 'linear-gradient(90deg,var(--green),#00cc6a)', borderRadius: 4 }} />
+                  <div style={{ background: 'rgba(255,255,255,.06)', borderRadius: 8, height: 12, overflow: 'hidden', marginBottom: 10 }}>
+                    <div style={{ width: `${mfaAdoption.pct}%`, height: '100%', background: 'linear-gradient(90deg,var(--green),#00cc6a)', borderRadius: 8, transition: 'width .8s ease' }} />
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: '.8rem' }}>
-                    <span>{mfaAdoption.enabled} users with MFA</span>
-                    <span>{mfaAdoption.disabled} users without MFA</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.78rem' }}>
+                    <span style={{ color: 'var(--green)', fontWeight: 600 }}>✓ {mfaAdoption.enabled} secured</span>
+                    <span style={{ color: '#f87171', fontWeight: 600 }}>⚠ {mfaAdoption.disabled} at risk</span>
                   </div>
                 </div>
               )}
@@ -317,26 +371,23 @@ export default function Admin() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
               <div>
-                <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>User Management</h1>
-                <p style={{ fontSize: '.85rem' }}>{userTotal} total users</p>
+                <h1 style={{ color: 'var(--heading)', fontSize: '1.6rem', fontWeight: 800, marginBottom: 4, letterSpacing: '-.02em' }}>User Management</h1>
+                <p style={{ fontSize: '.85rem', color: 'var(--text)' }}>{userTotal} total users</p>
               </div>
               <input
                 placeholder="🔍 Search users..."
                 value={search} onChange={e => setSearch(e.target.value)}
-                style={{
-                  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8,
-                  padding: '10px 16px', color: 'var(--text)', fontSize: '.9rem', width: 260,
-                }}
+                className="admin-search"
               />
             </div>
 
             {loading ? <Spinner /> : (
-              <div className="table-wrap" style={{ ...card, padding: 0, overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem' }}>
+              <div className="table-wrap" style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,.2)' }}>
+                <table className="admin-table">
                   <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,.02)' }}>
+                    <tr>
                       {['User', 'Plan', 'MFA', 'Logins', 'Status', 'Risk', 'Actions'].map(h => (
-                        <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: 'var(--heading)', whiteSpace: 'nowrap' }}>{h}</th>
+                        <th key={h}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -344,64 +395,66 @@ export default function Admin() {
                     {users.map(u => {
                       const risk = !u.mfa_enabled ? 'high' : u.failed_count > 5 ? 'medium' : 'low'
                       const riskColor = { high: '#f87171', medium: '#facc15', low: 'var(--green)' }[risk]
+                      const riskBg    = { high: 'rgba(248,113,113,.12)', medium: 'rgba(250,204,21,.12)', low: 'rgba(0,255,136,.12)' }[risk]
                       return (
-                        <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                          <td style={{ padding: '12px 16px' }}>
-                            <div style={{ fontWeight: 600, color: 'var(--heading)' }}>{u.full_name || '—'}</div>
-                            <div style={{ fontSize: '.75rem', marginTop: 2 }}>{u.email}</div>
+                        <tr key={u.id}>
+                          <td>
+                            <div style={{ fontWeight: 600, color: 'var(--heading)', fontSize: '.88rem' }}>{u.full_name || '—'}</div>
+                            <div style={{ fontSize: '.72rem', marginTop: 2, color: 'var(--text)' }}>{u.email}</div>
                           </td>
-                          <td style={{ padding: '12px 16px' }}>
-                            <span style={{ background: 'var(--green-dim)', color: 'var(--green)', borderRadius: 6, padding: '2px 8px', fontSize: '.75rem', fontWeight: 600, textTransform: 'capitalize' }}>
+                          <td>
+                            <span style={{ background: 'rgba(0,255,136,.1)', color: 'var(--green)', borderRadius: 20, padding: '3px 10px', fontSize: '.72rem', fontWeight: 700, textTransform: 'capitalize', border: '1px solid rgba(0,255,136,.2)' }}>
                               {u.plan}
                             </span>
                           </td>
-                          <td style={{ padding: '12px 16px' }}>
-                            <span style={{ color: u.mfa_enabled ? 'var(--green)' : '#f87171', fontWeight: 600 }}>
-                              {u.mfa_enabled ? '✅' : '❌'}
-                            </span>
+                          <td>
+                            <span style={{ fontSize: '1rem' }}>{u.mfa_enabled ? '✅' : '❌'}</span>
                           </td>
-                          <td style={{ padding: '12px 16px' }}>{u.login_count ?? 0}</td>
-                          <td style={{ padding: '12px 16px' }}>
+                          <td style={{ fontWeight: 600, color: 'var(--heading)' }}>{u.login_count ?? 0}</td>
+                          <td>
                             <span style={{
-                              borderRadius: 6, padding: '2px 8px', fontSize: '.75rem', fontWeight: 600,
+                              borderRadius: 20, padding: '3px 10px', fontSize: '.72rem', fontWeight: 700,
                               background: u.is_active ? 'rgba(0,255,136,.1)' : 'rgba(248,113,113,.1)',
                               color: u.is_active ? 'var(--green)' : '#f87171',
+                              border: `1px solid ${u.is_active ? 'rgba(0,255,136,.2)' : 'rgba(248,113,113,.2)'}`,
                             }}>
-                              {u.is_active ? 'active' : 'inactive'}
+                              {u.is_active ? 'Active' : 'Inactive'}
                             </span>
                           </td>
-                          <td style={{ padding: '12px 16px' }}>
-                            <span style={{ color: riskColor, fontWeight: 600, fontSize: '.8rem' }}>{risk}</span>
+                          <td>
+                            <span style={{ background: riskBg, color: riskColor, borderRadius: 20, padding: '3px 10px', fontSize: '.72rem', fontWeight: 700, textTransform: 'capitalize' }}>{risk}</span>
                           </td>
-                          <td style={{ padding: '12px 16px' }}>
+                          <td>
                             <div style={{ display: 'flex', gap: 6 }}>
                               <button onClick={() => toggleUserStatus(u)} style={{
-                                fontSize: '.72rem', padding: '3px 8px', borderRadius: 5, cursor: 'pointer',
-                                border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)',
-                              }}>
+                                fontSize: '.72rem', padding: '5px 10px', borderRadius: 8, cursor: 'pointer',
+                                border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.05)', color: 'var(--text)',
+                                transition: 'all .15s',
+                              }}
+                                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,.3)'}
+                                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,.1)'}
+                              >
                                 {u.is_active ? 'Deactivate' : 'Activate'}
                               </button>
                               {u.mfa_enabled && (
                                 <button onClick={() => resetMFA(u)} style={{
-                                  fontSize: '.72rem', padding: '3px 8px', borderRadius: 5, cursor: 'pointer',
-                                  border: '1px solid rgba(250,204,21,.4)', background: 'transparent', color: '#facc15',
-                                }}>
-                                  Reset MFA
-                                </button>
+                                  fontSize: '.72rem', padding: '5px 10px', borderRadius: 8, cursor: 'pointer',
+                                  border: '1px solid rgba(250,204,21,.3)', background: 'rgba(250,204,21,.08)', color: '#facc15',
+                                  transition: 'all .15s',
+                                }}>Reset MFA</button>
                               )}
                               <button onClick={() => deleteUser(u)} style={{
-                                fontSize: '.72rem', padding: '3px 8px', borderRadius: 5, cursor: 'pointer',
-                                border: '1px solid rgba(248,113,113,.4)', background: 'transparent', color: '#f87171',
-                              }}>
-                                Delete
-                              </button>
+                                fontSize: '.72rem', padding: '5px 10px', borderRadius: 8, cursor: 'pointer',
+                                border: '1px solid rgba(248,113,113,.3)', background: 'rgba(248,113,113,.08)', color: '#f87171',
+                                transition: 'all .15s',
+                              }}>Delete</button>
                             </div>
                           </td>
                         </tr>
                       )
                     })}
                     {!users.length && (
-                      <tr><td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--text)' }}>No users found.</td></tr>
+                      <tr><td colSpan={7} style={{ padding: 48, textAlign: 'center', color: 'var(--text)', opacity: .5 }}>No users found.</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -414,8 +467,8 @@ export default function Admin() {
         {activeTab === 'analytics' && (
           loading ? <Spinner /> : analytics && (
             <div>
-              <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>Analytics</h1>
-              <p style={{ fontSize: '.85rem', marginBottom: 28 }}>{analytics.chart_period}</p>
+              <h1 style={{ color: 'var(--heading)', fontSize: '1.6rem', fontWeight: 800, marginBottom: 4, letterSpacing: '-.02em' }}>Analytics</h1>
+              <p style={{ fontSize: '.85rem', marginBottom: 28, color: 'var(--text)' }}>{analytics.chart_period}</p>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 16, marginBottom: 28 }}>
                 {analytics.summary?.map(s => (
@@ -427,7 +480,7 @@ export default function Admin() {
                 ))}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 28 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 20, marginBottom: 28 }}>
                 <BarChart data={analytics.login_chart} />
                 <OTPBreakdown data={analytics.otp_methods} />
               </div>
@@ -448,6 +501,8 @@ export default function Admin() {
                   </div>
                 </div>
               )}
+              {/* Map */}
+              <LocationMap locations={analytics.locations || []} />
             </div>
           )
         )}
@@ -455,18 +510,16 @@ export default function Admin() {
         {/* ── ALERTS ── */}
         {activeTab === 'alerts' && (
           <div>
-            <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>Security Alerts</h1>
-            <p style={{ fontSize: '.85rem', marginBottom: 28 }}>{alerts.length} active alert{alerts.length !== 1 ? 's' : ''}</p>
+            <h1 style={{ color: 'var(--heading)', fontSize: '1.6rem', fontWeight: 800, marginBottom: 4, letterSpacing: '-.02em' }}>Security Alerts</h1>
+            <p style={{ fontSize: '.85rem', marginBottom: 24, color: 'var(--text)' }}>{alerts.length} active alert{alerts.length !== 1 ? 's' : ''}</p>
 
             {loading ? <Spinner /> : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {alerts.map(a => {
                   const c = alertColors[a.type] || alertColors.info
                   return (
-                    <div key={a.id} style={{
+                    <div key={a.id} className="admin-alert" style={{
                       background: c.bg, border: `1px solid ${c.border}`,
-                      borderRadius: 10, padding: '16px 20px',
-                      display: 'flex', alignItems: 'flex-start', gap: 14,
                     }}>
                       <span style={{ fontSize: '1.3rem', flexShrink: 0 }}>{a.icon}</span>
                       <div style={{ flex: 1 }}>
@@ -481,7 +534,7 @@ export default function Admin() {
                   )
                 })}
                 {!alerts.length && (
-                  <div style={{ ...card, textAlign: 'center', color: 'var(--text)', padding: 48 }}>
+                  <div style={{ ...card, textAlign: 'center', color: 'var(--text)', padding: 56, opacity: .5 }}>
                     ✅ No active alerts
                   </div>
                 )}
@@ -509,10 +562,16 @@ export default function Admin() {
         {activeTab === 'compliance' && <ComplianceAudit />}
 
         {/* ── FEATURE USAGE ANALYTICS ── */}
-        {activeTab === 'feature-usage' && <FeatureUsage />}   
-
-        
+        {activeTab === 'feature-usage' && <FeatureUsage />}
       </div>
+
+      {/* Mobile sidebar slide-in */}
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-sidebar { left: ${sidebarOpen ? '0' : '-260px'} !important; }
+          .admin-mobile-bar { display: flex !important; }
+        }
+      `}</style>
     </div>
   )
 }

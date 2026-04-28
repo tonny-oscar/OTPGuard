@@ -45,6 +45,29 @@ def api_key_required(fn):
 @rate_limit_otp(max_requests=10, window_minutes=5)
 @log_api_usage('email_otp')
 def external_send_otp():
+    """
+    Send OTP via SMS or Email (API Key auth)
+    ---
+    tags: [OTP - External API]
+    parameters:
+      - in: header
+        name: X-API-Key
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            method:  { type: string, enum: [sms, email], example: sms }
+            phone:   { type: string, example: "+254700000000" }
+            email:   { type: string, example: user@example.com }
+    responses:
+      200: { description: OTP sent successfully }
+      400: { description: Validation error }
+      403: { description: Plan does not support this channel }
+    """
     data   = request.get_json() or {}
     phone  = data.get('phone', '').strip()
     email  = data.get('email', '').strip().lower()
@@ -103,6 +126,29 @@ def external_send_otp():
 @mfa_bp.route('/otp/verify', methods=['POST'])
 @api_key_required
 def external_verify_otp():
+    """
+    Verify OTP code (API Key auth)
+    ---
+    tags: [OTP - External API]
+    parameters:
+      - in: header
+        name: X-API-Key
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            method: { type: string, enum: [sms, email] }
+            phone:  { type: string }
+            email:  { type: string }
+            code:   { type: string, example: "123456" }
+    responses:
+      200: { description: OTP verified }
+      401: { description: Invalid or expired OTP }
+    """
     data   = request.get_json() or {}
     phone  = data.get('phone', '').strip()
     email  = data.get('email', '').strip().lower()
@@ -131,6 +177,16 @@ def external_verify_otp():
 @mfa_bp.route('/send', methods=['POST'])
 @jwt_required()
 def send_otp():
+    """
+    Send OTP for MFA login (pre-auth token)
+    ---
+    tags: [MFA - Internal]
+    security: [{ Bearer: [] }]
+    responses:
+      200: { description: OTP sent }
+      400: { description: Invalid method or missing phone }
+      403: { description: Not a pre-auth token }
+    """
     claims = get_jwt()
     if not claims.get('mfa_pending'):
         return jsonify({'error': 'Not a pre-auth token'}), 403
@@ -171,6 +227,15 @@ def send_otp():
 @mfa_bp.route('/resend', methods=['POST'])
 @jwt_required()
 def resend_otp():
+    """
+    Resend OTP (rate limited to 4 per 15 min)
+    ---
+    tags: [MFA - Internal]
+    security: [{ Bearer: [] }]
+    responses:
+      200: { description: OTP resent }
+      429: { description: Too many resend attempts }
+    """
     claims = get_jwt()
     if not claims.get('mfa_pending'):
         return jsonify({'error': 'Not a pre-auth token'}), 403
@@ -221,6 +286,23 @@ def resend_otp():
 @mfa_bp.route('/verify', methods=['POST'])
 @jwt_required()
 def verify_otp():
+    """
+    Verify OTP and complete MFA login
+    ---
+    tags: [MFA - Internal]
+    security: [{ Bearer: [] }]
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            code: { type: string, example: "123456" }
+    responses:
+      200: { description: MFA verified, returns access token }
+      401: { description: Invalid or expired OTP }
+    """
     claims = get_jwt()
     if not claims.get('mfa_pending'):
         return jsonify({'error': 'Not a pre-auth token'}), 403
@@ -251,6 +333,14 @@ def verify_otp():
 @mfa_bp.route('/totp/setup', methods=['POST'])
 @jwt_required()
 def totp_setup():
+    """
+    Generate TOTP secret and QR code URI
+    ---
+    tags: [MFA - TOTP]
+    security: [{ Bearer: [] }]
+    responses:
+      200: { description: TOTP secret and provisioning URI }
+    """
     user = User.query.get(int(get_jwt_identity()))
     secret = pyotp.random_base32()
     uri    = pyotp.TOTP(secret).provisioning_uri(name=user.email, issuer_name='OTPGuard')
@@ -262,6 +352,22 @@ def totp_setup():
 @mfa_bp.route('/totp/confirm', methods=['POST'])
 @jwt_required()
 def totp_confirm():
+    """
+    Confirm TOTP setup with a valid code
+    ---
+    tags: [MFA - TOTP]
+    security: [{ Bearer: [] }]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          properties:
+            code: { type: string, example: "123456" }
+    responses:
+      200: { description: Authenticator app linked }
+      401: { description: Invalid code }
+    """
     user = User.query.get(int(get_jwt_identity()))
     if not user or not user.mfa_secret:
         return jsonify({'error': 'Run /totp/setup first'}), 400
@@ -277,6 +383,14 @@ def totp_confirm():
 @mfa_bp.route('/backup-codes', methods=['GET'])
 @jwt_required()
 def get_backup_codes():
+    """
+    Get or generate backup codes
+    ---
+    tags: [MFA - Backup Codes]
+    security: [{ Bearer: [] }]
+    responses:
+      200: { description: List of backup codes }
+    """
     user  = User.query.get(int(get_jwt_identity()))
     codes = OTPLog.query.filter_by(user_id=user.id, method='backup', status='pending').all()
     if not codes:
@@ -287,6 +401,22 @@ def get_backup_codes():
 @mfa_bp.route('/backup-codes/verify', methods=['POST'])
 @jwt_required()
 def use_backup_code():
+    """
+    Use a backup code to complete MFA login
+    ---
+    tags: [MFA - Backup Codes]
+    security: [{ Bearer: [] }]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          properties:
+            code: { type: string, example: ABCD-1234 }
+    responses:
+      200: { description: Backup code accepted, returns tokens }
+      401: { description: Invalid or used backup code }
+    """
     claims = get_jwt()
     if not claims.get('mfa_pending'):
         return jsonify({'error': 'Not a pre-auth token'}), 403
