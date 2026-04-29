@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+﻿import { useEffect, useRef } from 'react'
 
 // Country name → approximate lat/lng
 const COORDS = {
@@ -97,7 +97,7 @@ export default function LocationMap({ locations = [] }) {
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ color: 'var(--heading)', fontWeight: 600 }}>🗺️ Login Locations</h3>
+        <h3 style={{ color: 'var(--heading)', fontWeight: 600 }}>️ Login Locations</h3>
         <span style={{ fontSize: '.75rem', color: 'var(--text)' }}>Top {locations.length} regions</span>
       </div>
       {locations.length === 0 ? (
@@ -108,3 +108,4 @@ export default function LocationMap({ locations = [] }) {
     </div>
   )
 }
+

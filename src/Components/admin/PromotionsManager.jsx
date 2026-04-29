@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 
 const card = {
@@ -37,7 +37,7 @@ function PromotionsManager() {
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          🎁 Promotions & Discounts
+           Promotions & Discounts
         </h1>
         <p style={{ fontSize: '.85rem' }}>Manage and track promotional campaigns</p>
       </div>
@@ -49,10 +49,10 @@ function PromotionsManager() {
           {/* Overview */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 20, marginBottom: 28 }}>
             {[
-              { icon: '🎯', label: 'Active Promotions', val: promos.active_promotions },
-              { icon: '👥', label: 'Users with Discounts', val: promos.total_users_with_discounts },
-              { icon: '💰', label: 'Total Discount Value', val: `$${promos.total_discount_value}` },
-              { icon: '📈', label: 'Conversion Rate', val: trial ? `${trial.conversion_rate}%` : 'N/A' },
+              { icon: '', label: 'Active Promotions', val: promos.active_promotions },
+              { icon: '', label: 'Users with Discounts', val: promos.total_users_with_discounts },
+              { icon: '', label: 'Total Discount Value', val: `$${promos.total_discount_value}` },
+              { icon: '', label: 'Conversion Rate', val: trial ? `${trial.conversion_rate}%` : 'N/A' },
             ].map((stat, i) => (
               <div key={i} style={card}>
                 <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>{stat.icon}</div>
@@ -64,7 +64,7 @@ function PromotionsManager() {
 
           {/* Active Promotions */}
           <div style={card}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>📋 Active Promotion Codes</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Active Promotion Codes</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {promos.promotions.map((promo) => (
                 <div key={promo.id} style={{ padding: 16, background: 'rgba(0,255,136,.05)', borderRadius: 8 }}>
@@ -86,7 +86,7 @@ function PromotionsManager() {
           {/* Trial Conversion */}
           {trial && (
             <div style={{ ...card, marginTop: 20 }}>
-              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>🎓 Trial Conversion Metrics</h3>
+              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Trial Conversion Metrics</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 16 }}>
                 <div style={{ padding: 16, background: 'rgba(59,130,246,.05)', borderRadius: 8 }}>
                   <div style={{ fontSize: '.9rem', marginBottom: 8, fontWeight: 600 }}>Total Trial Users</div>
@@ -113,3 +113,4 @@ function PromotionsManager() {
 }
 
 export default PromotionsManager
+

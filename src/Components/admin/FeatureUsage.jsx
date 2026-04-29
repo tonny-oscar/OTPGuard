@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 
 const card = {
@@ -34,7 +34,7 @@ function FeatureUsage() {
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          🎮 Feature Usage Analytics
+           Feature Usage Analytics
         </h1>
         <p style={{ fontSize: '.85rem' }}>Track feature adoption and usage patterns</p>
       </div>
@@ -45,7 +45,7 @@ function FeatureUsage() {
         <div>
           {/* Features Overview */}
           <div style={card}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}>📊 Feature Adoption Rates</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}> Feature Adoption Rates</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {Object.entries(data.features).map(([key, feature]) => (
                 <div key={key}>
@@ -70,7 +70,7 @@ function FeatureUsage() {
 
           {/* By Plan */}
           <div style={{ ...card, marginTop: 20 }}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}>📈 Adoption by Plan</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}> Adoption by Plan</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 16 }}>
               {Object.entries(data.by_plan).map(([plan, info]) => (
                 <div key={plan} style={{ padding: 16, background: 'rgba(0,255,136,.05)', borderRadius: 8 }}>
@@ -90,3 +90,4 @@ function FeatureUsage() {
 }
 
 export default FeatureUsage
+

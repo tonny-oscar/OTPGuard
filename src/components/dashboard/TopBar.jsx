@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useSubscription } from '../../hooks/useSubscription'
@@ -60,7 +60,7 @@ export default function TopBar({ onMenuClick }) {
               {[
                 { label: '⚙️ Settings', action: () => { navigate('/settings'); setMenuOpen(false) } },
                 { label: '↑ Upgrade Plan', action: () => { navigate('/#pricing'); setMenuOpen(false) } },
-                { label: '🚪 Sign out', action: handleLogout, red: true },
+                { label: ' Sign out', action: handleLogout, red: true },
               ].map(item => (
                 <button key={item.label} onClick={item.action} style={{
                   width: '100%', textAlign: 'left', padding: '10px 16px',
@@ -85,3 +85,4 @@ export default function TopBar({ onMenuClick }) {
     </div>
   )
 }
+

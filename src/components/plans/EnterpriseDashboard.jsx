@@ -1,4 +1,4 @@
-import MetricCard from '../dashboard/widgets/MetricCard'
+﻿import MetricCard from '../dashboard/widgets/MetricCard'
 import ActivityTable from '../dashboard/widgets/ActivityTable'
 
 export default function EnterpriseDashboard() {
@@ -41,11 +41,11 @@ export default function EnterpriseDashboard() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 16 }}>
-        <MetricCard title="Total Users"       value={metrics.totalUsers.toLocaleString()} icon="👥" trend="+2,345 this month" trendUp color="blue" />
-        <MetricCard title="Uptime"            value={`${metrics.uptime}%`} icon="🖥️" subtitle="SLA: 99.9%" badge="✓ On Track" color="green" />
+        <MetricCard title="Total Users"       value={metrics.totalUsers.toLocaleString()} icon="" trend="+2,345 this month" trendUp color="blue" />
+        <MetricCard title="Uptime"            value={`${metrics.uptime}%`} icon="️" subtitle="SLA: 99.9%" badge="✓ On Track" color="green" />
         <MetricCard title="Avg Response"      value={`${metrics.avgResponseTime}ms`} icon="⚡" trend="-5ms" trendUp color="purple" />
-        <MetricCard title="Total OTPs"        value={`${(metrics.totalOTPs / 1000000).toFixed(1)}M`} icon="🔑" subtitle="This month" color="indigo" />
-        <MetricCard title="SMS Cost"          value={`${metrics.smsCost.toLocaleString()} KES`} icon="💳" trend="+12%" trendUp={false} color="amber" />
+        <MetricCard title="Total OTPs"        value={`${(metrics.totalOTPs / 1000000).toFixed(1)}M`} icon="" subtitle="This month" color="indigo" />
+        <MetricCard title="SMS Cost"          value={`${metrics.smsCost.toLocaleString()} KES`} icon="" trend="+12%" trendUp={false} color="amber" />
         <MetricCard title="Success Rate"      value={`${metrics.successRate}%`} icon="✅" trend="+0.5%" trendUp color="emerald" />
       </div>
 
@@ -127,7 +127,7 @@ export default function EnterpriseDashboard() {
       {/* White-Label */}
       <div style={{ background: 'rgba(250,204,21,.07)', border: '1px solid rgba(250,204,21,.25)', borderRadius: 12, padding: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-          <span style={{ fontSize: '1.3rem' }}>🏷️</span>
+          <span style={{ fontSize: '1.3rem' }}>️</span>
           <h3 style={{ color: 'var(--heading)', fontWeight: 600 }}>White-Label Active</h3>
         </div>
         <p style={{ fontSize: '.85rem', marginBottom: 12 }}>Your custom domain: <code style={{ color: 'var(--heading)', fontWeight: 700 }}>auth.acme.com</code></p>
@@ -141,3 +141,4 @@ export default function EnterpriseDashboard() {
     </div>
   )
 }
+

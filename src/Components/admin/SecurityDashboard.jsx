@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 
 const card = {
@@ -37,7 +37,7 @@ function SecurityDashboard() {
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          🔒 Security & Threats
+           Security & Threats
         </h1>
         <p style={{ fontSize: '.85rem' }}>Monitor security threats and MFA adoption</p>
       </div>
@@ -51,8 +51,8 @@ function SecurityDashboard() {
             {[
               { icon: '❌', label: 'Failed Logins (24h)', val: threats.failed_logins_24h, color: '#f87171' },
               { icon: '⚠️', label: 'Failed Logins (7d)', val: threats.failed_logins_7d, color: '#facc15' },
-              { icon: '🚨', label: 'Brute Force Attempts', val: threats.brute_force_attempts, color: '#f87171' },
-              { icon: '🔐', label: 'MFA Enforcement', val: `${threats.mfa_enforcement_rate}%`, color: 'var(--green)' },
+              { icon: '', label: 'Brute Force Attempts', val: threats.brute_force_attempts, color: '#f87171' },
+              { icon: '', label: 'MFA Enforcement', val: `${threats.mfa_enforcement_rate}%`, color: 'var(--green)' },
             ].map((stat, i) => (
               <div key={i} style={card}>
                 <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>{stat.icon}</div>
@@ -64,7 +64,7 @@ function SecurityDashboard() {
 
           {/* Suspicious IPs */}
           <div style={card}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>🚨 Suspicious IPs (7d)</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Suspicious IPs (7d)</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {threats.suspicious_ips.slice(0, 5).map((ip, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'rgba(248,113,113,.05)', borderRadius: 6 }}>
@@ -78,7 +78,7 @@ function SecurityDashboard() {
           {/* Brute Force */}
           {threats.brute_force_ips.length > 0 && (
             <div style={{ ...card, marginTop: 20, background: 'rgba(248,113,113,.08)' }}>
-              <h3 style={{ color: '#f87171', fontWeight: 600, marginBottom: 16 }}>🔴 Active Brute Force Attacks</h3>
+              <h3 style={{ color: '#f87171', fontWeight: 600, marginBottom: 16 }}> Active Brute Force Attacks</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {threats.brute_force_ips.map((ip, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: 'rgba(248,113,113,.1)', borderRadius: 6, borderLeft: '3px solid #f87171' }}>
@@ -93,7 +93,7 @@ function SecurityDashboard() {
           {/* MFA by Plan */}
           {mfa && (
             <div style={{ ...card, marginTop: 20 }}>
-              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>📊 MFA Adoption by Plan</h3>
+              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> MFA Adoption by Plan</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 16 }}>
                 {mfa.mfa_by_plan.map((plan) => (
                   <div key={plan.plan} style={{ padding: 16, background: 'rgba(0,255,136,.05)', borderRadius: 8 }}>
@@ -118,3 +118,4 @@ function SecurityDashboard() {
 }
 
 export default SecurityDashboard
+

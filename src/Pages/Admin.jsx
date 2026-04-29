@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+﻿import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth, API } from '../context/AuthContext'
 import ThemeToggle from '../Components/shared/ThemeToggle'
@@ -216,33 +216,33 @@ export default function Admin() {
   const dangerCount = alerts.filter(a => a.type === 'danger').length
 
   const topNav = [
-    { id: 'overview',   icon: '📊', label: 'Overview' },
-    { id: 'users',      icon: '👥', label: 'Users' },
-    { id: 'analytics',  icon: '📈', label: 'Analytics' },
-    { id: 'billing',    icon: '💳', label: 'Billing' },
-    { id: 'revenue',    icon: '💰', label: 'Revenue' },
-    { id: 'lifecycle',  icon: '🔄', label: 'Lifecycle' },
-    { id: 'compliance', icon: '🔐', label: 'Compliance' },
-    { id: 'feature-usage', icon: '🎮', label: 'Features' },
-    { id: 'alerts',     icon: '🚨', label: 'Alerts', badge: dangerCount || null },
+    { id: 'overview',   icon: '', label: 'Overview' },
+    { id: 'users',      icon: '', label: 'Users' },
+    { id: 'analytics',  icon: '', label: 'Analytics' },
+    { id: 'billing',    icon: '', label: 'Billing' },
+    { id: 'revenue',    icon: '', label: 'Revenue' },
+    { id: 'lifecycle',  icon: '', label: 'Lifecycle' },
+    { id: 'compliance', icon: '', label: 'Compliance' },
+    { id: 'feature-usage', icon: '', label: 'Features' },
+    { id: 'alerts',     icon: '', label: 'Alerts', badge: dangerCount || null },
   ]
 
   const churnItems = [
-    { id: 'churn',      icon: '📊', label: 'Overview' },
-    { id: 'churn-inactive',    icon: '🚪', label: 'Inactive Users' },
+    { id: 'churn',      icon: '', label: 'Overview' },
+    { id: 'churn-inactive',    icon: '', label: 'Inactive Users' },
     { id: 'churn-at-risk',     icon: '⚠️', label: 'At-Risk Users' },
-    { id: 'churn-voluntary',   icon: '🚶', label: 'Voluntary' },
+    { id: 'churn-voluntary',   icon: '', label: 'Voluntary' },
     { id: 'churn-involuntary', icon: '⚡', label: 'Involuntary' },
-    { id: 'churn-early',       icon: '🌱', label: 'Early Churn' },
-    { id: 'churn-retention',   icon: '💚', label: 'Retention' },
-    { id: 'churn-by-plan',     icon: '📦', label: 'By Plan' },
+    { id: 'churn-early',       icon: '', label: 'Early Churn' },
+    { id: 'churn-retention',   icon: '', label: 'Retention' },
+    { id: 'churn-by-plan',     icon: '', label: 'By Plan' },
   ]
 
   const reportItems = [
-    { id: 'reports-usage',     icon: '📊', label: 'Usage Report' },
-    { id: 'reports-security',  icon: '🔒', label: 'Security Report' },
-    { id: 'reports-churn',     icon: '📉', label: 'Churn Report' },
-    { id: 'reports-lifecycle', icon: '🔄', label: 'Lifecycle Report' },
+    { id: 'reports-usage',     icon: '', label: 'Usage Report' },
+    { id: 'reports-security',  icon: '', label: 'Security Report' },
+    { id: 'reports-churn',     icon: '', label: 'Churn Report' },
+    { id: 'reports-lifecycle', icon: '', label: 'Lifecycle Report' },
   ]
 
   // Derive churn category and report type from activeTab
@@ -271,7 +271,7 @@ export default function Admin() {
       }}>
         <div className="sidebar-logo" style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(255,255,255,.06)', background: 'rgba(0,255,136,.03)' }}>
           <Link to="/" style={{ textDecoration: 'none', fontWeight: 800, fontSize: '1.15rem', color: 'var(--heading)', letterSpacing: '-.01em' }}>
-            🔐 OTP<span style={{ color: 'var(--green)' }}>Guard</span>
+             OTP<span style={{ color: 'var(--green)' }}>Guard</span>
           </Link>
           <div style={{ fontSize: '.68rem', color: 'var(--green)', marginTop: 6, fontWeight: 700, letterSpacing: 2, opacity: .8 }}>ADMIN PANEL</div>
         </div>
@@ -309,7 +309,7 @@ export default function Admin() {
             onMouseEnter={e => { if (!isChurnActive) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
             onMouseLeave={e => { if (!isChurnActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
           >
-            <span style={{ fontSize: '1rem', width: 20, textAlign: 'center', flexShrink: 0 }}>📉</span>
+            <span style={{ fontSize: '1rem', width: 20, textAlign: 'center', flexShrink: 0 }}></span>
             <span style={{ flex: 1 }}>Churn</span>
             <span style={{ fontSize: '.7rem', opacity: .6, transition: 'transform .2s', transform: (churnOpen || isChurnActive) ? 'rotate(90deg)' : 'none' }}>▶</span>
           </button>
@@ -347,7 +347,7 @@ export default function Admin() {
             onMouseEnter={e => { if (!isReportsActive) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
             onMouseLeave={e => { if (!isReportsActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
           >
-            <span style={{ fontSize: '1rem', width: 20, textAlign: 'center', flexShrink: 0 }}>📋</span>
+            <span style={{ fontSize: '1rem', width: 20, textAlign: 'center', flexShrink: 0 }}></span>
             <span style={{ flex: 1 }}>Reports</span>
             <span style={{ fontSize: '.7rem', opacity: .6, transition: 'transform .2s', transform: (reportsOpen || isReportsActive) ? 'rotate(90deg)' : 'none' }}>▶</span>
           </button>
@@ -402,7 +402,7 @@ export default function Admin() {
             color: 'var(--heading)', fontSize: '1.1rem', cursor: 'pointer', padding: '8px 12px',
           }}>☰</button>
           <span style={{ fontWeight: 800, color: 'var(--heading)', fontSize: '1rem', letterSpacing: '-.01em' }}>
-            🔐 OTP<span style={{ color: 'var(--green)' }}>Guard</span>
+             OTP<span style={{ color: 'var(--green)' }}>Guard</span>
           </span>
         </div>
         {error && (
@@ -471,7 +471,7 @@ export default function Admin() {
                 <p style={{ fontSize: '.85rem', color: 'var(--text)' }}>{userTotal} total users</p>
               </div>
               <input
-                placeholder="🔍 Search users..."
+                placeholder=" Search users..."
                 value={search} onChange={e => setSearch(e.target.value)}
                 className="admin-search"
               />
@@ -671,3 +671,4 @@ export default function Admin() {
     </div>
   )
 }
+

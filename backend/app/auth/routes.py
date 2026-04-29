@@ -27,14 +27,13 @@ def register():
           type: object
           required: [email, password]
           properties:
-            email:      { type: string, example: user@example.com }
-            password:   { type: string, example: password123 }
-            full_name:  { type: string, example: John Doe }
-            phone:      { type: string, example: "+254700000000" }
-            plan:       { type: string, example: starter, enum: [starter, growth, business, enterprise] }
+            email:     { type: string, example: user@example.com }
+            password:  { type: string, example: password123 }
+            full_name: { type: string, example: John Doe }
+            phone:     { type: string, example: "+254700000000" }
+            plan:      { type: string, example: starter }
     responses:
-      201:
-        description: Account created successfully
+      201: { description: Account created }
       400: { description: Validation error }
       409: { description: Email already registered }
     """
@@ -94,8 +93,7 @@ def login():
             email:    { type: string, example: user@example.com }
             password: { type: string, example: password123 }
     responses:
-      200:
-        description: Login successful or MFA required
+      200: { description: Login successful or MFA required }
       401: { description: Invalid credentials }
       403: { description: Account disabled }
     """
@@ -170,7 +168,6 @@ def me():
     security: [{ Bearer: [] }]
     responses:
       200: { description: Current user data }
-      401: { description: Unauthorized }
       404: { description: User not found }
     """
     user = User.query.get(int(get_jwt_identity()))

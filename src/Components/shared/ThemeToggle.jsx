@@ -1,4 +1,4 @@
-import { useTheme } from '../../context/ThemeContext'
+﻿import { useTheme } from '../../context/ThemeContext'
 import { sound } from '../../utils/sound'
 
 export default function ThemeToggle() {
@@ -19,8 +19,9 @@ export default function ThemeToggle() {
       onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--green)'}
       onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
     >
-      <span style={{ fontSize: '1rem' }}>{isLight ? '🌙' : '☀️'}</span>
+      <span style={{ fontSize: '1rem' }}>{isLight ? '' : '☀️'}</span>
       <span>{isLight ? 'Dark' : 'Light'}</span>
     </button>
   )
 }
+

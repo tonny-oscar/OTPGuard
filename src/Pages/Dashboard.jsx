@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth, API } from '../context/AuthContext'
 
@@ -112,7 +112,7 @@ export default function Dashboard() {
               OTP<span style={{ color:'var(--green)' }}>Guard</span>
           </Link>
           <div style={{ display:'flex', alignItems:'center', gap:16 }}>
-            <span style={{ fontSize:'.85rem', color:'var(--text)' }}>👤 {profile?.email}</span>
+            <span style={{ fontSize:'.85rem', color:'var(--text)' }}>{profile?.email}</span>
             <span style={{ fontSize:'.75rem', background:'var(--green-dim)', color:'var(--green)', padding:'2px 10px', borderRadius:10, border:'1px solid rgba(0,255,136,.3)' }}>
               {profile?.plan?.toUpperCase()}
             </span>
@@ -137,7 +137,7 @@ export default function Dashboard() {
           display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16
         }}>
           <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-            <span style={{ fontSize:'1.5rem' }}>{profile?.mfa_enabled ? '🛡️' : '⚠️'}</span>
+            <span style={{ fontSize:'1.5rem' }}>{profile?.mfa_enabled ? '️' : '⚠️'}</span>
             <div>
               <div style={{ color:'var(--heading)', fontWeight:600 }}>MFA is {profile?.mfa_enabled ? 'Active' : 'Disabled'}</div>
               <div style={{ fontSize:'.85rem' }}>
@@ -166,10 +166,10 @@ export default function Dashboard() {
           <div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:20, marginBottom:28 }}>
               {(statCards.length > 0 ? statCards : [
-                { icon:'🔐', label:'MFA Status',      val: profile?.mfa_enabled ? 'Active' : 'Disabled', color: profile?.mfa_enabled ? 'var(--green)' : '#f87171' },
-                { icon:'📱', label:'MFA Method',      val: (profile?.mfa_method || '—').toUpperCase(),    color: 'var(--blue)' },
-                { icon:'💻', label:'Trusted Devices', val: devices.filter(d=>d.trusted).length,           color: 'var(--green)' },
-                { icon:'🔑', label:'API Keys',        val: apiKeys.length,                                color: '#facc15' },
+                { icon:'', label:'MFA Status',      val: profile?.mfa_enabled ? 'Active' : 'Disabled', color: profile?.mfa_enabled ? 'var(--green)' : '#f87171' },
+                { icon:'', label:'MFA Method',      val: (profile?.mfa_method || '—').toUpperCase(),    color: 'var(--blue)' },
+                { icon:'', label:'Trusted Devices', val: devices.filter(d=>d.trusted).length,           color: 'var(--green)' },
+                { icon:'', label:'API Keys',        val: apiKeys.length,                                color: '#facc15' },
               ]).map(s => (
                 <div key={s.label} style={card}>
                   <div style={{ fontSize:'1.5rem', marginBottom:8 }}>{s.icon}</div>
@@ -198,7 +198,7 @@ export default function Dashboard() {
             {devices.length === 0 ? <Empty text="No devices recorded yet" /> : devices.map((d,i) => (
               <div key={d.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 0', borderBottom: i<devices.length-1 ? '1px solid var(--border)' : 'none', flexWrap:'wrap', gap:12 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                  <span style={{ fontSize:'1.4rem' }}>💻</span>
+                  <span style={{ fontSize:'1.5rem' }}></span>
                   <div>
                     <div style={{ color:'var(--heading)', fontWeight:500, fontSize:'.9rem' }}>{d.user_agent || 'Unknown browser'}</div>
                     <div style={{ fontSize:'.78rem', marginTop:2 }}>{d.location || 'Unknown'} · {d.ip} · {timeAgo(d.last_seen)}</div>
@@ -290,9 +290,9 @@ export default function Dashboard() {
               <h3 style={{ color:'var(--heading)', fontWeight:600, marginBottom:20 }}>MFA Method</h3>
               <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
                 {(profile?.available_mfa_methods || [
-                  { val:'email', label:'📧 Email OTP',        desc:'Receive codes via email' },
-                  { val:'sms',   label:'📱 SMS OTP',          desc:'Receive codes via SMS (requires phone number)' },
-                  { val:'totp',  label:'🔑 Authenticator App', desc:'Google Authenticator / Authy' },
+                  { val:'email', label:' Email OTP',        desc:'Receive codes via email' },
+                  { val:'sms',   label:' SMS OTP',          desc:'Receive codes via SMS (requires phone number)' },
+                  { val:'totp',  label:' Authenticator App', desc:'Google Authenticator / Authy' },
                 ]).map(m => (
                   <label key={m.val} style={{
                     display:'flex', alignItems:'center', gap:14, padding:16, borderRadius:8, cursor:'pointer',
@@ -390,3 +390,4 @@ function timeAgo(iso) {
   if (h < 24) return `${h}h ago`
   return `${Math.floor(h/24)}d ago`
 }
+

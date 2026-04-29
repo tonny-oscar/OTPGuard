@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 
 const card = {
@@ -37,7 +37,7 @@ function SystemHealth() {
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          💬 System Health & Performance
+           System Health & Performance
         </h1>
         <p style={{ fontSize: '.85rem' }}>Monitor system status and performance metrics</p>
       </div>
@@ -70,7 +70,7 @@ function SystemHealth() {
                 { icon: '⬆️', label: 'Uptime', val: `${health.uptime_percentage}%` },
                 { icon: '⚡', label: 'Avg Response Time', val: `${health.api_response_time_ms}ms` },
                 { icon: '❌', label: 'Error Rate', val: `${health.error_rate_percent}%` },
-                { icon: '💾', label: 'Database Size', val: `${health.database_size_mb}MB` },
+                { icon: '', label: 'Database Size', val: `${health.database_size_mb}MB` },
               ].map((stat, i) => (
                 <div key={i} style={{ padding: 16, background: 'rgba(0,255,136,.05)', borderRadius: 8 }}>
                   <div style={{ fontSize: '1.2rem', marginBottom: 8 }}>{stat.icon}</div>
@@ -88,7 +88,7 @@ function SystemHealth() {
           {/* Performance Metrics */}
           {perf && (
             <div style={{ ...card, marginTop: 20 }}>
-              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}>📊 7-Day Performance Trend</h3>
+              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}> 7-Day Performance Trend</h3>
 
               {/* Response Time Chart */}
               <div style={{ marginBottom: 24 }}>
@@ -139,7 +139,7 @@ function SystemHealth() {
 
           {/* Data Stats */}
           <div style={{ ...card, marginTop: 20 }}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>📈 Data Statistics</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Data Statistics</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
               <div>
                 <div style={{ fontSize: '.85rem', marginBottom: 4, color: 'var(--text)' }}>Total Records</div>
@@ -162,3 +162,4 @@ function SystemHealth() {
 }
 
 export default SystemHealth
+

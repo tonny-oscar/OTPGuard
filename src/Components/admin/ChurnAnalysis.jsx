@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 import { generatePDF, pdfKpiGrid, pdfTable, pdfSection, pdfBar } from '../../utils/pdfExport'
 
@@ -27,14 +27,14 @@ function planBadge(plan) {
 }
 
 const CATEGORIES = [
-  { value: 'overview',    label: '📊 Overview' },
-  { value: 'inactive',    label: '🚪 Inactive Users' },
+  { value: 'overview',    label: ' Overview' },
+  { value: 'inactive',    label: ' Inactive Users' },
   { value: 'at-risk',     label: '⚠️ At-Risk Users' },
-  { value: 'voluntary',   label: '🚶 Voluntary Churn (60d+)' },
+  { value: 'voluntary',   label: ' Voluntary Churn (60d+)' },
   { value: 'involuntary', label: '⚡ Involuntary Churn (<60d)' },
-  { value: 'early',       label: '🌱 Early Churn (joined <30d)' },
-  { value: 'retention',   label: '💚 Retention Analysis' },
-  { value: 'by-plan',     label: '📦 By Plan' },
+  { value: 'early',       label: ' Early Churn (joined <30d)' },
+  { value: 'retention',   label: ' Retention Analysis' },
+  { value: 'by-plan',     label: ' By Plan' },
 ]
 
 export default function ChurnAnalysis({ initialCategory = 'overview' }) {
@@ -94,11 +94,11 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
       {/* Header */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:12, marginBottom:20 }}>
         <div>
-          <h1 style={{ color:'var(--heading)', fontSize:'1.6rem', fontWeight:800, letterSpacing:'-.02em', marginBottom:4 }}>📉 Churn Analysis</h1>
+          <h1 style={{ color:'var(--heading)', fontSize:'1.6rem', fontWeight:800, letterSpacing:'-.02em', marginBottom:4 }}> Churn Analysis</h1>
           <p style={{ fontSize:'.85rem', color:'var(--text)' }}>Monitor churn, identify at-risk users, and track retention</p>
         </div>
         <button onClick={exportPDF} disabled={!data} style={{ padding:'8px 18px', borderRadius:8, border:'none', background: data?'var(--green)':'var(--border)', color: data?'#0a0e1a':'var(--text)', fontWeight:700, cursor: data?'pointer':'not-allowed', fontSize:'.85rem' }}>
-          📄 Export PDF
+           Export PDF
         </button>
       </div>
 
@@ -143,10 +143,10 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
           {/* ── OVERVIEW ── */}
           {category === 'overview' && <>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:16 }}>
-              <KpiCard icon="📊" label="Churn Rate"     val={`${data.churn_rate_30d}%`}  color="#f87171" />
+              <KpiCard icon="" label="Churn Rate"     val={`${data.churn_rate_30d}%`}  color="#f87171" />
               <KpiCard icon="⚠️" label="At-Risk Users"  val={data.at_risk_users}          color="#facc15" sub="Declining activity" />
-              <KpiCard icon="🚪" label="Inactive Users" val={data.inactive_users_30d}     color="#fb923c" sub="No login in period" />
-              <KpiCard icon="📉" label="Churned"        val={data.churned_last_30d}       color="#f87171" />
+              <KpiCard icon="" label="Inactive Users" val={data.inactive_users_30d}     color="#fb923c" sub="No login in period" />
+              <KpiCard icon="" label="Churned"        val={data.churned_last_30d}       color="#f87171" />
             </div>
             <div style={{ ...card, background:'linear-gradient(135deg,rgba(0,255,136,.05),rgba(0,255,136,.02))', border:'1px solid rgba(0,255,136,.12)' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
@@ -157,7 +157,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
                 <div style={{ width:`${retentionRate}%`, height:'100%', borderRadius:8, background: retentionRate>=80?'linear-gradient(90deg,var(--green),#00cc6a)':retentionRate>=60?'linear-gradient(90deg,#facc15,#fb923c)':'linear-gradient(90deg,#f87171,#ef4444)', transition:'width .6s ease' }} />
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.75rem', color:'var(--text)' }}>
-                <span>🔴 Poor (&lt;60%)</span><span>🟡 Fair (60–80%)</span><span>🟢 Good (&gt;80%)</span>
+                <span> Poor (&lt;60%)</span><span> Fair (60–80%)</span><span> Good (&gt;80%)</span>
               </div>
             </div>
             <div style={card}>
@@ -173,9 +173,9 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
               </div>
             </div>
             <div style={{ ...card, background:'rgba(250,204,21,.05)', border:'1px solid rgba(250,204,21,.15)' }}>
-              <h3 style={{ color:'#facc15', fontWeight:700, marginBottom:12 }}>💡 Recommendations</h3>
+              <h3 style={{ color:'#facc15', fontWeight:700, marginBottom:12 }}> Recommendations</h3>
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:10 }}>
-                {[{icon:'📧',text:'Re-engagement emails to inactive users'},{icon:'🎁',text:'Promotions for at-risk customers'},{icon:'💬',text:'Check-ins with high-value accounts'},{icon:'📊',text:'Review pricing for declining users'}].map((r,i)=>(
+                {[{icon:'',text:'Re-engagement emails to inactive users'},{icon:'',text:'Promotions for at-risk customers'},{icon:'',text:'Check-ins with high-value accounts'},{icon:'',text:'Review pricing for declining users'}].map((r,i)=>(
                   <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background:'rgba(255,255,255,.03)', borderRadius:8 }}>
                     <span>{r.icon}</span><span style={{ fontSize:'.83rem', color:'var(--text)', lineHeight:1.5 }}>{r.text}</span>
                   </div>
@@ -265,10 +265,10 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
           {category === 'retention' && (
             <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:16 }}>
-                <KpiCard icon="💚" label="Retention Rate" val={`${retentionRate}%`}       color="var(--green)" sub="Inverse of churn" />
-                <KpiCard icon="📉" label="Churned"        val={data.churned_last_30d}     color="#f87171" sub="Last period" />
+                <KpiCard icon="" label="Retention Rate" val={`${retentionRate}%`}       color="var(--green)" sub="Inverse of churn" />
+                <KpiCard icon="" label="Churned"        val={data.churned_last_30d}     color="#f87171" sub="Last period" />
                 <KpiCard icon="⚠️" label="At-Risk"        val={data.at_risk_users}        color="#facc15" />
-                <KpiCard icon="🚪" label="Inactive"       val={data.inactive_users_30d}   color="#fb923c" />
+                <KpiCard icon="" label="Inactive"       val={data.inactive_users_30d}   color="#fb923c" />
               </div>
               <div style={card}>
                 <h3 style={{ color:'var(--heading)', fontWeight:700, marginBottom:20 }}>Monthly Churn vs Retention</h3>
@@ -363,3 +363,4 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
     </div>
   )
 }
+

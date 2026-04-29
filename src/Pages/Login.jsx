@@ -83,7 +83,7 @@ export default function Login() {
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Link to="/" style={{ textDecoration: 'none', fontSize: '1.5rem', fontWeight: 700, color: 'var(--heading)' }}>
-            🔐 OTP<span style={{ color: 'var(--green)' }}>Guard</span>
+            OTP<span style={{ color: 'var(--green)' }}>Guard</span>
           </Link>
         </div>
 
@@ -129,8 +129,10 @@ export default function Login() {
           ) : (
             <>
               <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>
-                  {mfaMethod === 'sms' ? '📱' : mfaMethod === 'totp' ? '🔑' : '📧'}
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--green-dim)', border: '1px solid rgba(0,255,136,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--green)', fontWeight: 700, fontSize: '1.2rem', margin: '0 auto' }}>
+                    {mfaMethod === 'sms' ? 'SMS' : mfaMethod === 'totp' ? 'OTP' : 'Email'}
+                  </div>
                 </div>
                 <h2 style={{ color: 'var(--heading)', marginBottom: 8 }}>
                   {mfaMethod === 'totp' ? 'Authenticator Code' : 'Enter OTP'}

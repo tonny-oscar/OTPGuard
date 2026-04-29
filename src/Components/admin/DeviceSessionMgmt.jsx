@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 
 const card = {
@@ -37,7 +37,7 @@ function DeviceSessionMgmt() {
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          📱 Device & Session Management
+           Device & Session Management
         </h1>
         <p style={{ fontSize: '.85rem' }}>Monitor active devices and user sessions</p>
       </div>
@@ -49,8 +49,8 @@ function DeviceSessionMgmt() {
           {/* Session Overview */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 20, marginBottom: 28 }}>
             {[
-              { icon: '👥', label: 'Active Users', val: sessions.online_users, color: 'var(--green)' },
-              { icon: '📱', label: 'Active Devices', val: sessions.active_devices, color: 'var(--blue)' },
+              { icon: '', label: 'Active Users', val: sessions.online_users, color: 'var(--green)' },
+              { icon: '', label: 'Active Devices', val: sessions.active_devices, color: 'var(--blue)' },
               { icon: '⏱️', label: 'Sessions (24h)', val: sessions.total_sessions_24h, color: '#facc15' },
               { icon: '⌚', label: 'Avg Session Duration', val: `${sessions.avg_session_duration_minutes}m`, color: 'var(--green)' },
             ].map((stat, i) => (
@@ -64,7 +64,7 @@ function DeviceSessionMgmt() {
 
           {/* Device Distribution */}
           <div style={card}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>📊 Device Type Distribution</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Device Type Distribution</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {Object.entries(sessions.device_distribution).map(([type, count]) => {
                 const total = Object.values(sessions.device_distribution).reduce((a, b) => a + b, 0)
@@ -94,7 +94,7 @@ function DeviceSessionMgmt() {
           {/* Geographic Distribution */}
           {geo && (
             <div style={{ ...card, marginTop: 20 }}>
-              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>🌍 Geographic Distribution</h3>
+              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Geographic Distribution</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {geo.geographic_distribution.slice(0, 5).map((loc, i) => (
                   <div key={i}>
@@ -122,7 +122,7 @@ function DeviceSessionMgmt() {
 
           {/* Security Notice */}
           <div style={{ ...card, marginTop: 20, background: 'rgba(59,130,246,.05)', borderColor: 'rgba(59,130,246,.2)' }}>
-            <h3 style={{ color: 'var(--blue)', fontWeight: 600, marginBottom: 12 }}>🔒 Session Security</h3>
+            <h3 style={{ color: 'var(--blue)', fontWeight: 600, marginBottom: 12 }}> Session Security</h3>
             <ul style={{ fontSize: '.85rem', color: 'var(--text)', paddingLeft: 20, lineHeight: 1.8 }}>
               <li>Expired sessions are automatically terminated</li>
               <li>Suspicious device activity is monitored</li>
@@ -137,3 +137,4 @@ function DeviceSessionMgmt() {
 }
 
 export default DeviceSessionMgmt
+

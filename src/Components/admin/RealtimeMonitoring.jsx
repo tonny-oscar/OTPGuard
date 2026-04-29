@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 
 const card = {
@@ -37,7 +37,7 @@ function RealtimeMonitoring() {
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          🔴 Real-Time Monitoring
+           Real-Time Monitoring
         </h1>
         <p style={{ fontSize: '.85rem' }}>Live system activity and user engagement</p>
       </div>
@@ -49,8 +49,8 @@ function RealtimeMonitoring() {
           {/* Live Metrics */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 20, marginBottom: 28 }}>
             {[
-              { icon: '👥', label: 'Online Users', val: realtime.online_users, color: 'var(--green)' },
-              { icon: '📱', label: 'Active Sessions', val: realtime.active_sessions, color: 'var(--blue)' },
+              { icon: '', label: 'Online Users', val: realtime.online_users, color: 'var(--green)' },
+              { icon: '', label: 'Active Sessions', val: realtime.active_sessions, color: 'var(--blue)' },
               { icon: '⚡', label: 'Requests/Min', val: realtime.requests_per_minute, color: '#fbbf24' },
               { icon: '⚠️', label: 'Alerts', val: realtime.alerts_count, color: '#f87171' },
             ].map((stat, i) => (
@@ -64,7 +64,7 @@ function RealtimeMonitoring() {
 
           {/* System Status */}
           <div style={card}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>🟢 System Status</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> System Status</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 16 }}>
               {Object.entries(realtime.system_status).map(([service, status]) => (
                 <div key={service} style={{ padding: 16, background: 'rgba(0,255,136,.05)', borderRadius: 8 }}>
@@ -94,7 +94,7 @@ function RealtimeMonitoring() {
           {/* Activity Feed */}
           {activity && (
             <div style={{ ...card, marginTop: 20 }}>
-              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>📋 Recent Activity</h3>
+              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Recent Activity</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {activity.activity_feed.map((event, i) => (
                   <div key={i} style={{ padding: 16, background: 'rgba(59,130,246,.05)', borderRadius: 8, borderLeft: '4px solid var(--blue)' }}>
@@ -123,7 +123,7 @@ function RealtimeMonitoring() {
 
           {/* Performance Metrics */}
           <div style={{ ...card, marginTop: 20 }}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>📊 Performance Metrics</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Performance Metrics</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16 }}>
               {[
                 { label: 'Avg Response Time', value: `${realtime.avg_response_time}ms`, trend: 'normal' },
@@ -150,3 +150,4 @@ function RealtimeMonitoring() {
 }
 
 export default RealtimeMonitoring
+

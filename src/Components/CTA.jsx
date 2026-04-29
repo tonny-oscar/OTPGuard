@@ -4,7 +4,6 @@ export default function CTA() {
   return (
     <section style={{ background:'var(--surface)', textAlign:'center' }}>
       <div className="container" style={{ maxWidth:700 }}>
-        <div style={{ fontSize:'3rem', marginBottom:16 }}>🚀</div>
         <h2 className="section-title">Start Securing Your Platform Today</h2>
         <p style={{ marginBottom:40, fontSize:'1.05rem', lineHeight:1.8 }}>
           Join businesses protecting their users with OTPGuard.

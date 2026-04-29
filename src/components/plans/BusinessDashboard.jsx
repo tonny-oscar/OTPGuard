@@ -1,4 +1,4 @@
-import MetricCard from '../dashboard/widgets/MetricCard'
+﻿import MetricCard from '../dashboard/widgets/MetricCard'
 import ActivityTable from '../dashboard/widgets/ActivityTable'
 
 export default function BusinessDashboard() {
@@ -28,10 +28,10 @@ export default function BusinessDashboard() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 16 }}>
-        <MetricCard title="Total Users"         value={metrics.totalUsers.toLocaleString()} icon="👥" trend="+234 this month" trendUp subtitle="Unlimited" color="blue" />
-        <MetricCard title="Email OTPs"          value={metrics.emailOTPs.toLocaleString()} icon="📧" trend="+12%" trendUp color="green" />
-        <MetricCard title="SMS OTPs"            value={metrics.smsOTPs.toLocaleString()} icon="📱" subtitle={`${metrics.smsCost.toLocaleString()} KES`} color="purple" />
-        <MetricCard title="TOTP Verifications"  value={metrics.totpVerifications.toLocaleString()} icon="🔐" badge="NEW" color="indigo" />
+        <MetricCard title="Total Users"         value={metrics.totalUsers.toLocaleString()} icon="" trend="+234 this month" trendUp subtitle="Unlimited" color="blue" />
+        <MetricCard title="Email OTPs"          value={metrics.emailOTPs.toLocaleString()} icon="" trend="+12%" trendUp color="green" />
+        <MetricCard title="SMS OTPs"            value={metrics.smsOTPs.toLocaleString()} icon="" subtitle={`${metrics.smsCost.toLocaleString()} KES`} color="purple" />
+        <MetricCard title="TOTP Verifications"  value={metrics.totpVerifications.toLocaleString()} icon="" badge="NEW" color="indigo" />
         <MetricCard title="Success Rate"        value={`${metrics.successRate}%`} icon="✅" trend="+1.2%" trendUp color="emerald" />
       </div>
 
@@ -56,7 +56,7 @@ export default function BusinessDashboard() {
         </div>
         <div style={card}>
           <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>Top Locations</h3>
-          {[{ flag:'🇰🇪', country:'Kenya', users:'8,234', pct:66 }, { flag:'🇺🇬', country:'Uganda', users:'2,456', pct:20 }, { flag:'🇹🇿', country:'Tanzania', users:'1,766', pct:14 }].map(l => (
+          {[{ flag:'', country:'Kenya', users:'8,234', pct:66 }, { flag:'', country:'Uganda', users:'2,456', pct:20 }, { flag:'', country:'Tanzania', users:'1,766', pct:14 }].map(l => (
             <div key={l.country} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: '1.4rem' }}>{l.flag}</span>
@@ -80,7 +80,7 @@ export default function BusinessDashboard() {
         {devices.map(d => (
           <div key={d.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--bg)', borderRadius: 8, marginBottom: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: '1.3rem' }}>💻</span>
+              <span style={{ fontSize: '1.3rem' }}></span>
               <div>
                 <div style={{ fontSize: '.88rem', color: 'var(--heading)', fontWeight: 500 }}>{d.device}</div>
                 <div style={{ fontSize: '.75rem' }}>{d.location} · {d.lastSeen}</div>
@@ -96,7 +96,7 @@ export default function BusinessDashboard() {
       <ActivityTable title="Recent OTP Requests" columns={['Time','User','Method','Status','Device','Location']} data={recentActivity} filters={['All','Email','SMS','TOTP','Verified','Failed']} searchable exportable pagination />
 
       <div style={{ background: 'rgba(139,92,246,.08)', border: '1px solid rgba(139,92,246,.25)', borderRadius: 12, padding: 20 }}>
-        <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 6 }}>🎨 Custom Branding Active</h3>
+        <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 6 }}> Custom Branding Active</h3>
         <p style={{ fontSize: '.85rem', marginBottom: 10 }}>Your OTP emails and pages are branded with your company logo and colors</p>
         <a href="/branding" style={{ color: '#a78bfa', fontSize: '.85rem', textDecoration: 'none', fontWeight: 600 }}>Manage Branding →</a>
       </div>
@@ -108,3 +108,4 @@ export default function BusinessDashboard() {
     </div>
   )
 }
+

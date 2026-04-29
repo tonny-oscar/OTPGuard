@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 
 const card = {
@@ -37,7 +37,7 @@ function SMSCosts() {
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          💾 SMS & Communication Costs
+           SMS & Communication Costs
         </h1>
         <p style={{ fontSize: '.85rem' }}>Track and optimize communication expenses</p>
       </div>
@@ -49,10 +49,10 @@ function SMSCosts() {
           {/* Cost Overview */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 20, marginBottom: 28 }}>
             {[
-              { icon: '📱', label: 'SMS Count (30d)', val: costs.sms_count, sub: `$${costs.sms_cost_per_unit}/SMS` },
-              { icon: '💸', label: 'SMS Cost', val: `$${costs.sms_cost}`, color: 'var(--blue)' },
-              { icon: '📨', label: 'Email Count (30d)', val: costs.email_count, sub: `$${costs.email_cost_per_unit}/Email` },
-              { icon: '💰', label: 'Total Cost', val: `$${costs.total_communication_cost}`, color: '#facc15' },
+              { icon: '', label: 'SMS Count (30d)', val: costs.sms_count, sub: `$${costs.sms_cost_per_unit}/SMS` },
+              { icon: '', label: 'SMS Cost', val: `$${costs.sms_cost}`, color: 'var(--blue)' },
+              { icon: '', label: 'Email Count (30d)', val: costs.email_count, sub: `$${costs.email_cost_per_unit}/Email` },
+              { icon: '', label: 'Total Cost', val: `$${costs.total_communication_cost}`, color: '#facc15' },
             ].map((stat, i) => (
               <div key={i} style={card}>
                 <div style={{ fontSize: '1.4rem', marginBottom: 8 }}>{stat.icon}</div>
@@ -67,7 +67,7 @@ function SMSCosts() {
 
           {/* Cost Per User */}
           <div style={card}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 12 }}>👥 Cost Per User (30d)</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 12 }}> Cost Per User (30d)</h3>
             <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--green)', marginBottom: 8 }}>
               ${costs.cost_by_user}
             </div>
@@ -79,7 +79,7 @@ function SMSCosts() {
           {/* Breakdown by Plan */}
           {breakdown && (
             <div style={{ ...card, marginTop: 20 }}>
-              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}>📊 Cost Breakdown by Plan</h3>
+              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}> Cost Breakdown by Plan</h3>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
@@ -109,7 +109,7 @@ function SMSCosts() {
 
           {/* Recommendations */}
           <div style={{ ...card, marginTop: 20, background: 'rgba(59,130,246,.05)', borderColor: 'rgba(59,130,246,.2)' }}>
-            <h3 style={{ color: 'var(--blue)', fontWeight: 600, marginBottom: 12 }}>💡 Cost Optimization Tips</h3>
+            <h3 style={{ color: 'var(--blue)', fontWeight: 600, marginBottom: 12 }}> Cost Optimization Tips</h3>
             <ul style={{ fontSize: '.85rem', color: 'var(--text)', paddingLeft: 20, lineHeight: 1.8 }}>
               <li>Encourage email-based OTP to reduce SMS costs</li>
               <li>Monitor plans with high per-user SMS costs</li>
@@ -124,3 +124,4 @@ function SMSCosts() {
 }
 
 export default SMSCosts
+

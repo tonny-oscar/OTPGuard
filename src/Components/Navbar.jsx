@@ -25,7 +25,6 @@ export default function Navbar() {
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
         {/* Logo */}
         <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: '1.4rem' }}>🔐</span>
           <span style={{ color: 'var(--heading)', fontWeight: 700, fontSize: '1.2rem' }}>
             OTP<span style={{ color: 'var(--green)' }}>Guard</span>
           </span>
@@ -53,12 +52,12 @@ export default function Navbar() {
               <Link to="/dashboard" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '.92rem', padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)', transition: 'all .2s' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--green)'; e.currentTarget.style.color = 'var(--green)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text)' }}
-              >🛡️ Dashboard</Link>
+              >Dashboard</Link>
               {user.role === 'admin' && (
                 <Link to="/admin" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '.92rem', padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)', transition: 'all .2s' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--green)'; e.currentTarget.style.color = 'var(--green)' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text)' }}
-                >⚙️ Admin</Link>
+                >Admin</Link>
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--green-dim)', border: '1px solid rgba(0,255,136,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--green)', fontWeight: 700, fontSize: '.85rem' }}>
@@ -101,8 +100,8 @@ export default function Navbar() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 8 }}>
-              <Link to="/dashboard" onClick={() => setOpen(false)} style={{ color: 'var(--green)', textDecoration: 'none', fontSize: '.95rem' }}>🛡️ Dashboard</Link>
-              {user.role === 'admin' && <Link to="/admin" onClick={() => setOpen(false)} style={{ color: 'var(--green)', textDecoration: 'none', fontSize: '.95rem' }}>⚙️ Admin</Link>}
+              <Link to="/dashboard" onClick={() => setOpen(false)} style={{ color: 'var(--green)', textDecoration: 'none', fontSize: '.95rem' }}>Dashboard</Link>
+              {user.role === 'admin' && <Link to="/admin" onClick={() => setOpen(false)} style={{ color: 'var(--green)', textDecoration: 'none', fontSize: '.95rem' }}>Admin</Link>}
               <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '.95rem', textAlign: 'left', padding: 0 }}>Logout</button>
             </div>
           )}

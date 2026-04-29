@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 
 const card = {
@@ -34,7 +34,7 @@ function CommunicationCenter() {
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          📧 Communication Center
+           Communication Center
         </h1>
         <p style={{ fontSize: '.85rem' }}>Monitor email and SMS delivery</p>
       </div>
@@ -45,7 +45,7 @@ function CommunicationCenter() {
         <div>
           {/* Email Stats */}
           <div style={{ ...card, marginBottom: 20 }}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}>📨 Email Delivery</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}> Email Delivery</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
               <div style={{ padding: 16, background: 'var(--blue-dim)', borderRadius: 8 }}>
                 <div style={{ fontSize: '.85rem', marginBottom: 8, color: 'var(--text)' }}>Emails Sent</div>
@@ -64,7 +64,7 @@ function CommunicationCenter() {
 
           {/* SMS Stats */}
           <div style={{ ...card, marginBottom: 20 }}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}>📱 SMS Delivery</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 20 }}> SMS Delivery</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
               <div style={{ padding: 16, background: 'var(--blue-dim)', borderRadius: 8 }}>
                 <div style={{ fontSize: '.85rem', marginBottom: 8, color: 'var(--text)' }}>SMS Sent</div>
@@ -99,3 +99,4 @@ function CommunicationCenter() {
 }
 
 export default CommunicationCenter
+

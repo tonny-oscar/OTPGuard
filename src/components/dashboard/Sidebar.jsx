@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+﻿import { Link, useLocation } from 'react-router-dom'
 import { useSubscription } from '../../hooks/useSubscription'
 import PlanBadge from '../shared/PlanBadge'
 
@@ -6,29 +6,29 @@ const navGroups = [
   {
     label: null,
     items: [
-      { href: '/dashboard', icon: '🏠', label: 'Dashboard', plans: ['starter','growth','business','enterprise'] },
-      { href: '/analytics', icon: '📈', label: 'Analytics', plans: ['growth','business','enterprise'], locked: ['starter'] },
-      { href: '/devices',   icon: '💻', label: 'Devices',   plans: ['business','enterprise'], locked: ['starter','growth'] },
-      { href: '/team',      icon: '👥', label: 'Team',      plans: ['enterprise'], locked: ['starter','growth','business'] },
+      { href: '/dashboard', icon: '', label: 'Dashboard', plans: ['starter','growth','business','enterprise'] },
+      { href: '/analytics', icon: '', label: 'Analytics', plans: ['growth','business','enterprise'], locked: ['starter'] },
+      { href: '/devices',   icon: '', label: 'Devices',   plans: ['business','enterprise'], locked: ['starter','growth'] },
+      { href: '/team',      icon: '', label: 'Team',      plans: ['enterprise'], locked: ['starter','growth','business'] },
     ]
   },
   {
     label: 'OTP Methods',
     items: [
-      { href: '/api-keys',      icon: '🔑', label: 'API Keys',      plans: ['starter','growth','business','enterprise'] },
-      { href: '/email-otp',     icon: '📧', label: 'Email OTP',     plans: ['starter','growth','business','enterprise'] },
-      { href: '/sms-otp',       icon: '📱', label: 'SMS OTP',       plans: ['growth','business','enterprise'], locked: ['starter'] },
-      { href: '/authenticator', icon: '🔐', label: 'Authenticator', plans: ['business','enterprise'], locked: ['starter','growth'] },
-      { href: '/backup-codes',  icon: '🗝️', label: 'Backup Codes',  plans: ['business','enterprise'], locked: ['starter','growth'] },
+      { href: '/api-keys',      icon: '', label: 'API Keys',      plans: ['starter','growth','business','enterprise'] },
+      { href: '/email-otp',     icon: '', label: 'Email OTP',     plans: ['starter','growth','business','enterprise'] },
+      { href: '/sms-otp',       icon: '', label: 'SMS OTP',       plans: ['growth','business','enterprise'], locked: ['starter'] },
+      { href: '/authenticator', icon: '', label: 'Authenticator', plans: ['business','enterprise'], locked: ['starter','growth'] },
+      { href: '/backup-codes',  icon: '️', label: 'Backup Codes',  plans: ['business','enterprise'], locked: ['starter','growth'] },
     ]
   },
   {
     label: 'Settings',
     items: [
-      { href: '/usage',      icon: '💳', label: 'Usage & Billing', plans: ['growth','business','enterprise'], locked: ['starter'] },
-      { href: '/logs',       icon: '📋', label: 'Activity Logs',   plans: ['starter','growth','business','enterprise'] },
-      { href: '/audit-logs', icon: '🔍', label: 'Audit Logs',      plans: ['enterprise'], locked: ['starter','growth','business'] },
-      { href: '/branding',   icon: '🎨', label: 'Branding',        plans: ['business','enterprise'], locked: ['starter','growth'] },
+      { href: '/usage',      icon: '', label: 'Usage & Billing', plans: ['growth','business','enterprise'], locked: ['starter'] },
+      { href: '/logs',       icon: '', label: 'Activity Logs',   plans: ['starter','growth','business','enterprise'] },
+      { href: '/audit-logs', icon: '', label: 'Audit Logs',      plans: ['enterprise'], locked: ['starter','growth','business'] },
+      { href: '/branding',   icon: '', label: 'Branding',        plans: ['business','enterprise'], locked: ['starter','growth'] },
       { href: '/settings',   icon: '⚙️', label: 'Settings',        plans: ['starter','growth','business','enterprise'] },
     ]
   }
@@ -43,7 +43,7 @@ function SidebarContent({ onClose, mobile }) {
       {/* Logo */}
       <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link to="/dashboard" style={{ textDecoration: 'none', fontWeight: 700, fontSize: '1.1rem', color: 'var(--heading)' }}>
-          🔐 OTP<span style={{ color: 'var(--green)' }}>Guard</span>
+           OTP<span style={{ color: 'var(--green)' }}>Guard</span>
         </Link>
         {mobile && (
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
@@ -79,7 +79,7 @@ function SidebarContent({ onClose, mobile }) {
                     }}>
                       <span>{item.icon}</span>
                       <span style={{ flex: 1 }}>{item.label}</span>
-                      <span style={{ fontSize: '.7rem' }}>🔒</span>
+                      <span style={{ fontSize: '.7rem' }}></span>
                     </div>
                   ) : (
                     <Link to={item.href} onClick={mobile ? onClose : undefined} style={{
@@ -141,3 +141,4 @@ export default function Sidebar({ open, onClose }) {
     </>
   )
 }
+

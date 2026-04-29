@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 
 const defaultTitles = {
   sms_otp: 'SMS OTP is locked',
@@ -26,7 +26,7 @@ export default function UpgradePrompt({ feature, upgradeInfo, style = 'banner', 
   if (style === 'inline') {
     return (
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: 20, textAlign: 'center' }}>
-        <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>🔒</div>
+        <div style={{ fontSize: '1.5rem', marginBottom: 8 }}></div>
         <p style={{ fontSize: '.85rem', color: 'var(--text)', marginBottom: 12 }}>{displayDescription}</p>
         <Link to={`/register?plan=${plan?.toLowerCase()}`} style={{ color: 'var(--green)', fontSize: '.82rem', textDecoration: 'none', fontWeight: 600 }}>
           Upgrade to {plan} →
@@ -38,7 +38,7 @@ export default function UpgradePrompt({ feature, upgradeInfo, style = 'banner', 
   return (
     <div style={{ background: 'var(--green-dim)', border: '1px solid rgba(0,255,136,.25)', borderRadius: 10, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-        <span style={{ fontSize: '1.3rem' }}>🔒</span>
+        <span style={{ fontSize: '1.3rem' }}></span>
         <div style={{ flex: 1 }}>
           <div style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 4 }}>{displayTitle}</div>
           <p style={{ fontSize: '.85rem', color: 'var(--text)', marginBottom: 12 }}>{displayDescription}</p>
@@ -55,3 +55,4 @@ export default function UpgradePrompt({ feature, upgradeInfo, style = 'banner', 
     </div>
   )
 }
+

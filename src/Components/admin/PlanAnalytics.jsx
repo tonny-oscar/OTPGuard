@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 
 const card = {
@@ -37,7 +37,7 @@ function PlanAnalytics() {
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          📊 Plan Analytics
+           Plan Analytics
         </h1>
         <p style={{ fontSize: '.85rem' }}>Analyze subscription plan distribution and performance</p>
       </div>
@@ -61,7 +61,7 @@ function PlanAnalytics() {
                   <div style={{ fontSize: '.75rem', marginBottom: 4, display: 'flex', justifyContent: 'space-between' }}>
                     <span>Growth</span>
                     <span style={{ color: plan.growth_percentage >= 0 ? 'var(--green)' : '#f87171' }}>
-                      {plan.growth_percentage >= 0 ? '📈' : '📉'} {Math.abs(plan.growth_percentage)}%
+                      {plan.growth_percentage >= 0 ? '' : ''} {Math.abs(plan.growth_percentage)}%
                     </span>
                   </div>
                   <div style={{ width: '100%', height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
@@ -83,7 +83,7 @@ function PlanAnalytics() {
 
           {/* Plan Metrics Table */}
           <div style={card}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>📈 Plan Performance Metrics</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Plan Performance Metrics</h3>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.9rem' }}>
                 <thead>
@@ -119,7 +119,7 @@ function PlanAnalytics() {
           {/* Upgrade/Downgrade Activity */}
           {movements && (
             <div style={{ ...card, marginTop: 20 }}>
-              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>🔄 Plan Movements</h3>
+              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Plan Movements</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16 }}>
                 {Object.entries(movements.upgrade_downgrade).map(([period, data]) => (
                   <div key={period} style={{ padding: 16, background: 'rgba(59,130,246,.05)', borderRadius: 8 }}>
@@ -146,3 +146,4 @@ function PlanAnalytics() {
 }
 
 export default PlanAnalytics
+

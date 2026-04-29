@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 
 export default function ApiDocs() {
   const apiUrl = window.location.origin
@@ -49,7 +49,7 @@ export default function ApiDocs() {
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
         <div style={{ marginBottom: 40 }}>
           <Link to="/" style={{ textDecoration: 'none', fontSize: '1.5rem', fontWeight: 700, color: 'var(--heading)', marginBottom: 20, display: 'inline-block' }}>
-            🔐 OTPGuard
+             OTPGuard
           </Link>
           <h1 style={{ color: 'var(--heading)', marginTop: 0, marginBottom: 8 }}>API Documentation</h1>
           <p style={{ color: 'var(--text)', fontSize: '1.1rem' }}>
@@ -76,7 +76,7 @@ export default function ApiDocs() {
             onMouseOver={e => e.currentTarget.style.transform = 'translateY(-4px)'}
             onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
           >
-            📚 Open Swagger UI
+             Open Swagger UI
           </a>
           <a href={`${apiUrl}/api/health`} target="_blank" rel="noreferrer"
             style={{
@@ -94,7 +94,7 @@ export default function ApiDocs() {
             onMouseOver={e => e.currentTarget.style.transform = 'translateY(-4px)'}
             onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
           >
-            💚 API Health
+             API Health
           </a>
         </div>
 
@@ -145,7 +145,7 @@ export default function ApiDocs() {
           padding: 24,
           marginTop: 40
         }}>
-          <h3 style={{ color: 'var(--heading)', marginTop: 0 }}>🔑 Authentication</h3>
+          <h3 style={{ color: 'var(--heading)', marginTop: 0 }}> Authentication</h3>
           <p style={{ color: 'var(--text)' }}>
             Most endpoints require <code style={{ background: 'rgba(0, 0, 0, 0.2)', padding: '2px 6px', borderRadius: 3 }}>Authorization: Bearer [token]</code> header.
           </p>
@@ -166,3 +166,4 @@ export default function ApiDocs() {
     </div>
   )
 }
+

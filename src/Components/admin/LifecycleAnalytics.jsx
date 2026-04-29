@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 import { generatePDF, pdfKpiGrid, pdfTable, pdfSection, pdfBar } from '../../utils/pdfExport'
 
@@ -45,7 +45,7 @@ function LifecycleAnalytics() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-            🔄 User Lifecycle Analytics
+             User Lifecycle Analytics
           </h1>
           <p style={{ fontSize: '.85rem' }}>Track user journey and lifecycle stages</p>
         </div>
@@ -56,7 +56,7 @@ function LifecycleAnalytics() {
           color: data ? '#0a0e1a' : 'var(--text)',
           fontWeight: 700, cursor: data ? 'pointer' : 'not-allowed', fontSize: '.85rem',
         }}>
-          📄 Export PDF
+           Export PDF
         </button>
       </div>
 
@@ -70,19 +70,19 @@ function LifecycleAnalytics() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 20 }}>
               {[
                 {
-                  icon: '🆕',
+                  icon: '',
                   label: 'New Users (7d)',
                   val: data.lifecycle_stages.new_users_7d,
                   color: 'var(--blue)',
                 },
                 {
-                  icon: '🚀',
+                  icon: '',
                   label: 'Active Users (30d)',
                   val: data.lifecycle_stages.active_users_30d,
                   color: 'var(--green)',
                 },
                 {
-                  icon: '📈',
+                  icon: '',
                   label: 'Mature Users (30-90d)',
                   val: data.lifecycle_stages.mature_users_30_90d,
                   color: '#facc15',
@@ -122,13 +122,13 @@ function LifecycleAnalytics() {
                 sub: '~6 months',
               },
               {
-                icon: '🎓',
+                icon: '',
                 label: 'Onboarding Completion',
                 val: `${data.onboarding_completion_rate}%`,
                 sub: 'Users who complete setup',
               },
               {
-                icon: '🎯',
+                icon: '',
                 label: 'Feature Adoption',
                 val: `${data.feature_adoption_rate}%`,
                 sub: 'Using advanced features',
@@ -258,7 +258,7 @@ function LifecycleAnalytics() {
 
           {/* Insights */}
           <div style={{ ...card, marginTop: 20, background: 'rgba(0,255,136,.05)', borderColor: 'rgba(0,255,136,.2)' }}>
-            <h3 style={{ color: 'var(--green)', fontWeight: 600, marginBottom: 12 }}>📊 Lifecycle Insights</h3>
+            <h3 style={{ color: 'var(--green)', fontWeight: 600, marginBottom: 12 }}> Lifecycle Insights</h3>
             <ul style={{ fontSize: '.85rem', color: 'var(--text)', paddingLeft: 20, lineHeight: 1.8 }}>
               <li>
                 <strong>Onboarding Health:</strong> {data.onboarding_completion_rate}% of users complete initial setup
@@ -286,3 +286,4 @@ function LifecycleAnalytics() {
 }
 
 export default LifecycleAnalytics
+

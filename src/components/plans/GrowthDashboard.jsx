@@ -1,4 +1,4 @@
-import MetricCard from '../dashboard/widgets/MetricCard'
+﻿import MetricCard from '../dashboard/widgets/MetricCard'
 import ActivityTable from '../dashboard/widgets/ActivityTable'
 
 export default function GrowthDashboard() {
@@ -20,9 +20,9 @@ export default function GrowthDashboard() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16 }}>
-        <MetricCard title="Active Users"  value={`${metrics.activeUsers} / ${metrics.maxUsers.toLocaleString()}`} icon="👥" trend="+23 this week" trendUp progressBar={(metrics.activeUsers / metrics.maxUsers) * 100} color="blue" />
-        <MetricCard title="Email OTPs"    value={metrics.emailOTPs.toLocaleString()} icon="📧" trend="+15% vs last month" trendUp color="green" />
-        <MetricCard title="SMS OTPs"      value={metrics.smsOTPs.toLocaleString()} icon="📱" subtitle={`Cost: ${metrics.smsCost.toLocaleString()} KES`} badge="NEW" color="purple" />
+        <MetricCard title="Active Users"  value={`${metrics.activeUsers} / ${metrics.maxUsers.toLocaleString()}`} icon="" trend="+23 this week" trendUp progressBar={(metrics.activeUsers / metrics.maxUsers) * 100} color="blue" />
+        <MetricCard title="Email OTPs"    value={metrics.emailOTPs.toLocaleString()} icon="" trend="+15% vs last month" trendUp color="green" />
+        <MetricCard title="SMS OTPs"      value={metrics.smsOTPs.toLocaleString()} icon="" subtitle={`Cost: ${metrics.smsCost.toLocaleString()} KES`} badge="NEW" color="purple" />
         <MetricCard title="Success Rate"  value={`${metrics.successRate}%`} icon="✅" trend="+2.1%" trendUp color="emerald" />
       </div>
 
@@ -62,3 +62,4 @@ export default function GrowthDashboard() {
     </div>
   )
 }
+

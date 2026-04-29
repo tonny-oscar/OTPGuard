@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 
 const card = {
@@ -45,7 +45,7 @@ function ComplianceAudit() {
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-          🔐 Compliance & Audit Trail
+           Compliance & Audit Trail
         </h1>
         <p style={{ fontSize: '.85rem' }}>Track admin actions and data access for compliance</p>
       </div>
@@ -56,7 +56,7 @@ function ComplianceAudit() {
         <div>
           {/* Admin Audit Log */}
           <div style={card}>
-            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>📋 Admin Audit Trail</h3>
+            <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Admin Audit Trail</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {audit.audit_entries.map((entry) => (
                 <div
@@ -89,7 +89,7 @@ function ComplianceAudit() {
           {/* Data Access Log */}
           {access && (
             <div style={{ ...card, marginTop: 20 }}>
-              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}>🔒 Data Access & Export Log</h3>
+              <h3 style={{ color: 'var(--heading)', fontWeight: 600, marginBottom: 16 }}> Data Access & Export Log</h3>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
@@ -172,3 +172,4 @@ function ComplianceAudit() {
 }
 
 export default ComplianceAudit
+

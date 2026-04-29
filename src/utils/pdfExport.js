@@ -1,4 +1,4 @@
-/**
+﻿/**
  * generatePDF — opens a styled print window that saves as PDF.
  * @param {string} title   — document title shown in header
  * @param {string} html    — inner HTML content to print
@@ -116,7 +116,7 @@ export function generatePDF(title, html, subtitle = '') {
 <body>
   <div class="pdf-header">
     <div>
-      <div class="pdf-logo">🔐 OTP<span>Guard</span></div>
+      <div class="pdf-logo"> OTP<span>Guard</span></div>
       <div class="pdf-title">${title}</div>
       ${subtitle ? `<div class="pdf-subtitle">${subtitle}</div>` : ''}
     </div>
@@ -174,3 +174,4 @@ export function pdfBar(label, pct, color = '#00b860') {
     <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
   </div>`
 }
+

@@ -54,7 +54,7 @@ export default function Register() {
       <div style={{ width: '100%', maxWidth: 460 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Link to="/" style={{ textDecoration: 'none', fontSize: '1.5rem', fontWeight: 700, color: 'var(--heading)' }}>
-            🔐 OTP<span style={{ color: 'var(--green)' }}>Guard</span>
+            OTP<span style={{ color: 'var(--green)' }}>Guard</span>
           </Link>
         </div>
 

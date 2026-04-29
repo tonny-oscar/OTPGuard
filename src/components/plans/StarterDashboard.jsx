@@ -1,4 +1,4 @@
-import MetricCard from '../dashboard/widgets/MetricCard'
+﻿import MetricCard from '../dashboard/widgets/MetricCard'
 import UpgradeBanner from '../dashboard/widgets/UpgradeBanner'
 import ActivityTable from '../dashboard/widgets/ActivityTable'
 import FeatureGate from '../shared/FeatureGate'
@@ -30,9 +30,9 @@ export default function StarterDashboard() {
       />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16 }}>
-        <MetricCard title="Active Users"  value={`${metrics.activeUsers} / ${metrics.maxUsers}`} icon="👥" trend="+2 this week" trendUp progressBar={(metrics.activeUsers / metrics.maxUsers) * 100} color="blue" />
-        <MetricCard title="Email OTPs Sent" value={metrics.emailOTPs.toLocaleString()} icon="📧" subtitle="This month" color="green" />
-        <MetricCard title="API Requests"  value={metrics.apiRequests.toLocaleString()} icon="🔑" subtitle="Last 30 days" color="purple" />
+        <MetricCard title="Active Users"  value={`${metrics.activeUsers} / ${metrics.maxUsers}`} icon="" trend="+2 this week" trendUp progressBar={(metrics.activeUsers / metrics.maxUsers) * 100} color="blue" />
+        <MetricCard title="Email OTPs Sent" value={metrics.emailOTPs.toLocaleString()} icon="" subtitle="This month" color="green" />
+        <MetricCard title="API Requests"  value={metrics.apiRequests.toLocaleString()} icon="" subtitle="Last 30 days" color="purple" />
       </div>
 
       <ActivityTable title="Recent OTP Requests" columns={['Time','Email','Status','Method']} data={recentActivity} maxRows={10} noAnalytics />
@@ -45,3 +45,4 @@ export default function StarterDashboard() {
     </div>
   )
 }
+

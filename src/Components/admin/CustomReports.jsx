@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 import { generatePDF, pdfKpiGrid, pdfTable, pdfSection } from '../../utils/pdfExport'
 
@@ -8,10 +8,10 @@ const th   = { padding: '11px 16px', textAlign: 'left', fontWeight: 700, fontSiz
 const td   = { padding: '12px 16px', fontSize: '.85rem', borderBottom: '1px solid rgba(255,255,255,.04)', color: 'var(--heading)' }
 
 const REPORT_TYPES = [
-  { value: 'usage',     label: '📊 Usage Report',     desc: 'OTP operations by method and status' },
-  { value: 'security',  label: '🔒 Security Report',  desc: 'Failed logins and suspicious IPs' },
-  { value: 'churn',     label: '📉 Churn Report',     desc: 'Inactive users by plan and period' },
-  { value: 'lifecycle', label: '🔄 Lifecycle Report', desc: 'Cohort retention analysis' },
+  { value: 'usage',     label: ' Usage Report',     desc: 'OTP operations by method and status' },
+  { value: 'security',  label: ' Security Report',  desc: 'Failed logins and suspicious IPs' },
+  { value: 'churn',     label: ' Churn Report',     desc: 'Inactive users by plan and period' },
+  { value: 'lifecycle', label: ' Lifecycle Report', desc: 'Cohort retention analysis' },
 ]
 
 export default function CustomReports({ initialType = 'usage' }) {
@@ -68,12 +68,12 @@ export default function CustomReports({ initialType = 'usage' }) {
     <div>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:12, marginBottom:24 }}>
         <div>
-          <h1 style={{ color:'var(--heading)', fontSize:'1.6rem', fontWeight:800, letterSpacing:'-.02em', marginBottom:4 }}>📋 Custom Reports</h1>
+          <h1 style={{ color:'var(--heading)', fontSize:'1.6rem', fontWeight:800, letterSpacing:'-.02em', marginBottom:4 }}> Custom Reports</h1>
           <p style={{ fontSize:'.85rem', color:'var(--text)' }}>Generate, filter, and export reports as PDF</p>
         </div>
         {result && (
           <button onClick={exportPDF} style={{ padding:'8px 18px', borderRadius:8, border:'none', background:'var(--green)', color:'#0a0e1a', fontWeight:700, cursor:'pointer', fontSize:'.85rem' }}>
-            📄 Export PDF
+             Export PDF
           </button>
         )}
       </div>
@@ -254,3 +254,4 @@ export default function CustomReports({ initialType = 'usage' }) {
     </div>
   )
 }
+

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 import { generatePDF, pdfKpiGrid, pdfTable, pdfSection } from '../../utils/pdfExport'
 
@@ -63,7 +63,7 @@ function BillingReport() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-            💳 Billing & Usage Reports
+             Billing & Usage Reports
           </h1>
           <p style={{ fontSize: '.85rem' }}>Detailed usage and billing analysis for all users</p>
         </div>
@@ -84,7 +84,7 @@ function BillingReport() {
             color: data ? '#0a0e1a' : 'var(--text)',
             fontWeight: 700, cursor: data ? 'pointer' : 'not-allowed', fontSize: '.85rem',
           }}>
-            📄 Export PDF
+             Export PDF
           </button>
         </div>
       </div>
@@ -96,9 +96,9 @@ function BillingReport() {
           {/* Summary stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 20, marginBottom: 28 }}>
             {[
-              { icon: '👥', label: 'Active Users', val: data.total_active_users },
-              { icon: '📊', label: 'Total OTP Operations', val: data.total_otp_operations },
-              { icon: '📈', label: 'Avg Ops/User', val: Math.round(data.total_otp_operations / (data.total_active_users || 1)) },
+              { icon: '', label: 'Active Users', val: data.total_active_users },
+              { icon: '', label: 'Total OTP Operations', val: data.total_otp_operations },
+              { icon: '', label: 'Avg Ops/User', val: Math.round(data.total_otp_operations / (data.total_active_users || 1)) },
             ].map((stat) => (
               <div key={stat.label} style={card}>
                 <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>{stat.icon}</div>
@@ -175,3 +175,4 @@ function BillingReport() {
 }
 
 export default BillingReport
+

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
 import { generatePDF, pdfKpiGrid, pdfTable, pdfSection, pdfBar } from '../../utils/pdfExport'
 
@@ -52,7 +52,7 @@ function RevenueAnalytics() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ color: 'var(--heading)', fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>
-            💰 Revenue Dashboard
+             Revenue Dashboard
           </h1>
           <p style={{ fontSize: '.85rem' }}>Monitor revenue metrics and subscription breakdown</p>
         </div>
@@ -63,7 +63,7 @@ function RevenueAnalytics() {
           color: data ? '#0a0e1a' : 'var(--text)',
           fontWeight: 700, cursor: data ? 'pointer' : 'not-allowed', fontSize: '.85rem',
         }}>
-          📄 Export PDF
+           Export PDF
         </button>
       </div>
 
@@ -74,10 +74,10 @@ function RevenueAnalytics() {
           {/* KPI Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 20, marginBottom: 28 }}>
             {[
-              { icon: '💵', label: 'Monthly Revenue', val: `$${data.total_monthly_revenue}`, change: '+12%' },
-              { icon: '🎯', label: 'Revenue Target', val: `$${data.monthly_revenue_target}`, pct: Math.round((data.total_monthly_revenue / data.monthly_revenue_target) * 100) },
-              { icon: '👥', label: 'Active Subscriptions', val: data.total_subscriptions, sub: `${data.paying_subscriptions} paying` },
-              { icon: '📊', label: 'ARPU', val: `$${data.avg_revenue_per_user}`, sub: 'Average per user' },
+              { icon: '', label: 'Monthly Revenue', val: `$${data.total_monthly_revenue}`, change: '+12%' },
+              { icon: '', label: 'Revenue Target', val: `$${data.monthly_revenue_target}`, pct: Math.round((data.total_monthly_revenue / data.monthly_revenue_target) * 100) },
+              { icon: '', label: 'Active Subscriptions', val: data.total_subscriptions, sub: `${data.paying_subscriptions} paying` },
+              { icon: '', label: 'ARPU', val: `$${data.avg_revenue_per_user}`, sub: 'Average per user' },
             ].map((stat, i) => (
               <div key={i} style={card}>
                 <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>{stat.icon}</div>
@@ -193,3 +193,4 @@ function RevenueAnalytics() {
 }
 
 export default RevenueAnalytics
+
