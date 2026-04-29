@@ -68,12 +68,14 @@ def create_app(env=None):
     from app.users.routes import users_bp
     from app.admin.routes import admin_bp
     from app.subscription.routes import subscription_bp
+    from app.subscription.features import feature_bp
 
     app.register_blueprint(auth_bp,  url_prefix='/api/auth')
     app.register_blueprint(mfa_bp,   url_prefix='/api/mfa')
     app.register_blueprint(users_bp, url_prefix='/api/users')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(subscription_bp, url_prefix='/api/subscription')
+    app.register_blueprint(feature_bp, url_prefix='/api/features')
 
     # ── Root route ────────────────────────────────────────
     @app.route('/')

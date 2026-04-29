@@ -123,6 +123,13 @@ def register():
     db.session.add(user)
     db.session.commit()
 
+    # Auto-assign Starter subscription
+    from app.subscription.service import SubscriptionService
+    try:
+        SubscriptionService.create_subscription(user.id, 'starter')
+    except Exception as e:
+        print(f"Warning: Could not create subscription: {e}")
+
     access_token  = create_access_token(identity=str(user.id))
     refresh_token = create_refresh_token(identity=str(user.id))
 
