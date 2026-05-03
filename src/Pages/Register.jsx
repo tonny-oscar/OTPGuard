@@ -1,6 +1,7 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { sanitizeInput, isValidEmail } from '../utils/sanitize'
 
 const inputStyle = {
   width: '100%', padding: '12px 16px', borderRadius: 8,
@@ -31,15 +32,17 @@ export default function Register() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    const cleanEmail = sanitizeInput(form.email, 254)
+    if (!isValidEmail(cleanEmail)) return setError('Please enter a valid email address')
     if (form.password.length < 8) return setError('Password must be at least 8 characters')
     setLoading(true)
     try {
       const data = await register({
-        email: form.email.trim().toLowerCase(),
-        password: form.password,
-        full_name: `${form.first_name} ${form.last_name}`.trim(),
-        company: form.company,
-        plan: form.plan
+        email:     cleanEmail.trim().toLowerCase(),
+        password:  form.password,
+        full_name: sanitizeInput(`${form.first_name} ${form.last_name}`.trim(), 120),
+        company:   sanitizeInput(form.company, 100),
+        plan:      form.plan
       })
       navigate(data.user?.role === 'admin' ? '/admin' : '/dashboard')
     } catch (err) {
@@ -153,3 +156,4 @@ export default function Register() {
     </div>
   )
 }
+

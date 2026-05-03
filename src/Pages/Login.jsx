@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { sanitizeInput, isValidEmail } from '../utils/sanitize'
 
 const inputStyle = {
   width: '100%', padding: '12px 16px', borderRadius: 8,
@@ -46,8 +47,10 @@ export default function Login() {
   async function handleLogin(e) {
     e.preventDefault()
     setError(''); setLoading(true)
+    const cleanId = sanitizeInput(identifier, 254)
+    if (!cleanId) { setLoading(false); return setError('Please enter your email or phone') }
     try {
-      const data = await login(identifier, password)
+      const data = await login(cleanId, password)
       if (data.mfa_required) {
         setMfaMethod(data.mfa_method)
         if (data.mfa_method !== 'totp') {

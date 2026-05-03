@@ -12,6 +12,12 @@ psycopg2-binary==2.9.10
 # Auth & security
 bcrypt==4.3.0
 pyotp==2.9.0
+Flask-Limiter==3.9.0
+bleach==6.2.0
+
+# Logging & monitoring
+python-json-logger==2.0.7
+sentry-sdk[flask]==2.19.2
 
 # Utilities
 python-dotenv==1.1.0

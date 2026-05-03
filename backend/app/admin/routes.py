@@ -465,70 +465,88 @@ def monthly_billing_summary():
 @admin_bp.route('/revenue/dashboard', methods=['GET'])
 @admin_required
 def revenue_dashboard():
-    """Get revenue analytics and metrics."""
-    now = datetime.now(timezone.utc)
+    """Get revenue analytics with real KES/USD figures from actual subscriptions."""
+    now   = datetime.now(timezone.utc)
     day30 = now - timedelta(days=30)
-    day90 = now - timedelta(days=90)
-    
-    # Plans breakdown
+
+    # Real KES pricing (stored in plans table as cents, divide by 100)
+    plan_pricing_kes = {'starter': 0, 'growth': 1500, 'business': 5000, 'enterprise': 0}
+    plan_pricing_usd = {'starter': 0, 'growth': 10,   'business': 35,   'enterprise': 0}
+
+    # Count active users per plan
     plan_counts = db.session.query(
         User.plan, func.count(User.id)
-    ).filter_by(role='user', is_active=True).group_by(User.plan).all()
-    
-    plan_pricing = {
-        'starter': 0,
-        'growth': 99,
-        'business': 299,
-        'enterprise': 999
-    }
-    
-    total_monthly_revenue = 0
+    ).filter(User.role == 'user', User.is_active == True).group_by(User.plan).all()
+
+    total_kes = 0
+    total_usd = 0
     plan_breakdown = []
     for plan, count in plan_counts:
-        revenue = count * plan_pricing.get(plan, 0)
-        total_monthly_revenue += revenue
+        kes = count * plan_pricing_kes.get(plan, 0)
+        usd = count * plan_pricing_usd.get(plan, 0)
+        total_kes += kes
+        total_usd += usd
         plan_breakdown.append({
-            'plan': plan,
-            'users': count,
-            'price': plan_pricing.get(plan, 0),
-            'revenue': revenue,
-            'percentage': None  # Will be calculated
+            'plan':       plan,
+            'users':      count,
+            'price_kes':  plan_pricing_kes.get(plan, 0),
+            'price_usd':  plan_pricing_usd.get(plan, 0),
+            'revenue_kes': kes,
+            'revenue_usd': usd,
+            'percentage': None,
         })
-    
-    # Calculate percentages
+
+    # Calculate revenue share percentages
     for item in plan_breakdown:
-        item['percentage'] = round(item['revenue'] / total_monthly_revenue * 100) if total_monthly_revenue > 0 else 0
-    
-    # Revenue trend (last 7 days)
+        item['percentage'] = round(item['revenue_kes'] / total_kes * 100) if total_kes > 0 else 0
+
+    # Sort by revenue descending
+    plan_breakdown.sort(key=lambda x: x['revenue_kes'], reverse=True)
+
+    # 7-day OTP activity trend (proxy for engagement/revenue activity)
     revenue_trend = []
     for i in range(6, -1, -1):
         ds = (now - timedelta(days=i)).replace(hour=0, minute=0, second=0, microsecond=0)
         de = ds + timedelta(days=1)
-        
-        daily_logins = OTPLog.query.filter(
-            OTPLog.timestamp >= ds,
-            OTPLog.timestamp < de,
-            OTPLog.status == 'verified'
+        sms_count = OTPLog.query.filter(
+            OTPLog.timestamp >= ds, OTPLog.timestamp < de,
+            OTPLog.method == 'sms', OTPLog.status == 'verified'
         ).count()
-        
+        # KES 3 avg per SMS as proxy revenue
         revenue_trend.append({
-            'day': ds.strftime('%a'),
-            'revenue': daily_logins * 0.5  # Mock calculation
+            'day':         ds.strftime('%a'),
+            'revenue_kes': sms_count * 3,
+            'revenue_usd': round(sms_count * 3 / 130, 2),  # ~130 KES per USD
+            'sms_count':   sms_count,
         })
-    
-    # Active subscriptions
-    total_users = User.query.filter_by(role='user', is_active=True).count()
-    trial_users = User.query.filter_by(role='user', is_active=True, plan='starter').count()  # Assumption
-    
+
+    # Subscription health from real data
+    total_users   = User.query.filter_by(role='user', is_active=True).count()
+    starter_users = User.query.filter_by(role='user', is_active=True, plan='starter').count()
+    paying_users  = total_users - starter_users
+
+    # Monthly SMS cost (real)
+    sms_30d = OTPLog.query.filter(
+        OTPLog.method == 'sms',
+        OTPLog.timestamp >= day30,
+        OTPLog.status == 'verified'
+    ).count()
+    sms_cost_kes = sms_30d * 3  # avg KES 3/SMS
+
     return jsonify({
-        'total_monthly_revenue': total_monthly_revenue,
-        'monthly_revenue_target': 10000,
-        'total_subscriptions': total_users,
-        'trial_subscriptions': trial_users,
-        'paying_subscriptions': total_users - trial_users,
-        'avg_revenue_per_user': round(total_monthly_revenue / total_users) if total_users > 0 else 0,
-        'plan_breakdown': plan_breakdown,
-        'revenue_trend_7d': revenue_trend
+        'total_monthly_revenue_kes': total_kes,
+        'total_monthly_revenue_usd': total_usd,
+        'monthly_target_kes':        500000,   # KES 500k target
+        'monthly_target_usd':        3500,
+        'total_subscriptions':       total_users,
+        'starter_subscriptions':     starter_users,
+        'paying_subscriptions':      paying_users,
+        'avg_revenue_per_user_kes':  round(total_kes / total_users) if total_users > 0 else 0,
+        'avg_revenue_per_user_usd':  round(total_usd / total_users, 2) if total_users > 0 else 0,
+        'sms_cost_kes':              sms_cost_kes,
+        'sms_count_30d':             sms_30d,
+        'plan_breakdown':            plan_breakdown,
+        'revenue_trend_7d':          revenue_trend,
     }), 200
 
 

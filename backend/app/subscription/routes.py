@@ -59,6 +59,8 @@ def subscribe_to_plan():
     
     try:
         subscription = SubscriptionService.create_subscription(user_id, plan_name)
+        from app.audit import log_subscription_created
+        log_subscription_created(user_id=user_id, plan=plan_name, ip=request.remote_addr or '')
         return jsonify({
             'message': f'Successfully subscribed to {plan_name} plan',
             'subscription': subscription.to_dict()
@@ -80,7 +82,10 @@ def upgrade_subscription():
         return jsonify({'error': 'plan_name is required'}), 400
     
     try:
+        old_plan = g.current_plan.name if g.current_plan else 'unknown'
         subscription = SubscriptionService.upgrade_subscription(g.current_user.id, new_plan_name)
+        from app.audit import log_subscription_upgraded
+        log_subscription_upgraded(user_id=g.current_user.id, old_plan=old_plan, new_plan=new_plan_name, ip=request.remote_addr or '')
         return jsonify({
             'message': f'Successfully upgraded to {new_plan_name} plan',
             'subscription': subscription.to_dict()
@@ -130,9 +135,10 @@ def cancel_subscription():
     subscription.status = 'cancelled'
     subscription.end_date = datetime.now(timezone.utc)
     subscription.auto_renew = False
-    
     db.session.commit()
-    
+    from app.audit import log_subscription_cancelled
+    plan_name = subscription.plan.name if subscription.plan else 'unknown'
+    log_subscription_cancelled(user_id=g.current_user.id, plan=plan_name, ip=request.remote_addr or '')
     return jsonify({
         'message': 'Subscription cancelled successfully',
         'subscription': subscription.to_dict()

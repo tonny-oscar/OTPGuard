@@ -6,14 +6,15 @@ from flask_jwt_extended import (
 from sqlalchemy import or_
 import bcrypt
 
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models import User, Device
-from app.utils import get_client_ip, get_location
+from app.utils import get_client_ip, get_location, sanitize_str, sanitize_email, sanitize_phone
 
 auth_bp = Blueprint("auth", __name__)
 
 
 @auth_bp.route("/register", methods=["POST"])
+@limiter.limit("5 per minute; 20 per hour")
 def register():
     """
     Register a new user account
@@ -38,11 +39,11 @@ def register():
       409: { description: Email already registered }
     """
     data      = request.get_json() or {}
-    email     = (data.get("email") or "").strip().lower()
-    phone     = (data.get("phone") or "").strip()
-    password  = data.get("password") or ""
-    full_name = (data.get("full_name") or "").strip()
-    plan      = (data.get("plan") or "starter").strip().lower()
+    email     = sanitize_email(data.get('email') or '')
+    phone     = sanitize_phone(data.get('phone') or '')
+    password  = data.get('password') or ''
+    full_name = sanitize_str(data.get('full_name') or '', 120)
+    plan      = sanitize_str(data.get('plan') or 'starter', 20).lower()
 
     if not email:
         return jsonify({"error": "Email is required"}), 400
@@ -84,6 +85,7 @@ def register():
 
 
 @auth_bp.route("/login", methods=["POST"])
+@limiter.limit("10 per minute; 50 per hour")
 def login():
     """
     Login with email/phone and password
@@ -105,8 +107,8 @@ def login():
       403: { description: Account disabled }
     """
     data       = request.get_json() or {}
-    identifier = (data.get("identifier") or data.get("email") or "").strip()
-    password   = data.get("password") or ""
+    identifier = sanitize_str(data.get('identifier') or data.get('email') or '', 254).lower()
+    password   = data.get('password') or ''
 
     if not identifier or not password:
         return jsonify({"error": "Email/phone and password are required"}), 400
@@ -116,6 +118,8 @@ def login():
     ).first()
 
     if not user or not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
+        from app.audit import log_login_attempt
+        log_login_attempt(email=identifier, ip=get_client_ip(request), success=False, reason="invalid_credentials")
         return jsonify({"error": "Invalid credentials"}), 401
 
     if not user.is_active:
@@ -132,6 +136,8 @@ def login():
             additional_claims={"mfa_pending": True},
             expires_delta=datetime.timedelta(minutes=10)
         )
+        from app.audit import log_login_attempt
+        log_login_attempt(email=identifier, ip=get_client_ip(request), success=True, reason="mfa_required")
         return jsonify({
             "mfa_required": True,
             "mfa_method": user.mfa_method,
@@ -141,6 +147,8 @@ def login():
     access_token  = create_access_token(identity=str(user.id))
     refresh_token = create_refresh_token(identity=str(user.id))
 
+    from app.audit import log_login_attempt
+    log_login_attempt(email=identifier, ip=get_client_ip(request), success=True, reason="login_success")
     return jsonify({
         "mfa_required": False,
         "user": user.to_dict(),

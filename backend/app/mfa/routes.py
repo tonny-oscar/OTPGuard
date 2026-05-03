@@ -15,6 +15,7 @@ from app.models import User, OTPLog, APIKey
 from app.notifications.service import send_email_otp, send_sms_otp
 from app.subscription.middleware import rate_limit_otp, log_api_usage
 from app.subscription.service import SubscriptionService
+from app.extensions import limiter
 
 mfa_bp = Blueprint('mfa', __name__)
 
@@ -176,6 +177,7 @@ def external_verify_otp():
 
 @mfa_bp.route('/send', methods=['POST'])
 @jwt_required()
+@limiter.limit("5 per minute")
 def send_otp():
     """
     Send OTP for MFA login (pre-auth token)
@@ -217,6 +219,8 @@ def send_otp():
         else:
             send_sms_otp(user.phone, code)
             dest = _mask_phone(user.phone)
+        from app.audit import log_otp_sent
+        log_otp_sent(user_id=user.id, method=user.mfa_method, ip=request.remote_addr or '')
         return jsonify({'message': f'OTP sent to {dest}', 'method': user.mfa_method,
                         'expires_in': current_app.config['OTP_EXPIRY_SECONDS']}), 200
     except Exception as e:
@@ -226,6 +230,7 @@ def send_otp():
 
 @mfa_bp.route('/resend', methods=['POST'])
 @jwt_required()
+@limiter.limit("3 per minute")
 def resend_otp():
     """
     Resend OTP (rate limited to 4 per 15 min)
@@ -276,6 +281,8 @@ def resend_otp():
         else:
             send_sms_otp(user.phone, code)
             dest = _mask_phone(user.phone)
+        from app.audit import log_otp_resent
+        log_otp_resent(user_id=user.id, method=user.mfa_method, ip=request.remote_addr or '')
         return jsonify({'message': f'OTP resent to {dest}', 'method': user.mfa_method,
                         'expires_in': current_app.config['OTP_EXPIRY_SECONDS']}), 200
     except Exception as e:
@@ -285,6 +292,7 @@ def resend_otp():
 
 @mfa_bp.route('/verify', methods=['POST'])
 @jwt_required()
+@limiter.limit("10 per minute")
 def verify_otp():
     """
     Verify OTP and complete MFA login
@@ -322,8 +330,12 @@ def verify_otp():
         ok = _verify_code(user.id, code)
 
     if not ok:
+        from app.audit import log_otp_verified
+        log_otp_verified(user_id=user.id, method=user.mfa_method, ip=request.remote_addr or '', success=False)
         return jsonify({'error': 'Invalid or expired OTP'}), 401
 
+    from app.audit import log_otp_verified
+    log_otp_verified(user_id=user.id, method=user.mfa_method, ip=request.remote_addr or '', success=True)
     access_token  = create_access_token(identity=str(user.id))
     refresh_token = create_refresh_token(identity=str(user.id))
     return jsonify({'message': 'MFA verified', 'user': user.to_dict(),
