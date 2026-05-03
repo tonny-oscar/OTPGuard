@@ -7,6 +7,7 @@ import Landing from './Pages/Landing'
 import Login from './Pages/Login'
 import Register from './Pages/Register'
 import Dashboard from './Pages/Dashboard'
+import PlanBasedDashboard from './Pages/PlanBasedDashboard'
 import Admin from './Pages/Admin'
 import Docs from './Pages/Docs'
 import ApiDocs from './Pages/ApiDocs'
@@ -41,6 +42,9 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={
+            <ProtectedRoute><PlanBasedDashboard /></ProtectedRoute>
+          } />
+          <Route path="/dashboard/legacy" element={
             <ProtectedRoute><Dashboard /></ProtectedRoute>
           } />
           <Route path="/admin" element={

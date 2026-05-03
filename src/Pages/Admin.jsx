@@ -215,34 +215,35 @@ export default function Admin() {
 
   const dangerCount = alerts.filter(a => a.type === 'danger').length
 
+  // Nav items — no icons, label only with a colored dot indicator
   const topNav = [
-    { id: 'overview',   icon: '', label: 'Overview' },
-    { id: 'users',      icon: '', label: 'Users' },
-    { id: 'analytics',  icon: '', label: 'Analytics' },
-    { id: 'billing',    icon: '', label: 'Billing' },
-    { id: 'revenue',    icon: '', label: 'Revenue' },
-    { id: 'lifecycle',  icon: '', label: 'Lifecycle' },
-    { id: 'compliance', icon: '', label: 'Compliance' },
-    { id: 'feature-usage', icon: '', label: 'Features' },
-    { id: 'alerts',     icon: '', label: 'Alerts', badge: dangerCount || null },
+    { id: 'overview',      label: 'Overview' },
+    { id: 'users',         label: 'Users' },
+    { id: 'analytics',     label: 'Analytics' },
+    { id: 'billing',       label: 'Billing' },
+    { id: 'revenue',       label: 'Revenue' },
+    { id: 'lifecycle',     label: 'Lifecycle' },
+    { id: 'compliance',    label: 'Compliance' },
+    { id: 'feature-usage', label: 'Features' },
+    { id: 'alerts',        label: 'Alerts', badge: dangerCount || null },
   ]
 
   const churnItems = [
-    { id: 'churn',      icon: '', label: 'Overview' },
-    { id: 'churn-inactive',    icon: '', label: 'Inactive Users' },
-    { id: 'churn-at-risk',     icon: '⚠️', label: 'At-Risk Users' },
-    { id: 'churn-voluntary',   icon: '', label: 'Voluntary' },
-    { id: 'churn-involuntary', icon: '⚡', label: 'Involuntary' },
-    { id: 'churn-early',       icon: '', label: 'Early Churn' },
-    { id: 'churn-retention',   icon: '', label: 'Retention' },
-    { id: 'churn-by-plan',     icon: '', label: 'By Plan' },
+    { id: 'churn',             label: 'Overview' },
+    { id: 'churn-inactive',    label: 'Inactive Users' },
+    { id: 'churn-at-risk',     label: 'At-Risk Users' },
+    { id: 'churn-voluntary',   label: 'Voluntary' },
+    { id: 'churn-involuntary', label: 'Involuntary' },
+    { id: 'churn-early',       label: 'Early Churn' },
+    { id: 'churn-retention',   label: 'Retention' },
+    { id: 'churn-by-plan',     label: 'By Plan' },
   ]
 
   const reportItems = [
-    { id: 'reports-usage',     icon: '', label: 'Usage Report' },
-    { id: 'reports-security',  icon: '', label: 'Security Report' },
-    { id: 'reports-churn',     icon: '', label: 'Churn Report' },
-    { id: 'reports-lifecycle', icon: '', label: 'Lifecycle Report' },
+    { id: 'reports-usage',     label: 'Usage Report' },
+    { id: 'reports-security',  label: 'Security Report' },
+    { id: 'reports-churn',     label: 'Churn Report' },
+    { id: 'reports-lifecycle', label: 'Lifecycle Report' },
   ]
 
   // Derive churn category and report type from activeTab
@@ -290,7 +291,6 @@ export default function Admin() {
               onMouseEnter={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
               onMouseLeave={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
             >
-              <span style={{ fontSize: '1rem', width: 20, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
               <span style={{ flex: 1 }}>{item.label}</span>
               {item.badge && <span style={{ background: '#ef4444', color: '#fff', borderRadius: 20, fontSize: '.65rem', padding: '2px 7px', fontWeight: 800 }}>{item.badge}</span>}
             </button>
@@ -309,15 +309,14 @@ export default function Admin() {
             onMouseEnter={e => { if (!isChurnActive) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
             onMouseLeave={e => { if (!isChurnActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
           >
-            <span style={{ fontSize: '1rem', width: 20, textAlign: 'center', flexShrink: 0 }}></span>
             <span style={{ flex: 1 }}>Churn</span>
-            <span style={{ fontSize: '.7rem', opacity: .6, transition: 'transform .2s', transform: (churnOpen || isChurnActive) ? 'rotate(90deg)' : 'none' }}>▶</span>
+            <span style={{ fontSize: '.65rem', opacity: .5, transition: 'transform .2s', display: 'inline-block', transform: (churnOpen || isChurnActive) ? 'rotate(90deg)' : 'none' }}>&#9654;</span>
           </button>
           {(churnOpen || isChurnActive) && (
             <div style={{ marginLeft: 12, marginBottom: 4, borderLeft: '1px solid rgba(0,255,136,.15)', paddingLeft: 8 }}>
               {churnItems.map(item => (
                 <button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); sound.tab() }} style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', display: 'flex', alignItems: 'center',
                   padding: '8px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
                   background: activeTab === item.id ? 'rgba(0,255,136,.1)' : 'transparent',
                   color: activeTab === item.id ? 'var(--green)' : 'var(--text)',
@@ -327,8 +326,7 @@ export default function Admin() {
                   onMouseEnter={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
                   onMouseLeave={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
                 >
-                  <span style={{ fontSize: '.85rem', width: 16, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
-                  <span>{item.label}</span>
+                  {item.label}
                 </button>
               ))}
             </div>
@@ -347,15 +345,14 @@ export default function Admin() {
             onMouseEnter={e => { if (!isReportsActive) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
             onMouseLeave={e => { if (!isReportsActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
           >
-            <span style={{ fontSize: '1rem', width: 20, textAlign: 'center', flexShrink: 0 }}></span>
             <span style={{ flex: 1 }}>Reports</span>
-            <span style={{ fontSize: '.7rem', opacity: .6, transition: 'transform .2s', transform: (reportsOpen || isReportsActive) ? 'rotate(90deg)' : 'none' }}>▶</span>
+            <span style={{ fontSize: '.65rem', opacity: .5, transition: 'transform .2s', display: 'inline-block', transform: (reportsOpen || isReportsActive) ? 'rotate(90deg)' : 'none' }}>&#9654;</span>
           </button>
           {(reportsOpen || isReportsActive) && (
             <div style={{ marginLeft: 12, marginBottom: 4, borderLeft: '1px solid rgba(0,255,136,.15)', paddingLeft: 8 }}>
               {reportItems.map(item => (
                 <button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); sound.tab() }} style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', display: 'flex', alignItems: 'center',
                   padding: '8px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
                   background: activeTab === item.id ? 'rgba(0,255,136,.1)' : 'transparent',
                   color: activeTab === item.id ? 'var(--green)' : 'var(--text)',
@@ -365,8 +362,7 @@ export default function Admin() {
                   onMouseEnter={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
                   onMouseLeave={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
                 >
-                  <span style={{ fontSize: '.85rem', width: 16, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
-                  <span>{item.label}</span>
+                  {item.label}
                 </button>
               ))}
             </div>
@@ -422,8 +418,8 @@ export default function Admin() {
                 {statsData?.map((s, i) => (
                   <div key={s.label} className="admin-stat-card">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                      <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(0,255,136,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>
-                        {s.icon}
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(0,255,136,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.7rem', fontWeight: 800, color: 'var(--green)', letterSpacing: .5 }}>
+                        {s.label?.slice(0,3).toUpperCase()}
                       </div>
                       {s.change && (
                         <span style={{
@@ -453,8 +449,8 @@ export default function Admin() {
                     <div style={{ width: `${mfaAdoption.pct}%`, height: '100%', background: 'linear-gradient(90deg,var(--green),#00cc6a)', borderRadius: 8, transition: 'width .8s ease' }} />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.78rem' }}>
-                    <span style={{ color: 'var(--green)', fontWeight: 600 }}>✓ {mfaAdoption.enabled} secured</span>
-                    <span style={{ color: '#f87171', fontWeight: 600 }}>⚠ {mfaAdoption.disabled} at risk</span>
+                    <span style={{ color: 'var(--green)', fontWeight: 600 }}>{mfaAdoption.enabled} secured</span>
+                    <span style={{ color: '#f87171', fontWeight: 600 }}>{mfaAdoption.disabled} at risk</span>
                   </div>
                 </div>
               )}
@@ -504,7 +500,9 @@ export default function Admin() {
                             </span>
                           </td>
                           <td>
-                            <span style={{ fontSize: '1rem' }}>{u.mfa_enabled ? '✅' : '❌'}</span>
+                            <span style={{ fontSize: '.82rem', fontWeight: 700, color: u.mfa_enabled ? 'var(--green)' : '#f87171' }}>
+                              {u.mfa_enabled ? 'Yes' : 'No'}
+                            </span>
                           </td>
                           <td style={{ fontWeight: 600, color: 'var(--heading)' }}>{u.login_count ?? 0}</td>
                           <td>
@@ -569,9 +567,8 @@ export default function Admin() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 16, marginBottom: 28 }}>
                 {analytics.summary?.map(s => (
                   <div key={s.label} style={card}>
-                    <div style={{ fontSize: '1.4rem', marginBottom: 8 }}>{s.icon}</div>
                     <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--heading)' }}>{s.val}</div>
-                    <div style={{ fontSize: '.8rem', marginTop: 4 }}>{s.label}</div>
+                    <div style={{ fontSize: '.8rem', marginTop: 4, color: 'var(--text)' }}>{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -617,7 +614,7 @@ export default function Admin() {
                     <div key={a.id} className="admin-alert" style={{
                       background: c.bg, border: `1px solid ${c.border}`,
                     }}>
-                      <span style={{ fontSize: '1.3rem', flexShrink: 0 }}>{a.icon}</span>
+                      <span style={{ fontSize: '1.3rem', flexShrink: 0, color: c.color, fontWeight: 700, fontSize: '.8rem', minWidth: 20 }}>{a.type?.toUpperCase()?.slice(0,1)}</span>
                       <div style={{ flex: 1 }}>
                         <div style={{ color: 'var(--heading)', fontSize: '.9rem', fontWeight: 500 }}>{a.msg}</div>
                         <div style={{ fontSize: '.75rem', marginTop: 4, color: c.color }}>{a.time}</div>
@@ -631,7 +628,7 @@ export default function Admin() {
                 })}
                 {!alerts.length && (
                   <div style={{ ...card, textAlign: 'center', color: 'var(--text)', padding: 56, opacity: .5 }}>
-                    ✅ No active alerts
+                    No active alerts
                   </div>
                 )}
               </div>

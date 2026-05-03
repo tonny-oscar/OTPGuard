@@ -56,10 +56,10 @@ def stats():
 
     return jsonify({
         'stats': [
-            {'icon': '👥', 'label': 'Total Users',     'val': str(total_users),  'change': None,                          'up': True},
-            {'icon': '🔐', 'label': 'MFA Enabled',     'val': str(mfa_users),    'change': f'{mfa_pct}%',                 'up': True},
-            {'icon': '✅', 'label': 'Logins Today',    'val': str(logins_today), 'change': pct_change(logins_today, logins_prev), 'up': logins_today >= logins_prev},
-            {'icon': '❌', 'label': 'Failed Attempts', 'val': str(failed_today), 'change': pct_change(failed_today, failed_prev), 'up': failed_today <= failed_prev},
+            {'label': 'Total Users',     'val': str(total_users),  'change': None,                          'up': True},
+            {'label': 'MFA Enabled',     'val': str(mfa_users),    'change': f'{mfa_pct}%',                 'up': True},
+            {'label': 'Logins Today',    'val': str(logins_today), 'change': pct_change(logins_today, logins_prev), 'up': logins_today >= logins_prev},
+            {'label': 'Failed Attempts', 'val': str(failed_today), 'change': pct_change(failed_today, failed_prev), 'up': failed_today <= failed_prev},
         ],
         'mfa_adoption': {
             'pct':      mfa_pct,
@@ -138,10 +138,10 @@ def analytics():
         'mfa_rate':     mfa_rate,
         'locations':    locations,
         'summary': [
-            {'icon': '📊', 'label': 'Total Logins (7d)',   'val': str(logins_7d)},
-            {'icon': '📨', 'label': 'OTPs Sent (7d)',      'val': str(otps_sent)},
-            {'icon': '✅', 'label': 'OTP Success Rate',    'val': f"{round(verified_7d / total_7d * 100 if total_7d else 0, 1)}%"},
-            {'icon': '⚡', 'label': 'Avg OTP Delivery',   'val': '~2s'},
+            {'label': 'Total Logins (7d)',   'val': str(logins_7d)},
+            {'label': 'OTPs Sent (7d)',      'val': str(otps_sent)},
+            {'label': 'OTP Success Rate',    'val': f"{round(verified_7d / total_7d * 100 if total_7d else 0, 1)}%"},
+            {'label': 'Avg OTP Delivery',   'val': '~2s'},
         ]
     }), 200
 
@@ -166,7 +166,7 @@ def get_alerts():
     )
     for ip, cnt in suspicious:
         alerts.append({
-            'id': f'sus_{ip}', 'type': 'danger', 'icon': '🚨',
+            'id': f'sus_{ip}', 'type': 'danger',
             'msg': f'{cnt} failed login attempts from {ip} in the last hour',
             'time': 'Last hour'
         })
@@ -175,7 +175,7 @@ def get_alerts():
     no_mfa = User.query.filter_by(mfa_enabled=False, is_active=True, role='user').count()
     if no_mfa:
         alerts.append({
-            'id': 'no_mfa', 'type': 'warning', 'icon': '⚠️',
+            'id': 'no_mfa', 'type': 'warning',
             'msg': f'{no_mfa} active users have not enabled MFA — accounts at risk',
             'time': 'Now'
         })
@@ -184,7 +184,7 @@ def get_alerts():
     new_devices = Device.query.filter(Device.created_at >= one_day, Device.trusted == False).count()
     if new_devices:
         alerts.append({
-            'id': 'new_devices', 'type': 'info', 'icon': '📍',
+            'id': 'new_devices', 'type': 'info',
             'msg': f'{new_devices} new unrecognised device(s) detected in the last 24 hours',
             'time': 'Last 24h'
         })
@@ -195,7 +195,7 @@ def get_alerts():
     if total:
         pct = round(mfa / total * 100)
         alerts.append({
-            'id': 'mfa_rate', 'type': 'success', 'icon': '✅',
+            'id': 'mfa_rate', 'type': 'success',
             'msg': f'MFA adoption rate is {pct}% ({mfa}/{total} users)',
             'time': 'Today'
         })

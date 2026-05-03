@@ -258,6 +258,25 @@ class SubscriptionService:
         return new_subscription
 
     @staticmethod
+    def ensure_user_subscription(user_id):
+        """Ensure user has an active subscription, create starter if missing."""
+        user = User.query.get(user_id)
+        if not user:
+            return None
+        existing = Subscription.query.filter(
+            Subscription.user_id == user_id,
+            Subscription.status.in_(['active', 'trial'])
+        ).first()
+        if existing:
+            return existing
+        # Create starter subscription based on user.plan field
+        plan_name = user.plan or 'starter'
+        try:
+            return SubscriptionService.create_subscription(user_id, plan_name)
+        except Exception:
+            return None
+
+    @staticmethod
     def start_trial(user_id, plan_name='growth', trial_days=14):
         """Start a trial subscription"""
         return SubscriptionService.create_subscription(user_id, plan_name, trial_days)

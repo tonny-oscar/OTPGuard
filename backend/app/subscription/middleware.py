@@ -213,6 +213,9 @@ def subscription_context(f):
         
         if user:
             g.current_user = user
+            # Auto-create subscription if missing
+            from app.subscription.service import SubscriptionService
+            SubscriptionService.ensure_user_subscription(user_id)
             g.current_subscription = user.current_subscription
             g.current_plan = user.current_plan
         

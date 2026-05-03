@@ -29,9 +29,9 @@ function planBadge(plan) {
 const CATEGORIES = [
   { value: 'overview',    label: ' Overview' },
   { value: 'inactive',    label: ' Inactive Users' },
-  { value: 'at-risk',     label: '⚠️ At-Risk Users' },
+  { value: 'at-risk',     label: ' At-Risk Users' },
   { value: 'voluntary',   label: ' Voluntary Churn (60d+)' },
-  { value: 'involuntary', label: '⚡ Involuntary Churn (<60d)' },
+  { value: 'involuntary', label: ' Involuntary Churn (<60d)' },
   { value: 'early',       label: ' Early Churn (joined <30d)' },
   { value: 'retention',   label: ' Retention Analysis' },
   { value: 'by-plan',     label: ' By Plan' },
@@ -140,11 +140,11 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
       ) : !data ? null : (
         <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
 
-          {/* ── OVERVIEW ── */}
+          {/*  OVERVIEW  */}
           {category === 'overview' && <>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:16 }}>
               <KpiCard icon="" label="Churn Rate"     val={`${data.churn_rate_30d}%`}  color="#f87171" />
-              <KpiCard icon="⚠️" label="At-Risk Users"  val={data.at_risk_users}          color="#facc15" sub="Declining activity" />
+              <KpiCard icon="" label="At-Risk Users"  val={data.at_risk_users}          color="#facc15" sub="Declining activity" />
               <KpiCard icon="" label="Inactive Users" val={data.inactive_users_30d}     color="#fb923c" sub="No login in period" />
               <KpiCard icon="" label="Churned"        val={data.churned_last_30d}       color="#f87171" />
             </div>
@@ -184,7 +184,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
             </div>
           </>}
 
-          {/* ── INACTIVE / VOLUNTARY / INVOLUNTARY / EARLY ── */}
+          {/*  INACTIVE / VOLUNTARY / INVOLUNTARY / EARLY  */}
           {['inactive','voluntary','involuntary','early'].includes(category) && (
             <div style={{ ...card, padding:0, overflow:'hidden' }}>
               <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,.06)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(0,255,136,.03)' }}>
@@ -192,7 +192,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
                 <span style={{ fontSize:'.8rem', color:'var(--text)' }}>{displayedInactive.length} users</span>
               </div>
               {displayedInactive.length === 0 ? (
-                <div style={{ padding:48, textAlign:'center', color:'var(--text)', opacity:.5 }}>✅ No users in this category</div>
+                <div style={{ padding:48, textAlign:'center', color:'var(--text)', opacity:.5 }}> No users in this category</div>
               ) : (
                 <div style={{ overflowX:'auto' }}>
                   <table style={{ width:'100%', borderCollapse:'collapse' }}>
@@ -217,15 +217,15 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
             </div>
           )}
 
-          {/* ── AT-RISK ── */}
+          {/*  AT-RISK  */}
           {category === 'at-risk' && (
             <div style={{ ...card, padding:0, overflow:'hidden' }}>
               <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,.06)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(250,204,21,.03)' }}>
-                <h3 style={{ color:'var(--heading)', fontWeight:700 }}>⚠️ At-Risk Users — Declining Activity</h3>
+                <h3 style={{ color:'var(--heading)', fontWeight:700 }}> At-Risk Users — Declining Activity</h3>
                 <span style={{ fontSize:'.8rem', color:'var(--text)' }}>{displayedAtRisk.length} users</span>
               </div>
               {displayedAtRisk.length === 0 ? (
-                <div style={{ padding:48, textAlign:'center', color:'var(--text)', opacity:.5 }}>✅ No at-risk users</div>
+                <div style={{ padding:48, textAlign:'center', color:'var(--text)', opacity:.5 }}> No at-risk users</div>
               ) : (
                 <div style={{ overflowX:'auto' }}>
                   <table style={{ width:'100%', borderCollapse:'collapse' }}>
@@ -261,13 +261,13 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
             </div>
           )}
 
-          {/* ── RETENTION ── */}
+          {/*  RETENTION  */}
           {category === 'retention' && (
             <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:16 }}>
                 <KpiCard icon="" label="Retention Rate" val={`${retentionRate}%`}       color="var(--green)" sub="Inverse of churn" />
                 <KpiCard icon="" label="Churned"        val={data.churned_last_30d}     color="#f87171" sub="Last period" />
-                <KpiCard icon="⚠️" label="At-Risk"        val={data.at_risk_users}        color="#facc15" />
+                <KpiCard icon="" label="At-Risk"        val={data.at_risk_users}        color="#facc15" />
                 <KpiCard icon="" label="Inactive"       val={data.inactive_users_30d}   color="#fb923c" />
               </div>
               <div style={card}>
@@ -298,7 +298,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
             </div>
           )}
 
-          {/* ── BY PLAN ── */}
+          {/*  BY PLAN  */}
           {category === 'by-plan' && (
             <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
               <div style={card}>
@@ -334,7 +334,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
                   const rb = (data.high_risk_users||[]).reduce((acc,u)=>{ acc[u.plan]=(acc[u.plan]||0)+1; return acc },{})
                   const rt = Object.values(rb).reduce((a,b)=>a+b,0)||1
                   return Object.keys(rb).length === 0 ? (
-                    <div style={{ textAlign:'center', padding:32, color:'var(--text)', opacity:.5 }}>✅ No at-risk users</div>
+                    <div style={{ textAlign:'center', padding:32, color:'var(--text)', opacity:.5 }}> No at-risk users</div>
                   ) : (
                     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
                       {Object.entries(rb).sort((a,b)=>b[1]-a[1]).map(([p,count]) => {
@@ -363,4 +363,5 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
     </div>
   )
 }
+
 

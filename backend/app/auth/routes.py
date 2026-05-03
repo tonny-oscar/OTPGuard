@@ -65,6 +65,13 @@ def register():
     db.session.add(user)
     db.session.commit()
 
+    # Auto-create starter subscription for new user
+    try:
+        from app.subscription.service import SubscriptionService
+        SubscriptionService.create_subscription(user.id, plan)
+    except Exception:
+        pass  # Non-fatal: user can still log in
+
     access_token  = create_access_token(identity=str(user.id))
     refresh_token = create_refresh_token(identity=str(user.id))
 

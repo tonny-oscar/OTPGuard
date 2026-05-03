@@ -218,9 +218,12 @@ class Subscription(db.Model):
     status     = db.Column(db.String(20), default='active')  # active | trial | cancelled | expired
     is_trial   = db.Column(db.Boolean, default=False)
     trial_ends = db.Column(db.DateTime)
+    start_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     end_date   = db.Column(db.DateTime)
     auto_renew = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
 
     @property
     def is_active(self):

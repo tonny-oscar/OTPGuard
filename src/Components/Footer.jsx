@@ -27,7 +27,7 @@ export default function Footer() {
           </div>
           <div>
             <div style={{ color:'var(--heading)', fontWeight:600, marginBottom:12 }}>Contact</div>
-            <p style={{ fontSize:'.9rem' }}>hello@otpguard.co.ke</p>
+            <p style={{ fontSize:'.9rem' }}>otpguard26@gmail.com</p>
             <p style={{ fontSize:'.9rem', marginTop:8 }}>+254 794 886 149</p>
           </div>
         </div>

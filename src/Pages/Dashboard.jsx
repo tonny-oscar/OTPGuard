@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth, API } from '../context/AuthContext'
+import { useSubscription } from '../context/SubscriptionContext'
 
 const card = { background:'var(--surface)', border:'1px solid var(--border)', borderRadius:12, padding:24 }
 
@@ -26,6 +27,7 @@ function useApi(endpoint) {
 
 export default function Dashboard() {
   const { user, token, logout } = useAuth()
+  const { currentPlan, planDetails, isTrial, trialEnds, refresh: refreshSub } = useSubscription()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('overview')
   const [codesVisible, setCodesVisible] = useState(false)
@@ -101,7 +103,7 @@ export default function Dashboard() {
 
   function handleLogout() { logout(); navigate('/') }
 
-  const tabs = ['overview', 'devices', 'activity', 'api-keys', 'settings']
+  const tabs = ['overview', 'devices', 'activity', 'api-keys', 'subscription', 'settings']
 
   return (
     <div style={{ minHeight:'100vh', background:'var(--bg)' }}>
@@ -137,7 +139,9 @@ export default function Dashboard() {
           display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16
         }}>
           <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-            <span style={{ fontSize:'1.5rem' }}>{profile?.mfa_enabled ? '️' : '⚠️'}</span>
+            <div style={{ width:36, height:36, borderRadius:8, background: profile?.mfa_enabled ? 'rgba(0,255,136,.15)' : 'rgba(248,113,113,.15)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <span style={{ fontSize:'.7rem', fontWeight:800, color: profile?.mfa_enabled ? 'var(--green)' : '#f87171' }}>{profile?.mfa_enabled ? 'ON' : 'OFF'}</span>
+            </div>
             <div>
               <div style={{ color:'var(--heading)', fontWeight:600 }}>MFA is {profile?.mfa_enabled ? 'Active' : 'Disabled'}</div>
               <div style={{ fontSize:'.85rem' }}>
@@ -166,15 +170,14 @@ export default function Dashboard() {
           <div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:20, marginBottom:28 }}>
               {(statCards.length > 0 ? statCards : [
-                { icon:'', label:'MFA Status',      val: profile?.mfa_enabled ? 'Active' : 'Disabled', color: profile?.mfa_enabled ? 'var(--green)' : '#f87171' },
-                { icon:'', label:'MFA Method',      val: (profile?.mfa_method || '—').toUpperCase(),    color: 'var(--blue)' },
-                { icon:'', label:'Trusted Devices', val: devices.filter(d=>d.trusted).length,           color: 'var(--green)' },
-                { icon:'', label:'API Keys',        val: apiKeys.length,                                color: '#facc15' },
+                { label:'MFA Status',      val: profile?.mfa_enabled ? 'Active' : 'Disabled', color: profile?.mfa_enabled ? 'var(--green)' : '#f87171' },
+                { label:'MFA Method',      val: (profile?.mfa_method || '—').toUpperCase(),    color: 'var(--blue)' },
+                { label:'Trusted Devices', val: devices.filter(d=>d.trusted).length,           color: 'var(--green)' },
+                { label:'API Keys',        val: apiKeys.length,                                color: '#facc15' },
               ]).map(s => (
                 <div key={s.label} style={card}>
-                  <div style={{ fontSize:'1.5rem', marginBottom:8 }}>{s.icon}</div>
-                  <div style={{ fontSize:'.8rem', marginBottom:4 }}>{s.label}</div>
-                  <div style={{ color:s.color, fontWeight:700, fontSize:'1.1rem' }}>{s.val}</div>
+                  <div style={{ fontSize:'.75rem', color:'var(--text)', textTransform:'uppercase', letterSpacing:.5, fontWeight:600, marginBottom:8 }}>{s.label}</div>
+                  <div style={{ color:s.color, fontWeight:800, fontSize:'1.4rem' }}>{s.val}</div>
                 </div>
               ))}
             </div>
@@ -198,7 +201,9 @@ export default function Dashboard() {
             {devices.length === 0 ? <Empty text="No devices recorded yet" /> : devices.map((d,i) => (
               <div key={d.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 0', borderBottom: i<devices.length-1 ? '1px solid var(--border)' : 'none', flexWrap:'wrap', gap:12 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                  <span style={{ fontSize:'1.5rem' }}></span>
+                  <div style={{ width:32, height:32, borderRadius:6, background:'rgba(255,255,255,.06)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <span style={{ fontSize:'.65rem', fontWeight:700, color:'var(--text)' }}>DEV</span>
+                  </div>
                   <div>
                     <div style={{ color:'var(--heading)', fontWeight:500, fontSize:'.9rem' }}>{d.user_agent || 'Unknown browser'}</div>
                     <div style={{ fontSize:'.78rem', marginTop:2 }}>{d.location || 'Unknown'} · {d.ip} · {timeAgo(d.last_seen)}</div>
@@ -283,6 +288,18 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* ── SUBSCRIPTION ── */}
+        {activeTab === 'subscription' && (
+          <SubscriptionTab
+            currentPlan={currentPlan}
+            planDetails={planDetails}
+            isTrial={isTrial}
+            trialEnds={trialEnds}
+            token={token}
+            onUpgrade={refreshSub}
+          />
+        )}
+
         {/* ── SETTINGS ── */}
         {activeTab === 'settings' && (
           <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
@@ -290,9 +307,9 @@ export default function Dashboard() {
               <h3 style={{ color:'var(--heading)', fontWeight:600, marginBottom:20 }}>MFA Method</h3>
               <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
                 {(profile?.available_mfa_methods || [
-                  { val:'email', label:' Email OTP',        desc:'Receive codes via email' },
-                  { val:'sms',   label:' SMS OTP',          desc:'Receive codes via SMS (requires phone number)' },
-                  { val:'totp',  label:' Authenticator App', desc:'Google Authenticator / Authy' },
+                  { val:'email', label:'Email OTP',        desc:'Receive codes via email' },
+                  { val:'sms',   label:'SMS OTP',           desc:'Receive codes via SMS (requires phone number)' },
+                  { val:'totp',  label:'Authenticator App', desc:'Google Authenticator / Authy' },
                 ]).map(m => (
                   <label key={m.val} style={{
                     display:'flex', alignItems:'center', gap:14, padding:16, borderRadius:8, cursor:'pointer',
@@ -333,10 +350,115 @@ export default function Dashboard() {
                   </div>
                 )
               )}
-              <p style={{ fontSize:'.8rem', marginTop:16, color:'#facc15' }}>⚠️ Store these somewhere safe. Each code can only be used once.</p>
+              <p style={{ fontSize:'.8rem', marginTop:16, color:'#facc15' }}>Store these somewhere safe. Each code can only be used once.</p>
             </div>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+function SubscriptionTab({ currentPlan, planDetails, isTrial, trialEnds, token, onUpgrade }) {
+  const [upgrading, setUpgrading] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  const PLANS = [
+    { id: 'starter',    name: 'Starter',    price: 'Free',          users: '50',       channels: ['Email'],              color: '#60a5fa' },
+    { id: 'growth',     name: 'Growth',     price: 'KES 1,500/mo',  users: '1,000',    channels: ['Email', 'SMS'],        color: 'var(--green)' },
+    { id: 'business',   name: 'Business',   price: 'KES 5,000/mo',  users: 'Unlimited', channels: ['Email', 'SMS', 'TOTP'], color: '#a78bfa' },
+    { id: 'enterprise', name: 'Enterprise', price: 'Custom',        users: 'Unlimited', channels: ['All + SLA'],           color: '#facc15' },
+  ]
+
+  async function handleUpgrade(planId) {
+    if (planId === 'enterprise') {
+      window.location.href = 'mailto:hello@otpguard.co.ke?subject=Enterprise Plan Inquiry'
+      return
+    }
+    if (planId === currentPlan) return
+    setUpgrading(true); setMsg('')
+    try {
+      const r = await fetch(`${API}/subscription/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ plan_name: planId })
+      })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error)
+      setMsg(`Switched to ${planId} plan successfully.`)
+      if (onUpgrade) onUpgrade()
+    } catch (e) { setMsg(e.message) }
+    finally { setUpgrading(false) }
+  }
+
+  const daysLeft = trialEnds ? Math.max(0, Math.ceil((new Date(trialEnds) - new Date()) / 86400000)) : null
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Current plan card */}
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
+        <h3 style={{ color: 'var(--heading)', fontWeight: 700, marginBottom: 16 }}>Current Plan</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--heading)', textTransform: 'capitalize', marginBottom: 4 }}>
+              {currentPlan}
+              {isTrial && daysLeft !== null && (
+                <span style={{ marginLeft: 10, fontSize: '.75rem', color: '#fb923c', fontWeight: 600 }}>
+                  Trial — {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
+                </span>
+              )}
+            </div>
+            {planDetails && (
+              <div style={{ fontSize: '.85rem', color: 'var(--text)' }}>
+                {planDetails.max_users === -1 ? 'Unlimited users' : `Up to ${planDetails.max_users} users`}
+                {' · '}
+                {(planDetails.otp_channels || ['email']).join(', ').toUpperCase()} OTP
+              </div>
+            )}
+          </div>
+          <Link to="/#pricing" style={{ fontSize: '.85rem', color: 'var(--green)', textDecoration: 'none', fontWeight: 600, padding: '8px 16px', border: '1px solid rgba(0,255,136,.3)', borderRadius: 8 }}>
+            View All Plans
+          </Link>
+        </div>
+      </div>
+
+      {/* Plan comparison */}
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
+        <h3 style={{ color: 'var(--heading)', fontWeight: 700, marginBottom: 16 }}>Available Plans</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 14 }}>
+          {PLANS.map(p => {
+            const isCurrent = p.id === currentPlan
+            return (
+              <div key={p.id} style={{
+                border: `1px solid ${isCurrent ? p.color : 'var(--border)'}`,
+                borderRadius: 10, padding: 18,
+                background: isCurrent ? `${p.color}10` : 'var(--bg)',
+                position: 'relative',
+              }}>
+                {isCurrent && (
+                  <div style={{ position: 'absolute', top: -10, left: 16, background: p.color, color: '#0a0e1a', fontSize: '.65rem', fontWeight: 800, padding: '2px 10px', borderRadius: 20 }}>CURRENT</div>
+                )}
+                <div style={{ fontWeight: 800, color: 'var(--heading)', marginBottom: 4 }}>{p.name}</div>
+                <div style={{ fontSize: '.85rem', color: p.color, fontWeight: 700, marginBottom: 10 }}>{p.price}</div>
+                <div style={{ fontSize: '.78rem', color: 'var(--text)', marginBottom: 4 }}>{p.users} users</div>
+                <div style={{ fontSize: '.78rem', color: 'var(--text)', marginBottom: 14 }}>{p.channels.join(' + ')}</div>
+                <button
+                  onClick={() => handleUpgrade(p.id)}
+                  disabled={isCurrent || upgrading}
+                  style={{
+                    width: '100%', padding: '8px', borderRadius: 8, border: 'none', cursor: isCurrent ? 'default' : 'pointer',
+                    background: isCurrent ? 'rgba(255,255,255,.06)' : p.color,
+                    color: isCurrent ? 'var(--text)' : '#0a0e1a',
+                    fontWeight: 700, fontSize: '.8rem', opacity: upgrading ? .6 : 1,
+                  }}
+                >
+                  {isCurrent ? 'Active' : p.id === 'enterprise' ? 'Contact Us' : 'Switch'}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+        {msg && <p style={{ marginTop: 14, fontSize: '.85rem', color: msg.includes('success') ? 'var(--green)' : '#f87171' }}>{msg}</p>}
       </div>
     </div>
   )
@@ -356,11 +478,10 @@ function Toggle({ value, onChange }) {
 
 function ActivityRow({ item, border }) {
   const statusColor = { verified:'var(--green)', failed:'#f87171', expired:'#facc15', pending:'var(--blue)' }
-  const statusIcon  = { verified:'✅', failed:'❌', expired:'⏱️', pending:'⏳' }
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 0', borderBottom: border ? '1px solid var(--border)' : 'none', flexWrap:'wrap', gap:8 }}>
       <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-        <span style={{ fontSize:'1rem' }}>{statusIcon[item.status] || '•'}</span>
+        <div style={{ width:8, height:8, borderRadius:'50%', background: statusColor[item.status] || 'var(--text)', flexShrink:0 }} />
         <div>
           <div style={{ color:'var(--heading)', fontSize:'.88rem', fontWeight:500 }}>
             OTP {item.status} via {item.method?.toUpperCase()}

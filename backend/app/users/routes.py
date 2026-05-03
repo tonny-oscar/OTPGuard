@@ -204,10 +204,10 @@ def get_stats():
 
     return jsonify({
         'stats': [
-            {'icon': '🔐', 'label': 'MFA Status',      'val': 'Active' if user.mfa_enabled else 'Disabled', 'color': 'var(--green)' if user.mfa_enabled else '#f87171'},
-            {'icon': '📱', 'label': 'MFA Method',      'val': (user.mfa_method or '—').upper(),              'color': 'var(--blue)'},
-            {'icon': '💻', 'label': 'Trusted Devices', 'val': devices,                                        'color': 'var(--green)'},
-            {'icon': '🔑', 'label': 'API Keys',        'val': keys,                                           'color': '#facc15'},
+            {'label': 'MFA Status',      'val': 'Active' if user.mfa_enabled else 'Disabled', 'color': 'var(--green)' if user.mfa_enabled else '#f87171'},
+            {'label': 'MFA Method',      'val': (user.mfa_method or '—').upper(),              'color': 'var(--blue)'},
+            {'label': 'Trusted Devices', 'val': devices,                                        'color': 'var(--green)'},
+            {'label': 'API Keys',        'val': keys,                                           'color': '#facc15'},
         ]
     }), 200
 

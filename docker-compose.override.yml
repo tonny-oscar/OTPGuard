@@ -1,0 +1,28 @@
+version: "3.9"
+
+# ── Development overrides ─────────────────────────────────────────
+# Auto-loaded alongside docker-compose.yml in dev.
+# Mounts source code so Flask reloader picks up changes.
+# For frontend hot-reload, run `npm run dev` locally instead of Docker.
+
+services:
+
+  backend:
+    build:
+      target: runtime
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+      - /app/.venv
+    environment:
+      FLASK_ENV: development
+      FLASK_DEBUG: "1"
+    # Override CMD to use Flask dev server with auto-reload
+    command: >
+      sh -c "./entrypoint.sh flask run --host=0.0.0.0 --port=5000 --reload"
+
+  # Skip nginx in dev — access backend on :5000 directly
+  # and run frontend with: npm run dev
+  nginx:
+    profiles:
+      - prod

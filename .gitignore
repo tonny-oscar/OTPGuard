@@ -22,5 +22,35 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-*.env
-backend/.env 
+
+# Environment secrets — never commit these
+.env
+.env.prod
+backend/.env
+backend/.env.prod
+
+# Keep example and dev env files
+!.env.dev
+!.env.example
+!backend/.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+backend/instance/
+
+# Docker
+.docker/
