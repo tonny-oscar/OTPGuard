@@ -83,10 +83,11 @@ def create_app(env=None):
         response.headers['X-XSS-Protection']       = '1; mode=block'
         response.headers['Referrer-Policy']         = 'strict-origin-when-cross-origin'
         response.headers['Permissions-Policy']      = 'camera=(), microphone=(), geolocation=(), payment=()'
+        frontend = app.config.get('FRONTEND_URL', '*')
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; script-src 'self' 'unsafe-inline'; "
             "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; "
-            "font-src 'self' data:; connect-src 'self'; "
+            f"font-src 'self' data:; connect-src 'self' {frontend} https://otpguard-api.onrender.com; "
             "frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
         )
         if IS_PROD:
