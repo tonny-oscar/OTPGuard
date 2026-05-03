@@ -16,7 +16,7 @@ export default function Hero() {
       }}/>
 
       <div className="container" style={{ position:'relative' }}>
-        <div className="tag">🔐 MFA Security Platform</div>
+        <div className="tag">MFA Security Platform</div>
 
         <h1 style={{
           fontSize:'clamp(2.2rem, 6vw, 4rem)',

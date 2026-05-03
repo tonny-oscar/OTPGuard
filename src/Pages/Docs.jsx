@@ -1,15 +1,15 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import Navbar from '../Components/Navbar'
 import Footer from '../Components/Footer'
 
 const sections = [
-  { id: 'overview', label: '📖 Overview' },
-  { id: 'auth', label: '🔑 Authentication' },
-  { id: 'send-otp', label: '📤 Send OTP' },
+  { id: 'overview', label: ' Overview' },
+  { id: 'auth', label: ' Authentication' },
+  { id: 'send-otp', label: ' Send OTP' },
   { id: 'verify-otp', label: '✅ Verify OTP' },
-  { id: 'resend-otp', label: '🔄 Resend OTP' },
+  { id: 'resend-otp', label: ' Resend OTP' },
   { id: 'errors', label: '⚠️ Error Codes' },
-  { id: 'sdks', label: '📦 SDKs' },
+  { id: 'sdks', label: ' SDKs' },
 ]
 
 const s = {
@@ -365,7 +365,7 @@ export default function Docs() {
           ))}
           <hr style={{ ...s.divider, margin: '16px 0' }} />
           <a href="mailto:hello@otpguard.co.ke" style={{ ...s.navItem(false), textDecoration: 'none', display: 'block' }}>
-            💬 Get Support
+             Get Support
           </a>
         </nav>
         <main style={s.content}>
@@ -376,3 +376,4 @@ export default function Docs() {
     </div>
   )
 }
+

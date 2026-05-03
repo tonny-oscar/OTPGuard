@@ -8,7 +8,7 @@ export default function HowItWorks() {
   return (
     <section id="how-it-works">
       <div className="container">
-        <div className="tag">⚙️ How It Works</div>
+        <div className="tag">How It Works</div>
         <h2 className="section-title">Up and Running in 3 Simple Steps</h2>
         <p className="section-sub">No complex setup. No DevOps headaches.</p>
 

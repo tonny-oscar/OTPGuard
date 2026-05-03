@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 
-const AuthContext = createContext(null)
-export const API = `http://${window.location.hostname}:5000/api`
+export const AuthContext = createContext(null)
+export const API = '/api'
 
 export function AuthProvider({ children }) {
   const [user, setUser]     = useState(null)
@@ -77,6 +77,17 @@ export function AuthProvider({ children }) {
     return d
   }
 
+  async function resendOTP() {
+    const pre = localStorage.getItem('pre_auth_token')
+    const r = await fetch(`${API}/mfa/resend`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${pre}` }
+    })
+    const d = await r.json()
+    if (!r.ok) throw new Error(d.error || 'Failed to resend OTP')
+    return d
+  }
+
   function logout() {
     ['token','refresh_token','pre_auth_token'].forEach(k => localStorage.removeItem(k))
     setToken(null)
@@ -84,7 +95,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, register, login, sendOTP, verifyOTP, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, register, login, sendOTP, verifyOTP, resendOTP, logout }}>
       {children}
     </AuthContext.Provider>
   )

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -9,7 +9,7 @@ const plans = [
     cta: 'Start Free', highlight: false
   },
   {
-    id: 'growth', name: 'Growth', price: { kes: 1500, usd: 10 }, tag: 'Most Popular 🔥',
+    id: 'growth', name: 'Growth', price: { kes: 1500, usd: 10 }, tag: 'Most Popular',
     features: ['Up to 1,000 users', 'SMS + Email OTP', 'Full dashboard', 'Priority email support', 'Login analytics'],
     cta: 'Get Started', highlight: true
   },
@@ -45,8 +45,8 @@ export default function Pricing() {
   return (
     <section id="pricing" style={{ background: 'var(--surface)' }}>
       <div className="container">
-        <div className="tag">💰 Pricing</div>
-        <h2 className="section-title">Simple, Affordable Pricing</h2>
+        <div className="tag">Pricing</div>
+        <h2 className="section-title">Simple, AffordablePricing</h2>
         <p className="section-sub">Start free. Scale as you grow. No hidden fees.</p>
 
         {/* Currency toggle */}
@@ -114,10 +114,12 @@ export default function Pricing() {
           ))}
         </div>
 
-        <p style={{ textAlign: 'center', marginTop: 32, fontSize: '.88rem', opacity: .7 }}>
-          💡 Per-SMS charges apply on Growth & Business plans. Setup fee: KES 5,000–20,000 for custom integrations.
+        <p style={{ textAlign: 'center', marginTop: 32, fontSize: '.88rem', opacity: .7 }}>Per-SMS charges apply on Growth & Business plans. Setup fee: KES 5,000–20,000 for custom integrations.
         </p>
       </div>
     </section>
   )
 }
+
+
+

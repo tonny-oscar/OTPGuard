@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 
 const MOCK_OTP = '482916'
 
@@ -31,7 +31,7 @@ export default function Demo() {
   return (
     <section id="demo">
       <div className="container">
-        <div className="tag">🎮 Live Demo</div>
+        <div className="tag">Live Demo</div>
         <h2 className="section-title">See It in Action</h2>
         <p className="section-sub">Experience the full login + OTP flow right here.</p>
 
@@ -39,7 +39,7 @@ export default function Demo() {
           <div className="card">
             {step === 'login' && (
               <>
-                <h3 style={{ color:'var(--heading)', marginBottom:24, textAlign:'center' }}>🔐 Sign In</h3>
+                <h3 style={{ color:'var(--heading)', marginBottom:24, textAlign:'center' }}>Sign In</h3>
                 <form onSubmit={handleLogin} style={{ display:'flex', flexDirection:'column', gap:16 }}>
                   <input style={inputStyle} type="email" placeholder="your@email.com"
                     value={email} onChange={e => setEmail(e.target.value)}
@@ -62,7 +62,7 @@ export default function Demo() {
             {step === 'otp' && (
               <>
                 <div style={{ textAlign:'center', marginBottom:24 }}>
-                  <div style={{ fontSize:'2.5rem', marginBottom:12 }}>📱</div>
+                  <div style={{ width:56, height:56, borderRadius:12, background:'var(--green-dim)', border:'1px solid rgba(0,255,136,.2)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px', color:'var(--green)', fontWeight:800, fontSize:'.85rem' }}>OTP</div>
                   <h3 style={{ color:'var(--heading)', marginBottom:8 }}>Enter OTP</h3>
                   <p style={{ fontSize:'.9rem' }}>A 6-digit code was sent to <strong style={{ color:'var(--green)' }}>{email}</strong></p>
                 </div>
@@ -87,7 +87,7 @@ export default function Demo() {
 
             {step === 'success' && (
               <div style={{ textAlign:'center', padding:'20px 0' }}>
-                <div style={{ fontSize:'3rem', marginBottom:16 }}>✅</div>
+                <div style={{ width:56, height:56, borderRadius:'50%', background:'rgba(0,255,136,.15)', border:'2px solid var(--green)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px', color:'var(--green)', fontWeight:800, fontSize:'1rem' }}>OK</div>
                 <h3 style={{ color:'var(--green)', marginBottom:12 }}>Login Successful!</h3>
                 <p style={{ fontSize:'.9rem', marginBottom:24 }}>Your account is protected by OTPGuard MFA.</p>
                 <button className="btn-primary" onClick={() => { setStep('login'); setEmail(''); setOtp(''); }}>
@@ -105,3 +105,4 @@ export default function Demo() {
     </section>
   )
 }
+
