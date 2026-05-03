@@ -8,11 +8,13 @@
   --heading: #f1f5f9;
   --green: #00ff88;
   --blue: #3b82f6;
-  --green-dim: rgba(0, 255, 136, 0.1);
+  --green-dim: rgba(0, 255, 136, 0.08);
   --blue-dim: rgba(59, 130, 246, 0.1);
   --shadow: 0 4px 24px rgba(0,0,0,.4);
   --radius: 12px;
   --transition: all .2s cubic-bezier(.4,0,.2,1);
+  --sidebar-bg: linear-gradient(180deg, #0d1117 0%, #0f1629 100%);
+  --sidebar-border: rgba(0,255,136,.08);
 }
 
 [data-theme="light"] {
@@ -23,9 +25,11 @@
   --heading: #1a202c;
   --green: #00b860;
   --blue: #2563eb;
-  --green-dim: rgba(0,184,96,.1);
+  --green-dim: rgba(0,184,96,.08);
   --blue-dim: rgba(37,99,235,.1);
   --shadow: 0 4px 24px rgba(0,0,0,.1);
+  --sidebar-bg: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
+  --sidebar-border: rgba(0,184,96,.15);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -190,8 +194,8 @@ section { padding: 80px 20px; }
 
 .admin-sidebar {
   width: 240px;
-  background: linear-gradient(180deg, #0d1117 0%, #0f1629 100%);
-  border-right: 1px solid rgba(0,255,136,.08);
+  background: var(--sidebar-bg, linear-gradient(180deg, #0d1117 0%, #0f1629 100%));
+  border-right: 1px solid var(--sidebar-border, rgba(0,255,136,.08));
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -203,8 +207,8 @@ section { padding: 80px 20px; }
 
 .admin-sidebar .sidebar-logo {
   padding: 24px 20px 20px;
-  border-bottom: 1px solid rgba(255,255,255,.06);
-  background: rgba(0,255,136,.03);
+  border-bottom: 1px solid var(--border);
+  background: var(--green-dim);
 }
 
 .admin-sidebar nav button {
@@ -215,20 +219,20 @@ section { padding: 80px 20px; }
 }
 
 .admin-sidebar nav button:hover {
-  background: rgba(255,255,255,.05) !important;
+  background: rgba(0,0,0,.05) !important;
   color: var(--heading) !important;
 }
 
 .admin-sidebar .sidebar-footer {
   padding: 16px 20px;
-  border-top: 1px solid rgba(255,255,255,.06);
-  background: rgba(0,0,0,.2);
+  border-top: 1px solid var(--border);
+  background: var(--green-dim);
 }
 
 /* Admin stat cards */
 .admin-stat-card {
-  background: linear-gradient(135deg, var(--surface) 0%, rgba(15,22,41,.8) 100%);
-  border: 1px solid rgba(255,255,255,.06);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 24px;
   transition: all .25s cubic-bezier(.4,0,.2,1);
@@ -246,8 +250,8 @@ section { padding: 80px 20px; }
 }
 .admin-stat-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(0,255,136,.2);
-  box-shadow: 0 12px 40px rgba(0,0,0,.4), 0 0 0 1px rgba(0,255,136,.08);
+  border-color: var(--green);
+  box-shadow: var(--shadow);
 }
 .admin-stat-card:hover::before { opacity: 1; }
 
@@ -266,7 +270,7 @@ section { padding: 80px 20px; }
   font-size: .85rem;
 }
 .admin-table thead tr {
-  background: rgba(0,255,136,.03);
+  background: var(--green-dim);
 }
 .admin-table thead th {
   padding: 14px 16px;
@@ -276,19 +280,20 @@ section { padding: 80px 20px; }
   text-transform: uppercase;
   letter-spacing: .8px;
   color: var(--text);
-  border-bottom: 2px solid rgba(0,255,136,.12);
+  border-bottom: 2px solid var(--border);
   white-space: nowrap;
 }
 .admin-table tbody tr {
   transition: background .15s;
 }
 .admin-table tbody tr:hover {
-  background: rgba(255,255,255,.025);
+  background: var(--green-dim);
 }
 .admin-table tbody td {
   padding: 13px 16px;
-  border-bottom: 1px solid rgba(255,255,255,.04);
+  border-bottom: 1px solid var(--border);
   vertical-align: middle;
+  color: var(--heading);
 }
 
 /* Admin section header */
@@ -308,20 +313,20 @@ section { padding: 80px 20px; }
 /* Admin card */
 .admin-card {
   background: var(--surface);
-  border: 1px solid rgba(255,255,255,.06);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 24px;
   transition: border-color .2s, box-shadow .2s;
 }
 .admin-card:hover {
-  border-color: rgba(0,255,136,.15);
-  box-shadow: 0 4px 20px rgba(0,0,0,.2);
+  border-color: var(--green);
+  box-shadow: var(--shadow);
 }
 
 /* Admin search input */
 .admin-search {
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.08);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 16px;
   color: var(--heading);
@@ -331,8 +336,8 @@ section { padding: 80px 20px; }
   width: 260px;
 }
 .admin-search:focus {
-  border-color: rgba(0,255,136,.4);
-  background: rgba(0,255,136,.04);
+  border-color: var(--green);
+  background: var(--green-dim);
 }
 .admin-search::placeholder { color: var(--text); }
 

@@ -11,9 +11,10 @@ import CustomReports from '../Components/admin/CustomReports'
 import ComplianceAudit from '../Components/admin/ComplianceAudit'
 import FeatureUsage from '../Components/admin/FeatureUsage'
 import LocationMap from '../Components/admin/LocationMap'
+import ContactMessages from '../Components/admin/ContactMessages'
 
 const card = {
-  background: 'var(--surface)', border: '1px solid rgba(255,255,255,.06)',
+  background: 'var(--surface)', border: '1px solid var(--border)',
   borderRadius: 16, padding: 24,
 }
 
@@ -98,6 +99,7 @@ export default function Admin() {
   const [alerts, setAlerts]           = useState([])
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState(null)
+  const [unreadMessages, setUnreadMessages] = useState(0)
 
 
   const authHeaders = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token])
@@ -182,9 +184,16 @@ export default function Admin() {
   // Load alerts
   useEffect(() => {
     if (activeTab !== 'alerts') return
-
     loadAlerts()
   }, [activeTab, loadAlerts])
+
+  // Load unread message count on mount
+  useEffect(() => {
+    fetch(`${API}/admin/contact/messages?per_page=1`, { headers: authHeaders })
+      .then(r => r.json())
+      .then(d => setUnreadMessages(d.unread || 0))
+      .catch(() => {})
+  }, [authHeaders])
 
 
   async function toggleUserStatus(u) {
@@ -226,6 +235,7 @@ export default function Admin() {
     { id: 'compliance',    label: 'Compliance' },
     { id: 'feature-usage', label: 'Features' },
     { id: 'alerts',        label: 'Alerts', badge: dangerCount || null },
+    { id: 'messages',      label: 'Messages', badge: unreadMessages || null },
   ]
 
   const churnItems = [
@@ -264,32 +274,29 @@ export default function Admin() {
 
       {/* Sidebar */}
       <aside className="admin-sidebar" style={{
-        width: 240, background: 'linear-gradient(180deg,#0d1117 0%,#0f1629 100%)',
-        borderRight: '1px solid rgba(0,255,136,.08)',
+        width: 240,
         padding: '0', display: 'flex', flexDirection: 'column', flexShrink: 0,
         position: 'sticky', top: 0, height: '100vh',
-        boxShadow: '4px 0 24px rgba(0,0,0,.3)',
       }}>
-        <div className="sidebar-logo" style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(255,255,255,.06)', background: 'rgba(0,255,136,.03)' }}>
-          <Link to="/" style={{ textDecoration: 'none', fontWeight: 800, fontSize: '1.15rem', color: 'var(--heading)', letterSpacing: '-.01em' }}>
+        <div className="sidebar-logo" style={{ padding: '24px 20px 20px' }}>
+          <Link to="/" style={{ textDecoration: 'none', fontWeight: 800, fontSize: '1.15rem', color: '#f1f5f9', letterSpacing: '-.01em' }}>
              OTP<span style={{ color: 'var(--green)' }}>Guard</span>
           </Link>
-          <div style={{ fontSize: '.68rem', color: 'var(--green)', marginTop: 6, fontWeight: 700, letterSpacing: 2, opacity: .8 }}>ADMIN PANEL</div>
-        </div>
+          <div style={{ fontSize: '.68rem', color: 'var(--green)', marginTop: 6, fontWeight: 700, letterSpacing: 2, opacity: .8 }}>ADMIN PANEL</div>        </div>
         <nav style={{ padding: '12px', flex: 1, overflowY: 'auto' }}>
           {/* Top nav items */}
           {topNav.map(item => (
             <button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); sound.tab() }} style={{
               width: '100%', display: 'flex', alignItems: 'center', gap: 10,
               padding: '10px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-              background: activeTab === item.id ? 'linear-gradient(135deg,rgba(0,255,136,.15),rgba(0,255,136,.05))' : 'transparent',
-              color: activeTab === item.id ? 'var(--green)' : 'var(--text)',
+              background: activeTab === item.id ? 'linear-gradient(135deg,rgba(0,255,136,.2),rgba(0,255,136,.08))' : 'transparent',
+              color: activeTab === item.id ? 'var(--green)' : '#94a3b8',
               fontSize: '.875rem', fontWeight: activeTab === item.id ? 700 : 400,
               marginBottom: 2, transition: 'all .18s', textAlign: 'left',
               borderLeft: activeTab === item.id ? '3px solid var(--green)' : '3px solid transparent',
             }}
-              onMouseEnter={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
-              onMouseLeave={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
+              onMouseEnter={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'rgba(255,255,255,.06)'; e.currentTarget.style.color = '#f1f5f9' } }}
+              onMouseLeave={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8' } }}
             >
               <span style={{ flex: 1 }}>{item.label}</span>
               {item.badge && <span style={{ background: '#ef4444', color: '#fff', borderRadius: 20, fontSize: '.65rem', padding: '2px 7px', fontWeight: 800 }}>{item.badge}</span>}
@@ -301,30 +308,30 @@ export default function Admin() {
             width: '100%', display: 'flex', alignItems: 'center', gap: 10,
             padding: '10px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
             background: isChurnActive ? 'linear-gradient(135deg,rgba(0,255,136,.15),rgba(0,255,136,.05))' : 'transparent',
-            color: isChurnActive ? 'var(--green)' : 'var(--text)',
+            color: isChurnActive ? 'var(--green)' : '#94a3b8',
             fontSize: '.875rem', fontWeight: isChurnActive ? 700 : 400,
             marginBottom: 2, transition: 'all .18s', textAlign: 'left',
             borderLeft: isChurnActive ? '3px solid var(--green)' : '3px solid transparent',
           }}
-            onMouseEnter={e => { if (!isChurnActive) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
-            onMouseLeave={e => { if (!isChurnActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
+            onMouseEnter={e => { if (!isChurnActive) { e.currentTarget.style.background = 'rgba(255,255,255,.06)'; e.currentTarget.style.color = '#f1f5f9' } }}
+            onMouseLeave={e => { if (!isChurnActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8' } }}
           >
             <span style={{ flex: 1 }}>Churn</span>
             <span style={{ fontSize: '.65rem', opacity: .5, transition: 'transform .2s', display: 'inline-block', transform: (churnOpen || isChurnActive) ? 'rotate(90deg)' : 'none' }}>&#9654;</span>
           </button>
           {(churnOpen || isChurnActive) && (
-            <div style={{ marginLeft: 12, marginBottom: 4, borderLeft: '1px solid rgba(0,255,136,.15)', paddingLeft: 8 }}>
+            <div style={{ marginLeft: 12, marginBottom: 4, borderLeft: '1px solid rgba(0,255,136,.2)', paddingLeft: 8 }}>
               {churnItems.map(item => (
                 <button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); sound.tab() }} style={{
                   width: '100%', display: 'flex', alignItems: 'center',
                   padding: '8px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  background: activeTab === item.id ? 'rgba(0,255,136,.1)' : 'transparent',
-                  color: activeTab === item.id ? 'var(--green)' : 'var(--text)',
+                  background: activeTab === item.id ? 'rgba(0,255,136,.15)' : 'transparent',
+                  color: activeTab === item.id ? 'var(--green)' : '#94a3b8',
                   fontSize: '.82rem', fontWeight: activeTab === item.id ? 700 : 400,
                   marginBottom: 1, transition: 'all .15s', textAlign: 'left',
                 }}
-                  onMouseEnter={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
-                  onMouseLeave={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
+                  onMouseEnter={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'rgba(255,255,255,.06)'; e.currentTarget.style.color = '#f1f5f9' } }}
+                  onMouseLeave={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8' } }}
                 >
                   {item.label}
                 </button>
@@ -336,31 +343,31 @@ export default function Admin() {
           <button onClick={() => { setReportsOpen(o => !o); sound.tab() }} style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 10,
             padding: '10px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-            background: isReportsActive ? 'linear-gradient(135deg,rgba(0,255,136,.15),rgba(0,255,136,.05))' : 'transparent',
-            color: isReportsActive ? 'var(--green)' : 'var(--text)',
+            background: isReportsActive ? 'linear-gradient(135deg,rgba(0,255,136,.2),rgba(0,255,136,.08))' : 'transparent',
+            color: isReportsActive ? 'var(--green)' : '#94a3b8',
             fontSize: '.875rem', fontWeight: isReportsActive ? 700 : 400,
             marginBottom: 2, transition: 'all .18s', textAlign: 'left',
             borderLeft: isReportsActive ? '3px solid var(--green)' : '3px solid transparent',
           }}
-            onMouseEnter={e => { if (!isReportsActive) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
-            onMouseLeave={e => { if (!isReportsActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
+            onMouseEnter={e => { if (!isReportsActive) { e.currentTarget.style.background = 'rgba(255,255,255,.06)'; e.currentTarget.style.color = '#f1f5f9' } }}
+            onMouseLeave={e => { if (!isReportsActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8' } }}
           >
             <span style={{ flex: 1 }}>Reports</span>
             <span style={{ fontSize: '.65rem', opacity: .5, transition: 'transform .2s', display: 'inline-block', transform: (reportsOpen || isReportsActive) ? 'rotate(90deg)' : 'none' }}>&#9654;</span>
           </button>
           {(reportsOpen || isReportsActive) && (
-            <div style={{ marginLeft: 12, marginBottom: 4, borderLeft: '1px solid rgba(0,255,136,.15)', paddingLeft: 8 }}>
+            <div style={{ marginLeft: 12, marginBottom: 4, borderLeft: '1px solid rgba(0,255,136,.2)', paddingLeft: 8 }}>
               {reportItems.map(item => (
                 <button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); sound.tab() }} style={{
                   width: '100%', display: 'flex', alignItems: 'center',
                   padding: '8px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  background: activeTab === item.id ? 'rgba(0,255,136,.1)' : 'transparent',
-                  color: activeTab === item.id ? 'var(--green)' : 'var(--text)',
+                  background: activeTab === item.id ? 'rgba(0,255,136,.15)' : 'transparent',
+                  color: activeTab === item.id ? 'var(--green)' : '#94a3b8',
                   fontSize: '.82rem', fontWeight: activeTab === item.id ? 700 : 400,
                   marginBottom: 1, transition: 'all .15s', textAlign: 'left',
                 }}
-                  onMouseEnter={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; e.currentTarget.style.color = 'var(--heading)' } }}
-                  onMouseLeave={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text)' } }}
+                  onMouseEnter={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'rgba(255,255,255,.06)'; e.currentTarget.style.color = '#f1f5f9' } }}
+                  onMouseLeave={e => { if (activeTab !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8' } }}
                 >
                   {item.label}
                 </button>
@@ -368,14 +375,14 @@ export default function Admin() {
             </div>
           )}
         </nav>
-        <div className="sidebar-footer" style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,.06)', background: 'rgba(0,0,0,.2)' }}>
+        <div className="sidebar-footer" style={{ padding: '16px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
             <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg,var(--green),#00cc6a)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0a0e1a', fontWeight: 800, fontSize: '.9rem', flexShrink: 0 }}>
               {(user?.full_name || user?.email || 'A').charAt(0).toUpperCase()}
             </div>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--heading)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.full_name || 'Admin'}</div>
-              <div style={{ fontSize: '.72rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
+              <div style={{ fontSize: '.82rem', fontWeight: 600, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.full_name || 'Admin'}</div>
+              <div style={{ fontSize: '.72rem', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
@@ -391,10 +398,10 @@ export default function Admin() {
         {/* Mobile topbar */}
         <div className="admin-mobile-bar" style={{
           display: 'none', alignItems: 'center', gap: 12,
-          marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,.06)',
+          marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid var(--border)',
         }}>
           <button onClick={() => setSidebarOpen(true)} style={{
-            background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 10,
+            background: 'rgba(0,0,0,.5)', border: '1px solid var(--border)', borderRadius: 10,
             color: 'var(--heading)', fontSize: '1.1rem', cursor: 'pointer', padding: '8px 12px',
           }}>☰</button>
           <span style={{ fontWeight: 800, color: 'var(--heading)', fontSize: '1rem', letterSpacing: '-.01em' }}>
@@ -445,7 +452,7 @@ export default function Admin() {
                     </div>
                     <span style={{ color: 'var(--green)', fontWeight: 800, fontSize: '1.6rem', letterSpacing: '-.02em' }}>{mfaAdoption.pct}%</span>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,.06)', borderRadius: 8, height: 12, overflow: 'hidden', marginBottom: 10 }}>
+                  <div style={{ background: 'var(--border)', borderRadius: 8, height: 12, overflow: 'hidden', marginBottom: 10 }}>
                     <div style={{ width: `${mfaAdoption.pct}%`, height: '100%', background: 'linear-gradient(90deg,var(--green),#00cc6a)', borderRadius: 8, transition: 'width .8s ease' }} />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.78rem' }}>
@@ -474,7 +481,7 @@ export default function Admin() {
             </div>
 
             {loading ? <Spinner /> : (
-              <div className="table-wrap" style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,.2)' }}>
+              <div className="table-wrap" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow)' }}>
                 <table className="admin-table">
                   <thead>
                     <tr>
@@ -522,12 +529,11 @@ export default function Admin() {
                             <div style={{ display: 'flex', gap: 6 }}>
                               <button onClick={() => toggleUserStatus(u)} style={{
                                 fontSize: '.72rem', padding: '5px 10px', borderRadius: 8, cursor: 'pointer',
-                                border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.05)', color: 'var(--text)',
+                                border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)',
                                 transition: 'all .15s',
                               }}
-                                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,.3)'}
-                                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,.1)'}
-                              >
+                                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--green)'}
+                                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}                              >
                                 {u.is_active ? 'Deactivate' : 'Activate'}
                               </button>
                               {u.mfa_enabled && (
@@ -656,6 +662,9 @@ export default function Admin() {
 
         {/* ── FEATURE USAGE ANALYTICS ── */}
         {activeTab === 'feature-usage' && <FeatureUsage />}
+
+        {/* ── CONTACT MESSAGES ── */}
+        {activeTab === 'messages' && <ContactMessages onUnreadChange={setUnreadMessages} />}
       </div>
 
       {/* Mobile sidebar slide-in */}

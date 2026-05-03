@@ -2,10 +2,10 @@
 import { useAuth, API } from '../../context/AuthContext'
 import { generatePDF, pdfKpiGrid, pdfTable, pdfSection, pdfBar } from '../../utils/pdfExport'
 
-const card = { background: 'var(--surface)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 16, padding: 24 }
-const sel  = { background: 'var(--bg)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '8px 12px', color: 'var(--heading)', fontSize: '.85rem', outline: 'none', cursor: 'pointer' }
-const th   = { padding: '11px 16px', textAlign: 'left', fontWeight: 700, fontSize: '.72rem', color: 'var(--text)', textTransform: 'uppercase', letterSpacing: .8, borderBottom: '2px solid rgba(0,255,136,.12)' }
-const td   = { padding: '12px 16px', fontSize: '.85rem', borderBottom: '1px solid rgba(255,255,255,.04)', color: 'var(--heading)' }
+const card = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }
+const sel  = { background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 12px', color: 'var(--heading)', fontSize: '.85rem', outline: 'none', cursor: 'pointer' }
+const th   = { padding: '11px 16px', textAlign: 'left', fontWeight: 700, fontSize: '.72rem', color: 'var(--text)', textTransform: 'uppercase', letterSpacing: .8, borderBottom: '2px solid var(--border)' }
+const td   = { padding: '12px 16px', fontSize: '.85rem', borderBottom: '1px solid var(--border)', color: 'var(--heading)' }
 
 function KpiCard({ icon, label, val, color, sub }) {
   return (
@@ -61,24 +61,45 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
 
   function exportPDF() {
     if (!data) return
+    const trend = data.churn_trend || []
+    const inactive = data.inactive_users || []
+    const atRisk = data.high_risk_users || []
+    const retRate = Math.max(0, 100 - (data.churn_rate_30d || 0))
+
     const html =
       pdfSection('Churn Summary', pdfKpiGrid([
-        { val: `${data.churn_rate_30d}%`, label: 'Churn Rate' },
-        { val: data.at_risk_users,        label: 'At-Risk Users' },
-        { val: data.inactive_users_30d,   label: 'Inactive Users' },
-        { val: data.churned_last_30d,     label: 'Churned' },
-        { val: `${Math.max(0, 100 - data.churn_rate_30d)}%`, label: 'Retention Rate' },
+        { val: `${data.churn_rate_30d ?? 0}%`,  label: 'Churn Rate' },
+        { val: data.at_risk_users ?? 0,          label: 'At-Risk Users' },
+        { val: data.inactive_users_30d ?? 0,     label: 'Inactive Users' },
+        { val: data.churned_last_30d ?? 0,       label: 'Churned' },
+        { val: `${retRate}%`,                    label: 'Retention Rate' },
       ])) +
-      pdfSection('Churn Trend', pdfTable(['Period','Churned'], data.churn_trend.map(m => [m.period, m.churned_users]))) +
-      (data.inactive_users?.length ? pdfSection('Inactive Users', pdfTable(
-        ['User','Email','Plan','Last Login','Days Inactive'],
-        data.inactive_users.map(u => [u.name||'—', u.email, u.plan, u.last_login ? new Date(u.last_login).toLocaleDateString() : 'Never', u.days_inactive+'d'])
+      (trend.length ? pdfSection('Churn Trend', pdfTable(
+        ['Period', 'Churned'],
+        trend.map(m => [m.period ?? '—', m.churned_users ?? 0])
       )) : '') +
-      (data.high_risk_users?.length ? pdfSection('At-Risk Users', pdfTable(
-        ['Email','Plan','Decline','Last 30d','Prev 30d'],
-        data.high_risk_users.map(u => [u.email, u.plan, u.activity_decline+'%', u.logins_30d, u.logins_prev_30d])
+      (inactive.length ? pdfSection('Inactive Users', pdfTable(
+        ['User', 'Email', 'Plan', 'Last Login', 'Days Inactive'],
+        inactive.map(u => [
+          u.name || '—', u.email ?? '—', u.plan ?? '—',
+          u.last_login ? new Date(u.last_login).toLocaleDateString() : 'Never',
+          (u.days_inactive ?? 0) + 'd'
+        ])
+      )) : '') +
+      (atRisk.length ? pdfSection('At-Risk Users', pdfTable(
+        ['Email', 'Plan', 'Decline', 'Last 30d', 'Prev 30d'],
+        atRisk.map(u => [
+          u.email ?? '—', u.plan ?? '—',
+          (u.activity_decline ?? 0) + '%',
+          u.logins_30d ?? 0, u.logins_prev_30d ?? 0
+        ])
       )) : '')
-    generatePDF('Churn Analysis Report', html, `${CATEGORIES.find(c=>c.value===category)?.label} · Last ${days} days${plan?' · '+plan:''}`)
+
+    generatePDF(
+      'Churn Analysis Report',
+      html || '<p style="color:#718096">No data available for this filter.</p>',
+      `${CATEGORIES.find(c => c.value === category)?.label ?? category} · Last ${days} days${plan ? ' · ' + plan : ''}`
+    )
   }
 
   const retentionRate = data ? Math.max(0, 100 - data.churn_rate_30d) : 0
@@ -103,7 +124,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
       </div>
 
       {/* Controls */}
-      <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:20, padding:'14px 16px', background:'var(--surface)', border:'1px solid rgba(255,255,255,.06)', borderRadius:12 }}>
+      <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:20, padding:'14px 16px', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:12 }}>
         <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
           <label style={{ fontSize:'.72rem', fontWeight:700, color:'var(--text)', textTransform:'uppercase', letterSpacing:.8 }}>Category</label>
           <select value={category} onChange={e => setCategory(e.target.value)} style={{ ...sel, minWidth:220 }}>
@@ -148,12 +169,12 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
               <KpiCard icon="" label="Inactive Users" val={data.inactive_users_30d}     color="#fb923c" sub="No login in period" />
               <KpiCard icon="" label="Churned"        val={data.churned_last_30d}       color="#f87171" />
             </div>
-            <div style={{ ...card, background:'linear-gradient(135deg,rgba(0,255,136,.05),rgba(0,255,136,.02))', border:'1px solid rgba(0,255,136,.12)' }}>
+            <div style={{ ...card, background:'var(--green-dim)', border:'1px solid rgba(0,255,136,.2)' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
                 <h3 style={{ color:'var(--heading)', fontWeight:700 }}>Retention Health</h3>
                 <span style={{ fontWeight:800, fontSize:'1.4rem', color: retentionRate>=80?'var(--green)':retentionRate>=60?'#facc15':'#f87171' }}>{retentionRate}%</span>
               </div>
-              <div style={{ background:'rgba(255,255,255,.06)', borderRadius:8, height:12, overflow:'hidden', marginBottom:8 }}>
+              <div style={{ background:'var(--border)', borderRadius:8, height:12, overflow:'hidden', marginBottom:8 }}>
                 <div style={{ width:`${retentionRate}%`, height:'100%', borderRadius:8, background: retentionRate>=80?'linear-gradient(90deg,var(--green),#00cc6a)':retentionRate>=60?'linear-gradient(90deg,#facc15,#fb923c)':'linear-gradient(90deg,#f87171,#ef4444)', transition:'width .6s ease' }} />
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:'.75rem', color:'var(--text)' }}>
@@ -166,17 +187,17 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
                 {data.churn_trend.map((m,i) => (
                   <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
                     <span style={{ fontSize:'.72rem', color:'var(--text)', fontWeight:600 }}>{m.churned_users}</span>
-                    <div style={{ width:'100%', borderRadius:'4px 4px 0 0', height:`${Math.max((m.churned_users/maxChurned)*90, m.churned_users?6:0)}px`, background: i===data.churn_trend.length-1?'linear-gradient(180deg,#f87171,#ef4444)':'linear-gradient(180deg,rgba(248,113,113,.5),rgba(248,113,113,.2))' }} />
+                    <div style={{ width:'100%', borderRadius:'4px 4px 0 0', height:`${Math.max((m.churned_users/maxChurned)*90, m.churned_users?6:0)}px`, background: i===data.churn_trend.length-1?'#f87171':'rgba(248,113,113,.45)' }} />
                     <span style={{ fontSize:'.72rem', color:'var(--text)' }}>{m.period.split('-')[0]}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{ ...card, background:'rgba(250,204,21,.05)', border:'1px solid rgba(250,204,21,.15)' }}>
+            <div style={{ ...card, background:'rgba(250,204,21,.06)', border:'1px solid rgba(250,204,21,.2)' }}>
               <h3 style={{ color:'#facc15', fontWeight:700, marginBottom:12 }}> Recommendations</h3>
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:10 }}>
                 {[{icon:'',text:'Re-engagement emails to inactive users'},{icon:'',text:'Promotions for at-risk customers'},{icon:'',text:'Check-ins with high-value accounts'},{icon:'',text:'Review pricing for declining users'}].map((r,i)=>(
-                  <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background:'rgba(255,255,255,.03)', borderRadius:8 }}>
+                  <div key={i} style={{ display:'flex', gap:10, padding:'10px 12px', background:'var(--bg)', borderRadius:8 }}>
                     <span>{r.icon}</span><span style={{ fontSize:'.83rem', color:'var(--text)', lineHeight:1.5 }}>{r.text}</span>
                   </div>
                 ))}
@@ -187,7 +208,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
           {/*  INACTIVE / VOLUNTARY / INVOLUNTARY / EARLY  */}
           {['inactive','voluntary','involuntary','early'].includes(category) && (
             <div style={{ ...card, padding:0, overflow:'hidden' }}>
-              <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,.06)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(0,255,136,.03)' }}>
+              <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'var(--green-dim)' }}>
                 <h3 style={{ color:'var(--heading)', fontWeight:700 }}>{CATEGORIES.find(c=>c.value===category)?.label}</h3>
                 <span style={{ fontSize:'.8rem', color:'var(--text)' }}>{displayedInactive.length} users</span>
               </div>
@@ -196,7 +217,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
               ) : (
                 <div style={{ overflowX:'auto' }}>
                   <table style={{ width:'100%', borderCollapse:'collapse' }}>
-                    <thead style={{ background:'rgba(0,255,136,.03)' }}>
+                    <thead style={{ background:'var(--green-dim)' }}>
                       <tr><th style={th}>User</th><th style={th}>Plan</th><th style={th}>Last Login</th><th style={th}>Days Inactive</th><th style={th}>Type</th><th style={th}>Joined</th></tr>
                     </thead>
                     <tbody>
@@ -220,7 +241,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
           {/*  AT-RISK  */}
           {category === 'at-risk' && (
             <div style={{ ...card, padding:0, overflow:'hidden' }}>
-              <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,.06)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(250,204,21,.03)' }}>
+              <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(250,204,21,.05)' }}>
                 <h3 style={{ color:'var(--heading)', fontWeight:700 }}> At-Risk Users — Declining Activity</h3>
                 <span style={{ fontSize:'.8rem', color:'var(--text)' }}>{displayedAtRisk.length} users</span>
               </div>
@@ -229,7 +250,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
               ) : (
                 <div style={{ overflowX:'auto' }}>
                   <table style={{ width:'100%', borderCollapse:'collapse' }}>
-                    <thead style={{ background:'rgba(250,204,21,.03)' }}>
+                    <thead style={{ background:'rgba(250,204,21,.05)' }}>
                       <tr><th style={th}>User</th><th style={th}>Plan</th><th style={th}>Activity Decline</th><th style={th}>Last 30d</th><th style={th}>Prev 30d</th><th style={th}>Risk</th></tr>
                     </thead>
                     <tbody>
@@ -242,7 +263,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
                             <td style={td}>{planBadge(u.plan)}</td>
                             <td style={td}>
                               <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                                <div style={{ flex:1, background:'rgba(255,255,255,.06)', borderRadius:4, height:6, maxWidth:80 }}>
+                                <div style={{ flex:1, background:'var(--border)', borderRadius:4, height:6, maxWidth:80 }}>
                                   <div style={{ width:`${u.activity_decline}%`, height:'100%', background:rc, borderRadius:4 }} />
                                 </div>
                                 <span style={{ fontWeight:700, color:rc, fontSize:'.82rem' }}>{u.activity_decline}%</span>
@@ -317,7 +338,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
                             <span style={{ fontWeight:600, textTransform:'capitalize', color:'var(--heading)' }}>{p}</span>
                             <span style={{ color, fontWeight:700 }}>{count} users ({pct}%)</span>
                           </div>
-                          <div style={{ background:'rgba(255,255,255,.06)', borderRadius:6, height:10, overflow:'hidden' }}>
+                          <div style={{ background:'var(--border)', borderRadius:6, height:10, overflow:'hidden' }}>
                             <div style={{ width:`${pct}%`, height:'100%', background:color, borderRadius:6, transition:'width .5s' }} />
                           </div>
                         </div>
@@ -345,7 +366,7 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
                               <span style={{ fontWeight:600, textTransform:'capitalize', color:'var(--heading)' }}>{p}</span>
                               <span style={{ color:'#facc15', fontWeight:700 }}>{count} at-risk ({pct}%)</span>
                             </div>
-                            <div style={{ background:'rgba(255,255,255,.06)', borderRadius:6, height:10, overflow:'hidden' }}>
+                            <div style={{ background:'var(--border)', borderRadius:6, height:10, overflow:'hidden' }}>
                               <div style={{ width:`${pct}%`, height:'100%', background:'#facc15', borderRadius:6, transition:'width .5s' }} />
                             </div>
                           </div>

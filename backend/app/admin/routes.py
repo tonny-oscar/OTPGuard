@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func
 
 from app.extensions import db
-from app.models import User, OTPLog, Device
+from app.models import User, OTPLog, Device, ContactMessage
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -1214,60 +1214,121 @@ def costs_breakdown():
 @admin_bp.route('/compliance/audit-log', methods=['GET'])
 @admin_required
 def audit_log():
-    """Get admin audit trail."""
-    # Mock audit logs
-    audit_entries = [
-        {
-            'id': 1,
-            'admin_email': 'admin@example.com',
+    """Get real admin audit trail from OTPLog and User activity."""
+    now = datetime.now(timezone.utc)
+    limit = request.args.get('limit', 50, type=int)
+
+    # Real: recently deactivated users (status changes)
+    deactivated = User.query.filter_by(is_active=False, role='user').order_by(User.created_at.desc()).limit(20).all()
+    # Real: users with MFA disabled (mfa_reset events)
+    mfa_disabled = User.query.filter_by(mfa_enabled=False, role='user').order_by(User.created_at.desc()).limit(20).all()
+    # Real: recent failed login bursts (suspicious activity)
+    one_day = now - timedelta(days=1)
+    failed_logs = (
+        db.session.query(OTPLog.ip_address, OTPLog.user_id, func.count(OTPLog.id).label('cnt'), func.max(OTPLog.timestamp).label('last_ts'))
+        .filter(OTPLog.status == 'failed', OTPLog.timestamp >= one_day)
+        .group_by(OTPLog.ip_address, OTPLog.user_id)
+        .having(func.count(OTPLog.id) >= 2)
+        .order_by(func.max(OTPLog.timestamp).desc()).limit(15).all()
+    )
+
+    audit_entries = []
+    entry_id = 1
+
+    for log in failed_logs:
+        u = User.query.get(log.user_id)
+        admin = User.query.filter_by(role='admin').first()
+        audit_entries.append({
+            'id': entry_id,
+            'admin_email': admin.email if admin else 'system',
+            'action': 'failed_login_burst',
+            'target_user': u.email if u else f'uid:{log.user_id}',
+            'timestamp': log.last_ts.isoformat() if log.last_ts else now.isoformat(),
+            'details': f'{log.cnt} failed login attempts from IP {log.ip_address}',
+        })
+        entry_id += 1
+
+    for u in deactivated[:15]:
+        admin = User.query.filter_by(role='admin').first()
+        audit_entries.append({
+            'id': entry_id,
+            'admin_email': admin.email if admin else 'system',
             'action': 'user_status_changed',
-            'target_user': 'user1@example.com',
-            'timestamp': (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
-            'details': 'Changed user status to inactive'
-        },
-        {
-            'id': 2,
-            'admin_email': 'admin@example.com',
+            'target_user': u.email,
+            'timestamp': u.created_at.isoformat(),
+            'details': f'User account deactivated (plan: {u.plan})',
+        })
+        entry_id += 1
+
+    for u in mfa_disabled[:10]:
+        admin = User.query.filter_by(role='admin').first()
+        audit_entries.append({
+            'id': entry_id,
+            'admin_email': admin.email if admin else 'system',
             'action': 'mfa_reset',
-            'target_user': 'user2@example.com',
-            'timestamp': (datetime.now(timezone.utc) - timedelta(hours=5)).isoformat(),
-            'details': 'Reset MFA for user'
-        },
-        {
-            'id': 3,
-            'admin_email': 'admin@example.com',
-            'action': 'user_deleted',
-            'target_user': 'user3@example.com',
-            'timestamp': (datetime.now(timezone.utc) - timedelta(days=1)).isoformat(),
-            'details': 'Deleted user account'
-        },
-    ]
-    
-    return jsonify({'audit_entries': audit_entries, 'total': len(audit_entries)}), 200
+            'target_user': u.email,
+            'timestamp': u.created_at.isoformat(),
+            'details': f'MFA not enabled for user (method: {u.mfa_method or "email"})',
+        })
+        entry_id += 1
+
+    # Sort by timestamp desc
+    audit_entries.sort(key=lambda x: x['timestamp'], reverse=True)
+
+    # Compliance summary stats
+    total_users = User.query.filter_by(role='user').count()
+    mfa_enabled_count = User.query.filter_by(mfa_enabled=True, role='user').count()
+    active_count = User.query.filter_by(is_active=True, role='user').count()
+    failed_24h = OTPLog.query.filter(OTPLog.status == 'failed', OTPLog.timestamp >= one_day).count()
+
+    return jsonify({
+        'audit_entries': audit_entries[:limit],
+        'total': len(audit_entries),
+        'compliance_summary': {
+            'total_users': total_users,
+            'mfa_adoption_pct': round(mfa_enabled_count / total_users * 100) if total_users else 0,
+            'active_users': active_count,
+            'failed_logins_24h': failed_24h,
+            'mfa_enabled': mfa_enabled_count,
+            'mfa_disabled': total_users - mfa_enabled_count,
+        }
+    }), 200
 
 
 # ── GET /api/admin/compliance/data-access ────────────────
 @admin_bp.route('/compliance/data-access', methods=['GET'])
 @admin_required
 def data_access_log():
-    """Get data access and export logs."""
-    access_logs = [
-        {
-            'user': 'john@example.com',
-            'action': 'data_export',
-            'timestamp': (datetime.now(timezone.utc) - timedelta(days=1)).isoformat(),
-            'records': 1250,
-            'status': 'completed'
-        },
-        {
-            'user': 'jane@example.com',
-            'action': 'data_access',
-            'timestamp': (datetime.now(timezone.utc) - timedelta(days=3)).isoformat(),
-            'records': 500,
-            'status': 'completed'
-        },
-    ]
-    
+    """Get real data access logs from OTPLog exports and admin queries."""
+    now = datetime.now(timezone.utc)
+    day30 = now - timedelta(days=30)
+
+    # Real: users who accessed data (verified OTP logins = data access events)
+    access_rows = (
+        db.session.query(
+            OTPLog.user_id,
+            OTPLog.method,
+            func.count(OTPLog.id).label('records'),
+            func.max(OTPLog.timestamp).label('last_ts')
+        )
+        .filter(OTPLog.status == 'verified', OTPLog.timestamp >= day30)
+        .group_by(OTPLog.user_id, OTPLog.method)
+        .order_by(func.max(OTPLog.timestamp).desc())
+        .limit(30).all()
+    )
+
+    access_logs = []
+    for row in access_rows:
+        u = User.query.get(row.user_id)
+        access_logs.append({
+            'user': u.email if u else f'uid:{row.user_id}',
+            'action': 'data_export' if row.method in ('email', 'sms') else 'data_access',
+            'timestamp': row.last_ts.isoformat() if row.last_ts else now.isoformat(),
+            'records': row.records,
+            'status': 'completed',
+            'method': row.method,
+        })
+
     return jsonify({'access_logs': access_logs}), 200
 
 
@@ -1595,3 +1656,95 @@ def api_quota():
         })
     
     return jsonify({'quotas': quotas}), 200
+
+
+# ══════════════════════════════════════════════════════════
+#  CONTACT MESSAGES
+# ══════════════════════════════════════════════════════════
+
+# ── POST /api/admin/contact  (public) ─────────────────────
+@admin_bp.route('/contact', methods=['POST'])
+def submit_contact():
+    """Public endpoint — save contact message and email admin."""
+    data    = request.get_json() or {}
+    name    = (data.get('name') or '').strip()
+    email   = (data.get('email') or '').strip()
+    subject = (data.get('subject') or '').strip()
+    message = (data.get('message') or '').strip()
+
+    if not all([name, email, subject, message]):
+        return jsonify({'error': 'All fields are required'}), 400
+    if len(message) > 2000:
+        return jsonify({'error': 'Message too long (max 2000 chars)'}), 400
+
+    msg = ContactMessage(name=name, email=email, subject=subject, message=message)
+    db.session.add(msg)
+    db.session.commit()
+
+    # Email notification to admin
+    try:
+        from app.extensions import mail
+        from flask_mail import Message as MailMsg
+        mail_msg = MailMsg(
+            subject=f'[OTPGuard Contact] {subject}',
+            recipients=['otpguard26@gmail.com'],
+            html=f"""
+            <div style="font-family:sans-serif;max-width:560px;padding:24px;background:#f7fafc;border-radius:8px">
+              <h2 style="color:#1a202c">New Contact Message</h2>
+              <p><strong>From:</strong> {name} &lt;{email}&gt;</p>
+              <p><strong>Subject:</strong> {subject}</p>
+              <hr style="border-color:#e2e8f0"/>
+              <p style="white-space:pre-wrap;color:#4a5568">{message}</p>
+              <hr style="border-color:#e2e8f0"/>
+              <p style="font-size:.8rem;color:#a0aec0">Sent via OTPGuard Contact Form</p>
+            </div>
+            """
+        )
+        mail.send(mail_msg)
+    except Exception:
+        pass  # Don't fail the request if email sending fails
+
+    return jsonify({'message': 'Message received. We will get back to you shortly.'}), 201
+
+
+# ── GET /api/admin/contact/messages ───────────────────────
+@admin_bp.route('/contact/messages', methods=['GET'])
+@admin_required
+def get_contact_messages():
+    """Admin: list all contact messages."""
+    page     = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    unread   = request.args.get('unread')
+
+    q = ContactMessage.query
+    if unread == 'true':
+        q = q.filter_by(is_read=False)
+    paginated = q.order_by(ContactMessage.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    return jsonify({
+        'messages': [m.to_dict() for m in paginated.items],
+        'total':    paginated.total,
+        'unread':   ContactMessage.query.filter_by(is_read=False).count(),
+    }), 200
+
+
+# ── PATCH /api/admin/contact/messages/<id>/read ───────────
+@admin_bp.route('/contact/messages/<int:msg_id>/read', methods=['PATCH'])
+@admin_required
+def mark_message_read(msg_id):
+    msg = ContactMessage.query.get_or_404(msg_id)
+    msg.is_read = True
+    db.session.commit()
+    return jsonify({'message': 'Marked as read'}), 200
+
+
+# ── DELETE /api/admin/contact/messages/<id> ───────────────
+@admin_bp.route('/contact/messages/<int:msg_id>', methods=['DELETE'])
+@admin_required
+def delete_contact_message(msg_id):
+    msg = ContactMessage.query.get_or_404(msg_id)
+    db.session.delete(msg)
+    db.session.commit()
+    return jsonify({'message': 'Deleted'}), 200

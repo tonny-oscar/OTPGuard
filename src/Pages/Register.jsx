@@ -5,7 +5,7 @@ import { sanitizeInput, isValidEmail } from '../utils/sanitize'
 
 const inputStyle = {
   width: '100%', padding: '12px 16px', borderRadius: 8,
-  background: '#0a0e1a', border: '1px solid var(--border)',
+  background: 'var(--bg)', border: '1px solid var(--border)',
   color: 'var(--heading)', fontSize: '1rem', outline: 'none',
   transition: 'border-color .2s'
 }
@@ -18,10 +18,12 @@ export default function Register() {
   const [params] = useSearchParams()
 
   const [form, setForm]     = useState({
-    first_name: '', last_name: '', email: '',
-    password: '', company: '',
+    first_name: '', last_name: '', email: '', phone: '',
+    password: '', confirm_password: '', company: '',
     plan: params.get('plan') || 'starter'
   })
+  const [showPw, setShowPw]       = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError]   = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -35,12 +37,14 @@ export default function Register() {
     const cleanEmail = sanitizeInput(form.email, 254)
     if (!isValidEmail(cleanEmail)) return setError('Please enter a valid email address')
     if (form.password.length < 8) return setError('Password must be at least 8 characters')
+    if (form.password !== form.confirm_password) return setError('Passwords do not match')
     setLoading(true)
     try {
       const data = await register({
         email:     cleanEmail.trim().toLowerCase(),
         password:  form.password,
         full_name: sanitizeInput(`${form.first_name} ${form.last_name}`.trim(), 120),
+        phone:     sanitizeInput(form.phone, 20),
         company:   sanitizeInput(form.company, 100),
         plan:      form.plan
       })
@@ -116,12 +120,55 @@ export default function Register() {
             </div>
 
             <div>
-              <label style={{ fontSize: '.85rem', marginBottom: 6, display: 'block' }}>Password</label>
-              <input style={inputStyle} type="password" placeholder="Min. 8 characters"
-                value={form.password} onChange={set('password')} required
+              <label style={{ fontSize: '.85rem', marginBottom: 6, display: 'block' }}>Mobile Number</label>
+              <input style={inputStyle} type="tel" placeholder="+254700000000"
+                value={form.phone} onChange={set('phone')}
                 onFocus={e => e.target.style.borderColor = 'var(--green)'}
                 onBlur={e => e.target.style.borderColor = 'var(--border)'}
               />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '.85rem', marginBottom: 6, display: 'block' }}>Password</label>
+              <div style={{ position: 'relative' }}>
+                <input style={{ ...inputStyle, paddingRight: 44 }} type={showPw ? 'text' : 'password'} placeholder="Min. 8 characters"
+                  value={form.password} onChange={set('password')} required
+                  onFocus={e => e.target.style.borderColor = 'var(--green)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                />
+                <button type="button" onClick={() => setShowPw(v => !v)} style={{
+                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)',
+                  fontSize: '.8rem', padding: 0, lineHeight: 1,
+                }}>{showPw ? 'Hide' : 'Show'}</button>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '.85rem', marginBottom: 6, display: 'block' }}>Confirm Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  style={{
+                    ...inputStyle, paddingRight: 44,
+                    borderColor: form.confirm_password && form.confirm_password !== form.password ? '#f87171' : undefined,
+                  }}
+                  type={showConfirm ? 'text' : 'password'} placeholder="Re-enter password"
+                  value={form.confirm_password} onChange={set('confirm_password')} required
+                  onFocus={e => e.target.style.borderColor = form.confirm_password && form.confirm_password !== form.password ? '#f87171' : 'var(--green)'}
+                  onBlur={e => e.target.style.borderColor = form.confirm_password && form.confirm_password !== form.password ? '#f87171' : 'var(--border)'}
+                />
+                <button type="button" onClick={() => setShowConfirm(v => !v)} style={{
+                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)',
+                  fontSize: '.8rem', padding: 0, lineHeight: 1,
+                }}>{showConfirm ? 'Hide' : 'Show'}</button>
+              </div>
+              {form.confirm_password && form.confirm_password !== form.password && (
+                <div style={{ fontSize: '.75rem', color: '#f87171', marginTop: 4 }}>Passwords do not match</div>
+              )}
+              {form.confirm_password && form.confirm_password === form.password && (
+                <div style={{ fontSize: '.75rem', color: 'var(--green)', marginTop: 4 }}>✓ Passwords match</div>
+              )}
             </div>
 
             <div>

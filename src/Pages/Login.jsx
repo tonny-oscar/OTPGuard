@@ -5,7 +5,7 @@ import { sanitizeInput, isValidEmail } from '../utils/sanitize'
 
 const inputStyle = {
   width: '100%', padding: '12px 16px', borderRadius: 8,
-  background: '#0a0e1a', border: '1px solid var(--border)',
+  background: 'var(--bg)', border: '1px solid var(--border)',
   color: 'var(--heading)', fontSize: '1rem', outline: 'none',
   transition: 'border-color .2s'
 }
@@ -14,9 +14,10 @@ export default function Login() {
   const { login, sendOTP, verifyOTP, resendOTP } = useAuth()
   const navigate = useNavigate()
 
-  const [step, setStep]         = useState('login')   // this is where there is login | otp
+  const [step, setStep]         = useState('login')
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
+  const [showPw, setShowPw]     = useState(false)
   const [otp, setOtp]           = useState('')
   const [mfaMethod, setMfaMethod] = useState('')
   const [error, setError]     = useState('')
@@ -107,11 +108,18 @@ export default function Login() {
                 </div>
                 <div>
                   <label style={{ fontSize: '.85rem', marginBottom: 6, display: 'block' }}>Password</label>
-                  <input style={inputStyle} type="password" placeholder="••••••••"
-                    value={password} onChange={e => setPassword(e.target.value)} required
-                    onFocus={e => e.target.style.borderColor = 'var(--green)'}
-                    onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input style={{ ...inputStyle, paddingRight: 44 }} type={showPw ? 'text' : 'password'} placeholder="••••••••"
+                      value={password} onChange={e => setPassword(e.target.value)} required
+                      onFocus={e => e.target.style.borderColor = 'var(--green)'}
+                      onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                    />
+                    <button type="button" onClick={() => setShowPw(v => !v)} style={{
+                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)',
+                      fontSize: '.8rem', padding: 0, lineHeight: 1,
+                    }}>{showPw ? 'Hide' : 'Show'}</button>
+                  </div>
                 </div>
 
                 {error && (

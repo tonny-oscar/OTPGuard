@@ -11,6 +11,14 @@ import PlanBasedDashboard from './Pages/PlanBasedDashboard'
 import Admin from './Pages/Admin'
 import Docs from './Pages/Docs'
 import ApiDocs from './Pages/ApiDocs'
+import FeaturesPage from './Pages/FeaturesPage'
+import PricingPage from './Pages/PricingPage'
+import HowItWorksPage from './Pages/HowItWorksPage'
+import PrivacyPolicy from './Pages/PrivacyPolicy'
+import TermsOfService from './Pages/TermsOfService'
+import FAQ from './Pages/FAQ'
+import AboutUs from './Pages/AboutUs'
+import ContactUs from './Pages/ContactUs'
 function PublicLayout({ children }) {
   return (
     <>
@@ -39,6 +47,14 @@ export default function App() {
       <SubscriptionProvider>
         <Routes>
           <Route path="/" element={<PublicLayout><Landing /></PublicLayout>} />
+          <Route path="/features"     element={<FeaturesPage />} />
+          <Route path="/pricing"      element={<PricingPage />} />
+          <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route path="/privacy"      element={<PrivacyPolicy />} />
+          <Route path="/terms"        element={<TermsOfService />} />
+          <Route path="/faq"          element={<FAQ />} />
+          <Route path="/about"        element={<AboutUs />} />
+          <Route path="/contact"      element={<ContactUs />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={
