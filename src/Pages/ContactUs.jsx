@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Navbar from '../Components/Navbar'
 import Footer from '../Components/Footer'
 import { API } from '../context/AuthContext'
+import contactImg from '../assets/pexels-padrinan-2882630.jpg'
 
 const inputStyle = {
   width: '100%', padding: '12px 16px', borderRadius: 8,
@@ -58,13 +59,13 @@ export default function ContactUs() {
       <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
 
         {/* Hero */}
-        <section style={{ padding: '80px 20px 60px', textAlign: 'center', borderBottom: '1px solid var(--border)' }}>
-          <div className="container" style={{ maxWidth: 640 }}>
+        <section style={{ padding: 0, position: 'relative', overflow: 'hidden', minHeight: 260, display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+          <img src={contactImg} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,14,26,.97) 0%, rgba(10,14,26,.85) 60%, rgba(10,14,26,.5) 100%)' }} />
+          <div className="container" style={{ maxWidth: 640, position: 'relative', zIndex: 1, padding: '52px 24px' }}>
             <div className="tag">Contact Us</div>
-            <h1 style={{ fontSize: 'clamp(2rem,5vw,3rem)', fontWeight: 800, color: 'var(--heading)', lineHeight: 1.2, marginBottom: 16 }}>
-              Get in Touch
-            </h1>
-            <p style={{ fontSize: '1.05rem', color: 'var(--text)', lineHeight: 1.8 }}>
+            <h1 style={{ fontSize: 'clamp(2rem,5vw,3rem)', fontWeight: 800, color: '#f1f5f9', lineHeight: 1.2, marginBottom: 12, marginTop: 8 }}>Get in Touch</h1>
+            <p style={{ fontSize: '1.05rem', color: '#94a3b8', lineHeight: 1.8 }}>
               Have a question, need support, or want to discuss an enterprise plan? We respond to every message within 24 hours.
             </p>
           </div>

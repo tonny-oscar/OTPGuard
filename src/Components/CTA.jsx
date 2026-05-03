@@ -11,11 +11,11 @@ export default function CTA() {
         </p>
         <div style={{ display:'flex', gap:16, justifyContent:'center', flexWrap:'wrap' }}>
           <Link to="/register" className="btn-primary" style={{ fontSize:'1rem', padding:'14px 32px' }}>
-            Get Started Free →
+            Get Started Free
           </Link>
-          <a href="mailto:hello@otpguard.co.ke" className="btn-outline" style={{ fontSize:'1rem', padding:'14px 32px' }}>
+          <Link to="/contact" className="btn-outline" style={{ fontSize:'1rem', padding:'14px 32px' }}>
             Talk to Us
-          </a>
+          </Link>
         </div>
         <p style={{ marginTop:24, fontSize:'.85rem', opacity:.6 }}>
           No credit card required · Free plan available · Cancel anytime

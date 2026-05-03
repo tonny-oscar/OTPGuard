@@ -1239,7 +1239,7 @@ def audit_log():
         u = User.query.get(log.user_id)
         admin = User.query.filter_by(role='admin').first()
         audit_entries.append({
-            'id': entry_id,
+            'id': f'fail_{log.user_id}_{entry_id}',
             'admin_email': admin.email if admin else 'system',
             'action': 'failed_login_burst',
             'target_user': u.email if u else f'uid:{log.user_id}',
@@ -1251,26 +1251,24 @@ def audit_log():
     for u in deactivated[:15]:
         admin = User.query.filter_by(role='admin').first()
         audit_entries.append({
-            'id': entry_id,
+            'id': f'deact_{u.id}',
             'admin_email': admin.email if admin else 'system',
             'action': 'user_status_changed',
             'target_user': u.email,
             'timestamp': u.created_at.isoformat(),
             'details': f'User account deactivated (plan: {u.plan})',
         })
-        entry_id += 1
 
     for u in mfa_disabled[:10]:
         admin = User.query.filter_by(role='admin').first()
         audit_entries.append({
-            'id': entry_id,
+            'id': f'mfa_{u.id}',
             'admin_email': admin.email if admin else 'system',
             'action': 'mfa_reset',
             'target_user': u.email,
             'timestamp': u.created_at.isoformat(),
             'details': f'MFA not enabled for user (method: {u.mfa_method or "email"})',
         })
-        entry_id += 1
 
     # Sort by timestamp desc
     audit_entries.sort(key=lambda x: x['timestamp'], reverse=True)
@@ -1748,3 +1746,51 @@ def delete_contact_message(msg_id):
     db.session.delete(msg)
     db.session.commit()
     return jsonify({'message': 'Deleted'}), 200
+
+
+# ── POST /api/admin/contact/messages/<id>/reply ───────────
+@admin_bp.route('/contact/messages/<int:msg_id>/reply', methods=['POST'])
+@admin_required
+def reply_contact_message(msg_id):
+    """Admin: send a reply email to the contact message sender."""
+    msg = ContactMessage.query.get_or_404(msg_id)
+    data = request.get_json() or {}
+    reply_body = (data.get('reply') or '').strip()
+
+    if not reply_body:
+        return jsonify({'error': 'Reply message is required'}), 400
+
+    try:
+        from app.extensions import mail
+        from flask_mail import Message as MailMsg
+        mail_msg = MailMsg(
+            subject=f'Re: {msg.subject}',
+            recipients=[msg.email],
+            html=f"""
+            <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;
+                        background:#f7fafc;border-radius:8px;border:1px solid #e2e8f0">
+              <div style="margin-bottom:24px">
+                <span style="font-size:1.1rem;font-weight:800;color:#1a202c">OTP<span style="color:#00b860">Guard</span></span>
+              </div>
+              <p style="color:#4a5568;margin-bottom:8px">Hi {msg.name},</p>
+              <div style="white-space:pre-wrap;color:#1a202c;line-height:1.8;margin-bottom:24px">{reply_body}</div>
+              <hr style="border-color:#e2e8f0;margin:24px 0"/>
+              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:16px;margin-bottom:24px">
+                <p style="font-size:.8rem;color:#718096;margin-bottom:8px">Your original message:</p>
+                <p style="font-size:.85rem;color:#4a5568;white-space:pre-wrap">{msg.message}</p>
+              </div>
+              <p style="font-size:.8rem;color:#a0aec0">
+                OTPGuard Support &mdash; otpguard26@gmail.com &mdash; +254 794 886 149
+              </p>
+            </div>
+            """
+        )
+        mail.send(mail_msg)
+    except Exception as e:
+        return jsonify({'error': f'Failed to send email: {str(e)}'}), 500
+
+    # Mark as read after replying
+    msg.is_read = True
+    db.session.commit()
+
+    return jsonify({'message': f'Reply sent to {msg.email}'}), 200

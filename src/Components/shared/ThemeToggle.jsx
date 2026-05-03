@@ -1,26 +1,79 @@
-﻿import { useTheme } from '../../context/ThemeContext'
+import { useTheme } from '../../context/ThemeContext'
 import { sound } from '../../utils/sound'
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ inNavbar = false }) {
   const { theme, toggle } = useTheme()
-  const isLight = theme === 'light'
+  const isDark = theme === 'dark'
 
+  if (inNavbar) {
+    return (
+      <button
+        onClick={() => { sound.toggle?.(); toggle() }}
+        title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+        style={{
+          width: 36, height: 36, borderRadius: '50%',
+          border: `1px solid ${isDark ? 'rgba(255,255,255,.12)' : 'var(--border)'}`,
+          background: isDark ? 'rgba(255,255,255,.06)' : 'var(--surface)',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'all .2s', flexShrink: 0, padding: 0,
+          color: isDark ? '#facc15' : '#64748b',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--green)'; e.currentTarget.style.color = 'var(--green)' }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,.12)' : 'var(--border)'; e.currentTarget.style.color = isDark ? '#facc15' : '#64748b' }}
+      >
+        {isDark ? (
+          // Sun icon
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        ) : (
+          // Moon icon
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        )}
+      </button>
+    )
+  }
+
+  // Sidebar / settings version — pill with label
   return (
     <button
-      onClick={() => { sound.toggle(); toggle() }}
-      title={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
+      onClick={() => { sound.toggle?.(); toggle() }}
+      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: 20, padding: '5px 12px', cursor: 'pointer',
-        fontSize: '.8rem', color: 'var(--text)', transition: 'all .2s',
-        whiteSpace: 'nowrap',
+        display: 'flex', alignItems: 'center', gap: 8,
+        background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)',
+        borderRadius: 20, padding: '6px 12px 6px 8px', cursor: 'pointer',
+        fontSize: '.78rem', color: '#94a3b8', transition: 'all .2s', whiteSpace: 'nowrap',
       }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--green)'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--green)'; e.currentTarget.style.color = '#f1f5f9' }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,.1)'; e.currentTarget.style.color = '#94a3b8' }}
     >
-      <span style={{ fontSize: '.8rem', fontWeight: 600 }}>{isLight ? 'Dark' : 'Light'} Mode</span>
+      <span style={{ color: isDark ? '#facc15' : '#94a3b8', display: 'flex', alignItems: 'center' }}>
+        {isDark ? (
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        ) : (
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        )}
+      </span>
+      <span style={{ fontWeight: 600 }}>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
     </button>
   )
 }
-

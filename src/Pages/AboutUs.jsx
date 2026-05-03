@@ -1,12 +1,13 @@
 import Navbar from '../Components/Navbar'
 import Footer from '../Components/Footer'
 import { Link } from 'react-router-dom'
+import aboutHero from '../assets/pexels-sora-shimazaki-5935791 (1).jpg'
 
 const team = [
-  { name: 'Tonny Bett', role: 'Founder & CEO', bio: 'Security engineer with 5 years of experience building authentication systems for financial institutions across East Africa.' },
-  { name: 'Tonny Bett', role: 'CTO', bio: 'Backend architect specialising in distributed systems and API design. Previously led engineering at two Nairobi-based fintech startups.' },
-  { name: 'Erasmus kipkosgei', role: 'Head of Product', bio: 'Product leader focused on developer experience. Passionate about making security tools accessible to teams of all sizes.' },
-  { name: 'ERasmus and Tonny', role: 'Lead Security Engineer', bio: 'Certified ethical hacker and penetration tester. Responsible for OTPGuard\'s security architecture and compliance framework.' },
+  { name: 'Tonny Bett',          role: 'Founder & CEO',          bio: 'Security engineer with 5 years of experience building authentication systems for financial institutions across East Africa.' },
+  { name: 'Erasmus Kipkosgei',   role: 'CTO',                    bio: 'Backend architect specialising in distributed systems and API design. Previously led engineering at two Nairobi-based fintech startups.' },
+  { name: 'Erasmus & Tonny',     role: 'Head of Product',        bio: 'Product leaders focused on developer experience. Passionate about making security tools accessible to teams of all sizes.' },
+  { name: 'OTPGuard Security',   role: 'Lead Security Engineer', bio: 'Certified ethical hacker and penetration tester. Responsible for OTPGuard\'s security architecture and compliance framework.' },
 ]
 
 const values = [
@@ -30,20 +31,22 @@ export default function AboutUs() {
       <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
 
         {/* Hero */}
-        <section style={{ padding: '80px 20px 64px', textAlign: 'center', borderBottom: '1px solid var(--border)' }}>
-          <div className="container" style={{ maxWidth: 740 }}>
+        <section style={{ padding: 0, position: 'relative', overflow: 'hidden', minHeight: 340, display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+          <img src={aboutHero} alt="About OTPGuard" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,14,26,.92) 0%, rgba(10,14,26,.7) 60%, rgba(10,14,26,.4) 100%)' }} />
+          <div className="container" style={{ maxWidth: 740, position: 'relative', zIndex: 1, padding: '64px 24px' }}>
             <div className="tag">About OTPGuard</div>
-            <h1 style={{ fontSize: 'clamp(2rem,5vw,3.2rem)', fontWeight: 800, color: 'var(--heading)', lineHeight: 1.2, marginBottom: 20 }}>
+            <h1 style={{ fontSize: 'clamp(2rem,5vw,3.2rem)', fontWeight: 800, color: '#f1f5f9', lineHeight: 1.2, marginBottom: 16 }}>
               We Make Account Security<br />Accessible to Every Developer
             </h1>
-            <p style={{ fontSize: '1.1rem', color: 'var(--text)', lineHeight: 1.85, marginBottom: 0 }}>
-              OTPGuard was founded in Nairobi with a single mission: to make multi-factor authentication simple enough that every application — from a two-person startup to an enterprise — can protect its users without a dedicated security team.
+            <p style={{ fontSize: '1.05rem', color: '#94a3b8', lineHeight: 1.85, maxWidth: 560 }}>
+              OTPGuard was founded in Nairobi with a single mission: to make multi-factor authentication simple enough that every application can protect its users without a dedicated security team.
             </p>
           </div>
         </section>
 
         {/* Mission */}
-        <section style={{ padding: '72px 20px', borderBottom: '1px solid var(--border)' }}>
+        <section style={{ padding: '44px 20px', borderBottom: '1px solid var(--border)' }}>
           <div className="container" style={{ maxWidth: 900 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(380px,1fr))', gap: 48, alignItems: 'center' }}>
               <div>
@@ -76,7 +79,7 @@ export default function AboutUs() {
         </section>
 
         {/* Values */}
-        <section style={{ padding: '72px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <section style={{ padding: '44px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
           <div className="container">
             <div className="tag">Our Values</div>
             <h2 className="section-title">What We Stand For</h2>
@@ -94,7 +97,7 @@ export default function AboutUs() {
         </section>
 
         {/* Timeline */}
-        <section style={{ padding: '72px 20px', borderBottom: '1px solid var(--border)' }}>
+        <section style={{ padding: '44px 20px', borderBottom: '1px solid var(--border)' }}>
           <div className="container" style={{ maxWidth: 720 }}>
             <div className="tag">Our Story</div>
             <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--heading)', marginBottom: 40 }}>How We Got Here</h2>
@@ -118,7 +121,7 @@ export default function AboutUs() {
         </section>
 
         {/* Team */}
-        <section style={{ padding: '72px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <section style={{ padding: '44px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
           <div className="container">
             <div className="tag">The Team</div>
             <h2 className="section-title">The People Behind OTPGuard</h2>
@@ -139,7 +142,7 @@ export default function AboutUs() {
         </section>
 
         {/* CTA */}
-        <section style={{ padding: '80px 20px', textAlign: 'center' }}>
+        <section style={{ padding: '44px 20px', textAlign: 'center' }}>
           <div className="container" style={{ maxWidth: 580 }}>
             <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--heading)', marginBottom: 16 }}>Ready to protect your users?</h2>
             <p style={{ color: 'var(--text)', marginBottom: 32, lineHeight: 1.7 }}>

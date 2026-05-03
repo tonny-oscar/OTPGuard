@@ -85,9 +85,9 @@ function ComplianceAudit() {
                 </span>
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {audit.audit_entries.map((entry) => (
+                {audit.audit_entries.map((entry, idx) => (
                   <div
-                    key={entry.id}
+                    key={`${entry.id}-${idx}`}
                     style={{
                       padding: 12,
                       background: 'rgba(255,255,255,.02)',

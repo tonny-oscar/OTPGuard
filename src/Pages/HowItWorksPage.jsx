@@ -1,6 +1,7 @@
 import Navbar from '../Components/Navbar'
 import Footer from '../Components/Footer'
 import { Link } from 'react-router-dom'
+import howHero from '../assets/pexels-sora-shimazaki-5935791.jpg'
 
 const steps = [
   {
@@ -52,23 +53,23 @@ export default function HowItWorksPage() {
       <Navbar />
       <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
         {/* Hero */}
-        <section style={{ padding: '80px 20px 60px', textAlign: 'center', borderBottom: '1px solid var(--border)' }}>
-          <div className="container" style={{ maxWidth: 700 }}>
+        <section style={{ padding: 0, position: 'relative', overflow: 'hidden', minHeight: 300, display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+          <img src={howHero} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,14,26,.97) 0%, rgba(10,14,26,.82) 60%, rgba(10,14,26,.5) 100%)' }} />
+          <div className="container" style={{ maxWidth: 700, position: 'relative', zIndex: 1, padding: '56px 24px' }}>
             <div className="tag">How It Works</div>
-            <h1 style={{ fontSize: 'clamp(2rem,5vw,3.2rem)', fontWeight: 800, color: 'var(--heading)', lineHeight: 1.2, marginBottom: 20 }}>
+            <h1 style={{ fontSize: 'clamp(2rem,5vw,3.2rem)', fontWeight: 800, color: '#f1f5f9', lineHeight: 1.2, marginBottom: 16, marginTop: 8 }}>
               From Zero to Secure<br />in Under an Hour
             </h1>
-            <p style={{ fontSize: '1.05rem', color: 'var(--text)', lineHeight: 1.8, marginBottom: 36 }}>
+            <p style={{ fontSize: '1.05rem', color: '#94a3b8', lineHeight: 1.8, marginBottom: 28, maxWidth: 520 }}>
               OTPGuard is designed to integrate cleanly into any existing application. No infrastructure changes. No complex configuration. Just a few API calls.
             </p>
-            <Link to="/register" className="btn-primary" style={{ padding: '13px 32px', fontSize: '1rem' }}>
-              Start for Free
-            </Link>
+            <Link to="/register" className="btn-primary" style={{ padding: '13px 32px', fontSize: '1rem' }}>Start for Free</Link>
           </div>
         </section>
 
         {/* Steps */}
-        <section style={{ padding: '72px 20px', borderBottom: '1px solid var(--border)' }}>
+        <section style={{ padding: '48px 20px', borderBottom: '1px solid var(--border)' }}>
           <div className="container" style={{ maxWidth: 860 }}>
             <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--heading)', marginBottom: 48, textAlign: 'center' }}>The Integration Process</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -92,7 +93,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* Code example */}
-        <section style={{ padding: '72px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <section style={{ padding: '48px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
           <div className="container" style={{ maxWidth: 860 }}>
             <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--heading)', marginBottom: 8 }}>Simple API Integration</h2>
             <p style={{ color: 'var(--text)', marginBottom: 32, lineHeight: 1.7 }}>Two endpoints. That is all you need to add MFA to your application.</p>
@@ -123,7 +124,7 @@ Authorization: Bearer <api_key>
         </section>
 
         {/* Integrations */}
-        <section style={{ padding: '72px 20px', borderBottom: '1px solid var(--border)' }}>
+        <section style={{ padding: '48px 20px', borderBottom: '1px solid var(--border)' }}>
           <div className="container">
             <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--heading)', marginBottom: 8, textAlign: 'center' }}>Works With Your Stack</h2>
             <p style={{ color: 'var(--text)', textAlign: 'center', marginBottom: 40 }}>Official and community SDKs available for the most popular languages.</p>
@@ -139,7 +140,7 @@ Authorization: Bearer <api_key>
         </section>
 
         {/* Use cases */}
-        <section style={{ padding: '72px 20px' }}>
+        <section style={{ padding: '48px 20px' }}>
           <div className="container">
             <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--heading)', marginBottom: 8, textAlign: 'center' }}>Built for Every Industry</h2>
             <p style={{ color: 'var(--text)', textAlign: 'center', marginBottom: 40 }}>OTPGuard adapts to the security requirements of your specific domain.</p>

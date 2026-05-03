@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Navbar from '../Components/Navbar'
 import Footer from '../Components/Footer'
 import { Link } from 'react-router-dom'
+import faqHero from '../assets/pexels-severus-jones-942216-4304021.jpg'
 
 const faqs = [
   {
@@ -124,15 +125,15 @@ export default function FAQ() {
       <Navbar />
       <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
         {/* Hero */}
-        <section style={{ padding: '80px 20px 60px', textAlign: 'center', borderBottom: '1px solid var(--border)' }}>
-          <div className="container" style={{ maxWidth: 680 }}>
+        <section style={{ padding: 0, position: 'relative', overflow: 'hidden', minHeight: 240, display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+          <img src={faqHero} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,14,26,.97) 0%, rgba(10,14,26,.82) 55%, rgba(10,14,26,.5) 100%)' }} />
+          <div className="container" style={{ maxWidth: 680, position: 'relative', zIndex: 1, padding: '48px 24px' }}>
             <div className="tag">FAQ</div>
-            <h1 style={{ fontSize: 'clamp(2rem,5vw,3rem)', fontWeight: 800, color: 'var(--heading)', lineHeight: 1.2, marginBottom: 16 }}>
-              Frequently Asked Questions
-            </h1>
-            <p style={{ fontSize: '1.05rem', color: 'var(--text)', lineHeight: 1.8 }}>
-              Everything you need to know about OTPGuard. Can't find your answer?{' '}
-              <Link to="/contact" style={{ color: 'var(--green)', textDecoration: 'none', fontWeight: 600 }}>Contact us</Link>.
+            <h1 style={{ fontSize: 'clamp(2rem,5vw,3rem)', fontWeight: 800, color: '#f1f5f9', lineHeight: 1.2, marginBottom: 12, marginTop: 8 }}>Frequently Asked Questions</h1>
+            <p style={{ fontSize: '1.05rem', color: '#94a3b8', lineHeight: 1.8 }}>
+              Everything you need to know about OTPGuard.{' '}
+              <Link to="/contact" style={{ color: 'var(--green)', textDecoration: 'none', fontWeight: 600 }}>Contact us</Link> if you can't find your answer.
             </p>
           </div>
         </section>

@@ -1,6 +1,7 @@
 import Navbar from '../Components/Navbar'
 import Footer from '../Components/Footer'
 import { Link } from 'react-router-dom'
+import featHero from '../assets/istockphoto-2200469339-612x612.jpg'
 
 const features = [
   {
@@ -47,18 +48,18 @@ export default function FeaturesPage() {
       <Navbar />
       <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
         {/* Hero */}
-        <section style={{ padding: '80px 20px 60px', textAlign: 'center', borderBottom: '1px solid var(--border)' }}>
-          <div className="container" style={{ maxWidth: 720 }}>
+        <section style={{ padding: 0, position: 'relative', overflow: 'hidden', minHeight: 320, display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+          <img src={featHero} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,14,26,.96) 0%, rgba(10,14,26,.8) 60%, rgba(10,14,26,.5) 100%)' }} />
+          <div className="container" style={{ maxWidth: 720, position: 'relative', zIndex: 1, padding: '56px 24px' }}>
             <div className="tag">Platform Features</div>
-            <h1 style={{ fontSize: 'clamp(2rem,5vw,3.2rem)', fontWeight: 800, color: 'var(--heading)', lineHeight: 1.2, marginBottom: 20 }}>
+            <h1 style={{ fontSize: 'clamp(2rem,5vw,3.2rem)', fontWeight: 800, color: '#f1f5f9', lineHeight: 1.2, marginBottom: 16, marginTop: 8 }}>
               Built for Security.<br />Designed for Developers.
             </h1>
-            <p style={{ fontSize: '1.1rem', lineHeight: 1.8, color: 'var(--text)', marginBottom: 36 }}>
+            <p style={{ fontSize: '1.05rem', lineHeight: 1.8, color: '#94a3b8', marginBottom: 28, maxWidth: 560 }}>
               OTPGuard gives you every tool needed to add robust multi-factor authentication to your application — from delivery channels to compliance reporting.
             </p>
-            <Link to="/register" className="btn-primary" style={{ fontSize: '1rem', padding: '13px 32px' }}>
-              Start Building Free
-            </Link>
+            <Link to="/register" className="btn-primary" style={{ fontSize: '1rem', padding: '13px 32px' }}>Start Building Free</Link>
           </div>
         </section>
 
@@ -81,7 +82,7 @@ export default function FeaturesPage() {
         ))}
 
         {/* CTA */}
-        <section style={{ padding: '80px 20px', textAlign: 'center' }}>
+        <section style={{ padding: '44px 20px', textAlign: 'center' }}>
           <div className="container" style={{ maxWidth: 600 }}>
             <h2 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--heading)', marginBottom: 16 }}>Ready to get started?</h2>
             <p style={{ color: 'var(--text)', marginBottom: 32, lineHeight: 1.7 }}>
