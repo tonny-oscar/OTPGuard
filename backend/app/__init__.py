@@ -48,7 +48,11 @@ def create_app(env=None):
 
     # ── CORS ──────────────────────────────────────────────────────
     CORS(app,
-         resources={r'/api/*': {'origins': '*'}},
+         resources={r'/api/*': {'origins': [
+             'http://localhost:5173',
+             'http://localhost:3000',
+             os.getenv('FRONTEND_URL', 'https://otpguard.onrender.com'),
+         ]}},
          supports_credentials=False,
          allow_headers=['Content-Type', 'Authorization', 'X-API-Key'],
          methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
