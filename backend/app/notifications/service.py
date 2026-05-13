@@ -11,46 +11,23 @@ from app.extensions import mail
 def send_email_otp(to_email: str, code: str):
     """Send OTP code via email using configured SMTP."""
     username = current_app.config.get('MAIL_USERNAME', '')
-
     password = current_app.config.get('MAIL_PASSWORD', '')
-    
-    # Check if credentials are properly configured
-    if not username or username == 'your@gmail.com' or not password or password == 'your-app-password':
-        # Development mode: log code to console for manual testing
-        current_app.logger.warning(f"[EMAIL] ⚠️  Dev Mode - Email credentials not configured")
-        current_app.logger.warning(f"[EMAIL] 📧 OTP CODE FOR {to_email}: {code}")
-        current_app.logger.warning(f"[EMAIL] Valid for 5 minutes. Use code above for testing.")
-        return
-    
-    subject = f"{code} is your OTPGuard verification code"
-    body    = _email_body(code)
-    msg = Message(subject=subject, recipients=[to_email], html=body)
-    
-    try:
-        current_app.logger.info(f"[EMAIL] Sending OTP to {to_email} via {current_app.config.get('MAIL_SERVER')}:{current_app.config.get('MAIL_PORT')}")
-        mail.send(msg)
-        current_app.logger.info(f"[EMAIL] ✅ OTP sent successfully to {to_email}")
-    except Exception as e:
-        error_msg = str(e)
-        current_app.logger.error(f"[EMAIL] ❌ Failed to send to {to_email}: {error_msg}")
-        # Fallback: log code for manual use
-        current_app.logger.warning(f"[EMAIL] 📧 Fallback - OTP CODE FOR {to_email}: {code}")
-        # Don't raise - let testing continue even if email fails
 
-    if not username or username == 'your@gmail.com':
-        current_app.logger.warning(f"[EMAIL] MAIL_USERNAME not configured — OTP code for {to_email}: {code}")
+    if not username or not password:
+        current_app.logger.warning(f"[EMAIL] Credentials not configured — OTP for {to_email}: {code}")
         return
 
-    subject = f"{code} is your OTPGuard verification code"
-    body    = _email_body(code)
-    msg = Message(subject=subject, recipients=[to_email], html=body)
+    msg = Message(
+        subject=f"{code} is your OTPGuard verification code",
+        recipients=[to_email],
+        html=_email_body(code)
+    )
     try:
         mail.send(msg)
-        current_app.logger.info(f"[EMAIL] OTP sent to {to_email}")
+        current_app.logger.info(f"[EMAIL] ✅ OTP sent to {to_email}")
     except Exception as e:
-        current_app.logger.error(f"[EMAIL] Failed to send to {to_email}: {e}")
-        # Don't raise — OTP is already saved in DB, user can still verify
-
+        current_app.logger.error(f"[EMAIL] ❌ Failed to send to {to_email}: {e}")
+        raise
 
 
 def _email_body(code: str) -> str:
@@ -83,96 +60,52 @@ def _email_body(code: str) -> str:
 def send_sms_otp(to_phone: str, code: str):
     """Send OTP via SMS. Uses Twilio if configured, else Africa's Talking."""
     message = f"Your OTPGuard code is: {code}. Valid for 5 minutes. Do not share."
-
     cfg = current_app.config
 
-    sent = False
-    
-    # Try Twilio first
     if cfg.get("TWILIO_ACCOUNT_SID") and cfg.get("TWILIO_AUTH_TOKEN"):
         try:
             _send_twilio(to_phone, message)
-            sent = True
+            return
         except Exception as e:
-            current_app.logger.warning(f"[SMS] Twilio failed, trying Africa's Talking...")
-    
-    # Try Africa's Talking if Twilio failed or not configured
-    if not sent and cfg.get("AT_API_KEY"):
+            current_app.logger.warning(f"[SMS] Twilio failed: {e} — trying Africa's Talking")
+
+    if cfg.get("AT_API_KEY"):
         try:
             _send_africas_talking(to_phone, message)
-            sent = True
+            return
         except Exception as e:
-            current_app.logger.warning(f"[SMS] Africa's Talking also failed...")
-    
-    # If both failed, log code for manual testing
-    if not sent:
-        current_app.logger.warning(f"[SMS] ⚠️  All SMS providers failed")
-        current_app.logger.warning(f"[SMS] 📱 Dev Mode - SMS CODE FOR {to_phone}: {code}")
-        current_app.logger.warning(f"[SMS] Valid for 5 minutes. Use code above for testing.")
+            current_app.logger.error(f"[SMS] Africa's Talking also failed: {e}")
 
-    if cfg.get("TWILIO_ACCOUNT_SID") and cfg.get("TWILIO_AUTH_TOKEN"):
-        _send_twilio(to_phone, message)
-    elif cfg.get("AT_API_KEY"):
-        _send_africas_talking(to_phone, message)
-    else:
-        current_app.logger.warning("[SMS] No SMS provider configured — code not sent")
-
+    current_app.logger.warning(f"[SMS] All providers failed — OTP for {to_phone}: {code}")
 
 
 def _send_twilio(to_phone: str, message: str):
     cfg = current_app.config
-    try:
-        current_app.logger.info(f"[TWILIO] Sending SMS to {to_phone}...")
-        from twilio.rest import Client
-        client = Client(cfg["TWILIO_ACCOUNT_SID"], cfg["TWILIO_AUTH_TOKEN"])
-        response = client.messages.create(
-            body=message,
-            from_=cfg["TWILIO_PHONE_NUMBER"],
-            to=to_phone
-        )
-        current_app.logger.info(f"[TWILIO] ✅ SMS sent successfully to {to_phone} (SID: {response.sid})")
-    except Exception as e:
-        error_msg = str(e)
-        current_app.logger.error(f"[TWILIO] ❌ Failed to send to {to_phone}: {error_msg}")
-        # Fallback to Africa's Talking
-        if current_app.config.get("AT_API_KEY"):
-            current_app.logger.info("[TWILIO] Falling back to Africa's Talking")
-            _send_africas_talking(to_phone, message)
-        else:
-            raise
-
+    from twilio.rest import Client
+    client = Client(cfg["TWILIO_ACCOUNT_SID"], cfg["TWILIO_AUTH_TOKEN"])
+    response = client.messages.create(
+        body=message,
+        from_=cfg["TWILIO_PHONE_NUMBER"],
+        to=to_phone
+    )
+    current_app.logger.info(f"[TWILIO] ✅ SMS sent to {to_phone} (SID: {response.sid})")
 
 
 def _send_africas_talking(to_phone: str, message: str):
     cfg = current_app.config
-    try:
-
-        current_app.logger.info(f"[AfricasTalking] Sending SMS to {to_phone}...")
-
-
-        resp = requests.post(
-            "https://api.africastalking.com/version1/messaging",
-            headers={
-                "apiKey":       cfg["AT_API_KEY"],
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Accept":       "application/json",
-            },
-            data={
-                "username": cfg["AT_USERNAME"],
-                "to":       to_phone,
-                "message":  message,
-            },
-            timeout=10
-        )
-        resp.raise_for_status()
-
-        current_app.logger.info(f"[AfricasTalking] ✅ SMS sent successfully to {to_phone}")
-    except Exception as e:
-        error_msg = str(e)
-        current_app.logger.error(f"[AfricasTalking] ❌ Failed to send to {to_phone}: {error_msg}")
-
-        current_app.logger.info(f"[AT] SMS sent to {to_phone}")
-    except Exception as e:
-        current_app.logger.error(f"[AT] Failed: {e}")
-
-        raise
+    resp = requests.post(
+        "https://api.africastalking.com/version1/messaging",
+        headers={
+            "apiKey":       cfg["AT_API_KEY"],
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept":       "application/json",
+        },
+        data={
+            "username": cfg["AT_USERNAME"],
+            "to":       to_phone,
+            "message":  message,
+        },
+        timeout=10
+    )
+    resp.raise_for_status()
+    current_app.logger.info(f"[AT] ✅ SMS sent to {to_phone}")
