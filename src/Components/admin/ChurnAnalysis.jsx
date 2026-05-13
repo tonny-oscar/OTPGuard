@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
-import { generatePDF, pdfKpiGrid, pdfTable, pdfSection, pdfBar } from '../../utils/pdfExport'
+import { generatePDF, pdfKpiGrid, pdfTable, pdfSection, pdfBar, exportCSV } from '../../utils/pdfExport'
 
 const card = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24 }
 const sel  = { background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 12px', color: 'var(--heading)', fontSize: '.85rem', outline: 'none', cursor: 'pointer' }
@@ -118,9 +118,15 @@ export default function ChurnAnalysis({ initialCategory = 'overview' }) {
           <h1 style={{ color:'var(--heading)', fontSize:'1.6rem', fontWeight:800, letterSpacing:'-.02em', marginBottom:4 }}> Churn Analysis</h1>
           <p style={{ fontSize:'.85rem', color:'var(--text)' }}>Monitor churn, identify at-risk users, and track retention</p>
         </div>
+        <div style={{ display:'flex', gap:8 }}>
+        <button onClick={() => data && exportCSV('churn-report',
+          ['Email','Name','Plan','Last Login','Days Inactive','Type'],
+          (data.inactive_users||[]).map(u => [u.email, u.name||'—', u.plan, u.last_login||'Never', u.days_inactive, u.churn_type])
+        )} disabled={!data} style={{ padding:'8px 16px', borderRadius:8, border:'1px solid var(--border)', background:'transparent', color:'var(--text)', fontWeight:700, cursor: data?'pointer':'not-allowed', fontSize:'.85rem' }}>Export CSV</button>
         <button onClick={exportPDF} disabled={!data} style={{ padding:'8px 18px', borderRadius:8, border:'none', background: data?'var(--green)':'var(--border)', color: data?'#0a0e1a':'var(--text)', fontWeight:700, cursor: data?'pointer':'not-allowed', fontSize:'.85rem' }}>
            Export PDF
         </button>
+        </div>
       </div>
 
       {/* Controls */}

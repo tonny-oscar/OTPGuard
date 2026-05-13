@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
-import { generatePDF, pdfKpiGrid, pdfTable, pdfSection } from '../../utils/pdfExport'
+import { generatePDF, pdfKpiGrid, pdfTable, pdfSection, exportCSV } from '../../utils/pdfExport'
 
 const card = {
   background: 'var(--surface)',
@@ -77,15 +77,21 @@ function BillingReport() {
             <option value={30}>Last 30 days</option>
             <option value={90}>Last 90 days</option>
           </select>
+          <button onClick={() => data && exportCSV('billing-report',
+            ['Name','Email','Plan','Logins','Failed','Success %'],
+            data.users.map(u => [u.name||'—', u.email, u.plan, u.total_logins, u.failed_logins, u.success_rate+'%'])
+          )} disabled={!data} style={{
+            padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)',
+            background: 'transparent', color: 'var(--text)',
+            fontWeight: 700, cursor: data ? 'pointer' : 'not-allowed', fontSize: '.85rem',
+          }}>Export CSV</button>
           <button onClick={exportPDF} disabled={!data} style={{
             display: 'flex', alignItems: 'center', gap: 6,
             padding: '8px 16px', borderRadius: 8, border: 'none',
             background: data ? 'var(--green)' : 'var(--border)',
             color: data ? '#0a0e1a' : 'var(--text)',
             fontWeight: 700, cursor: data ? 'pointer' : 'not-allowed', fontSize: '.85rem',
-          }}>
-             Export PDF
-          </button>
+          }}> Export PDF</button>
         </div>
       </div>
 

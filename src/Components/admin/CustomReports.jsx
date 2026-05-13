@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react'
 import { useAuth, API } from '../../context/AuthContext'
-import { generatePDF, pdfKpiGrid, pdfTable, pdfSection } from '../../utils/pdfExport'
+import { generatePDF, pdfKpiGrid, pdfTable, pdfSection, exportCSV } from '../../utils/pdfExport'
 
 const card = { background: 'var(--surface)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 16, padding: 24 }
 const sel  = { background: 'var(--bg)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '8px 12px', color: 'var(--heading)', fontSize: '.85rem', outline: 'none', cursor: 'pointer' }
@@ -72,9 +72,18 @@ export default function CustomReports({ initialType = 'usage' }) {
           <p style={{ fontSize:'.85rem', color:'var(--text)' }}>Generate, filter, and export reports as PDF</p>
         </div>
         {result && (
+          <div style={{ display:'flex', gap:8 }}>
+          <button onClick={() => {
+            if (!result) return
+            if (result.type === 'usage') exportCSV('usage-report', ['Status','Count'], Object.entries(result.by_status||{}))
+            else if (result.type === 'security') exportCSV('security-report', ['IP','Attempts'], (result.top_ips||[]).map(ip=>[ip.ip,ip.attempts]))
+            else if (result.type === 'churn') exportCSV('churn-report', ['Email','Plan','Days Inactive'], (result.inactive_users||[]).map(u=>[u.email,u.plan,u.days_inactive]))
+            else if (result.type === 'lifecycle') exportCSV('lifecycle-report', ['Month','Signups','Active','Retention'], (result.cohorts||[]).map(c=>[c.month,c.signups,c.active,c.retention+'%']))
+          }} style={{ padding:'8px 16px', borderRadius:8, border:'1px solid var(--border)', background:'transparent', color:'var(--text)', fontWeight:700, cursor:'pointer', fontSize:'.85rem' }}>Export CSV</button>
           <button onClick={exportPDF} style={{ padding:'8px 18px', borderRadius:8, border:'none', background:'var(--green)', color:'#0a0e1a', fontWeight:700, cursor:'pointer', fontSize:'.85rem' }}>
              Export PDF
           </button>
+          </div>
         )}
       </div>
 

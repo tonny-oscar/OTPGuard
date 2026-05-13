@@ -1,0 +1,9 @@
+{
+  "name": "otpguard",
+  "version": "1.0.0",
+  "description": "Official JavaScript SDK for OTPGuard MFA Platform",
+  "main": "otpguard.js",
+  "keywords": ["otp", "mfa", "2fa", "authentication", "otpguard"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/tonny-oscar/OTPGuard" }
+}
