@@ -20,6 +20,8 @@ import TermsOfService from './Pages/TermsOfService'
 import FAQ from './Pages/FAQ'
 import AboutUs from './Pages/AboutUs'
 import ContactUs from './Pages/ContactUs'
+import Support from './Pages/Support'
+import ChatWidget from './Components/support/ChatWidget'
 
 // Scroll to top on every route change
 function ScrollToTop() {
@@ -86,6 +88,7 @@ export default function App() {
       <SubscriptionProvider>
         <ScrollToTop />
         <ScrollTopButton />
+        <ChatWidget />
         <Routes>
           <Route path="/" element={<PublicLayout><Landing /></PublicLayout>} />
           <Route path="/features"     element={<FeaturesPage />} />
@@ -107,6 +110,7 @@ export default function App() {
           <Route path="/admin" element={
             <ProtectedRoute adminOnly><Admin /></ProtectedRoute>
           } />
+          <Route path="/support" element={<Support />} />
           <Route path="/docs" element={<Docs />} />
           <Route path="/api-docs" element={<ApiDocs />} />
           <Route path="*" element={<Navigate to="/" replace />} />

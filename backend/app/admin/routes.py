@@ -170,6 +170,12 @@ def get_alerts():
             'msg': f'{cnt} failed login attempts from {ip} in the last hour',
             'time': 'Last hour'
         })
+        # Fire monitoring alert for brute-force IPs
+        try:
+            from app.monitoring import MonitoringService
+            MonitoringService.alert_suspicious_activity(ip=ip, failed_attempts=cnt)
+        except Exception:
+            pass
 
     # Users without MFA
     no_mfa = User.query.filter_by(mfa_enabled=False, is_active=True, role='user').count()
@@ -1763,27 +1769,16 @@ def reply_contact_message(msg_id):
     try:
         from app.extensions import mail
         from flask_mail import Message as MailMsg
+        from app.email_templates import contact_reply_email
         mail_msg = MailMsg(
             subject=f'Re: {msg.subject}',
             recipients=[msg.email],
-            html=f"""
-            <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;
-                        background:#f7fafc;border-radius:8px;border:1px solid #e2e8f0">
-              <div style="margin-bottom:24px">
-                <span style="font-size:1.1rem;font-weight:800;color:#1a202c">OTP<span style="color:#00b860">Guard</span></span>
-              </div>
-              <p style="color:#4a5568;margin-bottom:8px">Hi {msg.name},</p>
-              <div style="white-space:pre-wrap;color:#1a202c;line-height:1.8;margin-bottom:24px">{reply_body}</div>
-              <hr style="border-color:#e2e8f0;margin:24px 0"/>
-              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:16px;margin-bottom:24px">
-                <p style="font-size:.8rem;color:#718096;margin-bottom:8px">Your original message:</p>
-                <p style="font-size:.85rem;color:#4a5568;white-space:pre-wrap">{msg.message}</p>
-              </div>
-              <p style="font-size:.8rem;color:#a0aec0">
-                OTPGuard Support &mdash; otpguard26@gmail.com &mdash; +254 794 886 149
-              </p>
-            </div>
-            """
+            html=contact_reply_email(
+                name=msg.name,
+                original_subject=msg.subject,
+                reply_body=reply_body,
+                original_message=msg.message
+            )
         )
         mail.send(mail_msg)
     except Exception as e:

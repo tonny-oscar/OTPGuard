@@ -324,3 +324,244 @@ class ContactMessage(db.Model):
             'is_read':    self.is_read,
             'created_at': self.created_at.isoformat(),
         }
+
+
+# ─── SUPPORT SYSTEM ──────────────────────────────────────────────────────────
+
+class SupportTicket(db.Model):
+    __tablename__ = 'support_tickets'
+
+    id                  = db.Column(db.Integer, primary_key=True)
+    ticket_number       = db.Column(db.String(20), unique=True, nullable=False, index=True)
+    user_id             = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
+    guest_name          = db.Column(db.String(120))
+    guest_email         = db.Column(db.String(255))
+    subject             = db.Column(db.String(200), nullable=False)
+    category            = db.Column(db.String(50), default='general')
+    priority            = db.Column(db.String(20), default='medium')
+    status              = db.Column(db.String(20), default='open', index=True)
+    assigned_to_id      = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    first_response_at   = db.Column(db.DateTime)
+    resolved_at         = db.Column(db.DateTime)
+    satisfaction_rating = db.Column(db.Integer)
+    created_at          = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at          = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                                    onupdate=lambda: datetime.now(timezone.utc))
+
+    submitter   = db.relationship('User', foreign_keys=[user_id],
+                                  backref='support_tickets', lazy=True)
+    assigned_to = db.relationship('User', foreign_keys=[assigned_to_id], lazy=True)
+    messages    = db.relationship('TicketMessage', backref='ticket', lazy=True,
+                                  cascade='all, delete-orphan',
+                                  order_by='TicketMessage.created_at')
+
+    @property
+    def requester_name(self):
+        if self.submitter:
+            return self.submitter.full_name or self.submitter.email
+        return self.guest_name or 'Guest'
+
+    @property
+    def requester_email(self):
+        if self.submitter:
+            return self.submitter.email
+        return self.guest_email
+
+    def to_dict(self, include_messages=False):
+        d = {
+            'id':                  self.id,
+            'ticket_number':       self.ticket_number,
+            'subject':             self.subject,
+            'category':            self.category,
+            'priority':            self.priority,
+            'status':              self.status,
+            'requester_name':      self.requester_name,
+            'requester_email':     self.requester_email,
+            'assigned_to_id':      self.assigned_to_id,
+            'first_response_at':   self.first_response_at.isoformat() if self.first_response_at else None,
+            'resolved_at':         self.resolved_at.isoformat() if self.resolved_at else None,
+            'satisfaction_rating': self.satisfaction_rating,
+            'created_at':          self.created_at.isoformat(),
+            'updated_at':          self.updated_at.isoformat(),
+            'message_count':       len(self.messages),
+        }
+        if include_messages:
+            d['messages'] = [m.to_dict() for m in self.messages if not m.is_internal]
+        return d
+
+
+class TicketMessage(db.Model):
+    __tablename__ = 'ticket_messages'
+
+    id          = db.Column(db.Integer, primary_key=True)
+    ticket_id   = db.Column(db.Integer, db.ForeignKey('support_tickets.id'),
+                            nullable=False, index=True)
+    sender_type = db.Column(db.String(20), nullable=False)  # user | agent | system
+    sender_id   = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    sender_name = db.Column(db.String(120))
+    message     = db.Column(db.Text, nullable=False)
+    is_internal = db.Column(db.Boolean, default=False)
+    created_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    sender = db.relationship('User', foreign_keys=[sender_id], lazy=True)
+
+    def to_dict(self):
+        return {
+            'id':          self.id,
+            'ticket_id':   self.ticket_id,
+            'sender_type': self.sender_type,
+            'sender_name': self.sender_name or (self.sender.full_name if self.sender else 'Support'),
+            'message':     self.message,
+            'is_internal': self.is_internal,
+            'created_at':  self.created_at.isoformat(),
+        }
+
+
+class KnowledgeBaseCategory(db.Model):
+    __tablename__ = 'kb_categories'
+
+    id          = db.Column(db.Integer, primary_key=True)
+    name        = db.Column(db.String(100), nullable=False)
+    slug        = db.Column(db.String(100), unique=True, nullable=False)
+    icon        = db.Column(db.String(50), default='📚')
+    description = db.Column(db.String(300))
+    sort_order  = db.Column(db.Integer, default=0)
+    created_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    articles = db.relationship('KnowledgeBaseArticle', backref='category', lazy=True,
+                               cascade='all, delete-orphan')
+
+    def to_dict(self):
+        return {
+            'id':            self.id,
+            'name':          self.name,
+            'slug':          self.slug,
+            'icon':          self.icon,
+            'description':   self.description,
+            'sort_order':    self.sort_order,
+            'article_count': len([a for a in self.articles if a.is_published]),
+        }
+
+
+class KnowledgeBaseArticle(db.Model):
+    __tablename__ = 'kb_articles'
+
+    id                = db.Column(db.Integer, primary_key=True)
+    category_id       = db.Column(db.Integer, db.ForeignKey('kb_categories.id'),
+                                  nullable=True, index=True)
+    title             = db.Column(db.String(200), nullable=False)
+    slug              = db.Column(db.String(200), unique=True, nullable=False)
+    content           = db.Column(db.Text, nullable=False)
+    excerpt           = db.Column(db.String(400))
+    tags              = db.Column(db.Text, default='[]')  # JSON array
+    is_published      = db.Column(db.Boolean, default=True)
+    is_featured       = db.Column(db.Boolean, default=False)
+    helpful_count     = db.Column(db.Integer, default=0)
+    not_helpful_count = db.Column(db.Integer, default=0)
+    view_count        = db.Column(db.Integer, default=0)
+    created_at        = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at        = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                                  onupdate=lambda: datetime.now(timezone.utc))
+
+    def get_tags(self):
+        try:
+            return json.loads(self.tags) if self.tags else []
+        except Exception:
+            return []
+
+    def to_dict(self, full=False):
+        content = self.content or ''
+        d = {
+            'id':                self.id,
+            'category_id':       self.category_id,
+            'title':             self.title,
+            'slug':              self.slug,
+            'excerpt':           self.excerpt or (content[:200] + '...') if len(content) > 200 else content,
+            'tags':              self.get_tags(),
+            'is_published':      self.is_published,
+            'is_featured':       self.is_featured,
+            'helpful_count':     self.helpful_count,
+            'not_helpful_count': self.not_helpful_count,
+            'view_count':        self.view_count,
+            'created_at':        self.created_at.isoformat(),
+            'updated_at':        self.updated_at.isoformat(),
+        }
+        if full:
+            d['content'] = self.content
+        return d
+
+
+# ─── COMMUNITY FORUM ─────────────────────────────────────────────────────────
+
+class ForumPost(db.Model):
+    __tablename__ = 'forum_posts'
+
+    id           = db.Column(db.Integer, primary_key=True)
+    user_id      = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    author_name  = db.Column(db.String(120), nullable=False)
+    author_email = db.Column(db.String(255), nullable=True)
+    title        = db.Column(db.String(300), nullable=False)
+    body         = db.Column(db.Text, nullable=False)
+    category     = db.Column(db.String(50), default='general')
+    tags         = db.Column(db.Text, default='[]')
+    upvotes      = db.Column(db.Integer, default=0)
+    views        = db.Column(db.Integer, default=0)
+    is_pinned    = db.Column(db.Boolean, default=False)
+    is_answered  = db.Column(db.Boolean, default=False)
+    created_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    author  = db.relationship('User', foreign_keys=[user_id], lazy=True)
+    replies = db.relationship('ForumReply', backref='post', lazy=True,
+                              cascade='all, delete-orphan',
+                              order_by='ForumReply.created_at')
+
+    def get_tags(self):
+        try:
+            return json.loads(self.tags) if self.tags else []
+        except Exception:
+            return []
+
+    def to_dict(self, include_replies=False):
+        d = {
+            'id':           self.id,
+            'author_name':  self.author_name,
+            'title':        self.title,
+            'body':         self.body,
+            'category':     self.category,
+            'tags':         self.get_tags(),
+            'upvotes':      self.upvotes,
+            'views':        self.views,
+            'is_pinned':    self.is_pinned,
+            'is_answered':  self.is_answered,
+            'reply_count':  len(self.replies),
+            'created_at':   self.created_at.isoformat(),
+            'updated_at':   self.updated_at.isoformat(),
+        }
+        if include_replies:
+            d['replies'] = [r.to_dict() for r in self.replies]
+        return d
+
+
+class ForumReply(db.Model):
+    __tablename__ = 'forum_replies'
+
+    id          = db.Column(db.Integer, primary_key=True)
+    post_id     = db.Column(db.Integer, db.ForeignKey('forum_posts.id'), nullable=False, index=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    author_name = db.Column(db.String(120), nullable=False)
+    body        = db.Column(db.Text, nullable=False)
+    upvotes     = db.Column(db.Integer, default=0)
+    is_accepted = db.Column(db.Boolean, default=False)
+    created_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            'id':          self.id,
+            'post_id':     self.post_id,
+            'author_name': self.author_name,
+            'body':        self.body,
+            'upvotes':     self.upvotes,
+            'is_accepted': self.is_accepted,
+            'created_at':  self.created_at.isoformat(),
+        }

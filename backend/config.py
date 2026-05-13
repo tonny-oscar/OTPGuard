@@ -62,6 +62,11 @@ class Config:
     # ── CORS ──────────────────────────────────────────────────────
     FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
+    # ── Monitoring & Alerting ─────────────────────────────────────
+    SLACK_WEBHOOK_URL          = os.getenv('SLACK_WEBHOOK_URL')
+    DISCORD_WEBHOOK_URL        = os.getenv('DISCORD_WEBHOOK_URL')
+    PAGERDUTY_INTEGRATION_KEY  = os.getenv('PAGERDUTY_INTEGRATION_KEY')
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

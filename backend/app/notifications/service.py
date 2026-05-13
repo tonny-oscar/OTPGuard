@@ -2,6 +2,7 @@ import requests
 from flask import current_app
 from flask_mail import Message
 from app.extensions import mail
+from app.email_templates import otp_email
 
 
 # ══════════════════════════════════════════════════════════
@@ -20,37 +21,15 @@ def send_email_otp(to_email: str, code: str):
     msg = Message(
         subject=f"{code} is your OTPGuard verification code",
         recipients=[to_email],
-        html=_email_body(code)
+        html=otp_email(code)
     )
     try:
         mail.send(msg)
         current_app.logger.info(f"[EMAIL] ✅ OTP sent to {to_email}")
     except Exception as e:
         current_app.logger.error(f"[EMAIL] ❌ Failed to send to {to_email}: {e}")
+        _alert_email_failure(to_email, str(e))
         raise
-
-
-def _email_body(code: str) -> str:
-    return f"""
-    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;
-                background:#0f1629;border-radius:12px;border:1px solid #1e2d4a;">
-      <h2 style="color:#f1f5f9;margin-bottom:8px;">🔐 OTPGuard</h2>
-      <p style="color:#94a3b8;margin-bottom:24px;">Your verification code:</p>
-      <div style="background:#0a0e1a;border:1px solid #1e2d4a;border-radius:8px;
-                  padding:20px;text-align:center;margin-bottom:24px;">
-        <span style="font-size:2.5rem;font-weight:800;letter-spacing:12px;color:#00ff88;
-                     font-family:monospace;">{code}</span>
-      </div>
-      <p style="color:#94a3b8;font-size:.85rem;">
-        This code expires in <strong style="color:#f1f5f9;">5 minutes</strong>.
-        Never share it with anyone.
-      </p>
-      <hr style="border-color:#1e2d4a;margin:24px 0;"/>
-      <p style="color:#475569;font-size:.75rem;">
-        If you didn't request this, ignore this email or contact support.
-      </p>
-    </div>
-    """
 
 
 # ══════════════════════════════════════════════════════════
@@ -68,6 +47,7 @@ def send_sms_otp(to_phone: str, code: str):
             return
         except Exception as e:
             current_app.logger.warning(f"[SMS] Twilio failed: {e} — trying Africa's Talking")
+            _alert_sms_failure(to_phone, "Twilio", str(e))
 
     if cfg.get("AT_API_KEY"):
         try:
@@ -75,6 +55,7 @@ def send_sms_otp(to_phone: str, code: str):
             return
         except Exception as e:
             current_app.logger.error(f"[SMS] Africa's Talking also failed: {e}")
+            _alert_sms_failure(to_phone, "Africa's Talking", str(e))
 
     current_app.logger.warning(f"[SMS] All providers failed — OTP for {to_phone}: {code}")
 
@@ -109,3 +90,23 @@ def _send_africas_talking(to_phone: str, message: str):
     )
     resp.raise_for_status()
     current_app.logger.info(f"[AT] ✅ SMS sent to {to_phone}")
+
+
+# ══════════════════════════════════════════════════════════
+#  MONITORING ALERT HELPERS  (fire-and-forget)
+# ══════════════════════════════════════════════════════════
+
+def _alert_sms_failure(phone: str, provider: str, error: str):
+    try:
+        from app.monitoring import MonitoringService
+        MonitoringService.alert_sms_delivery_failure(phone, provider, error)
+    except Exception:
+        pass  # Never let monitoring break the main flow
+
+
+def _alert_email_failure(email: str, error: str):
+    try:
+        from app.monitoring import MonitoringService
+        MonitoringService.alert_email_delivery_failure(email, error)
+    except Exception:
+        pass

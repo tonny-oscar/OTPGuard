@@ -160,12 +160,14 @@ def create_app(env=None):
     from app.users.routes        import users_bp
     from app.admin.routes        import admin_bp
     from app.subscription.routes import subscription_bp
+    from app.support.routes      import support_bp
 
     app.register_blueprint(auth_bp,         url_prefix='/api/auth')
     app.register_blueprint(mfa_bp,          url_prefix='/api/mfa')
     app.register_blueprint(users_bp,        url_prefix='/api/users')
     app.register_blueprint(admin_bp,        url_prefix='/api/admin')
     app.register_blueprint(subscription_bp, url_prefix='/api/subscription')
+    app.register_blueprint(support_bp,      url_prefix='/api/support')
 
     @app.route('/')
     def index():
@@ -175,9 +177,46 @@ def create_app(env=None):
     def health():
         return {'status': 'ok', 'env': env}, 200
 
+    @app.route('/api/health/detailed')
+    def health_detailed():
+        """Detailed health check for uptime monitoring tools."""
+        import time
+        from sqlalchemy import text
+        checks = {}
+
+        # Database check
+        t0 = time.monotonic()
+        try:
+            db.session.execute(text('SELECT 1'))
+            checks['database'] = {'status': 'ok', 'latency_ms': round((time.monotonic() - t0) * 1000, 1)}
+        except Exception as e:
+            checks['database'] = {'status': 'error', 'error': str(e)}
+
+        # Mail config check
+        checks['email'] = {
+            'status': 'ok' if app.config.get('MAIL_USERNAME') else 'unconfigured'
+        }
+
+        # SMS config check
+        checks['sms'] = {
+            'status': 'ok' if (app.config.get('TWILIO_ACCOUNT_SID') or app.config.get('AT_API_KEY')) else 'unconfigured'
+        }
+
+        overall = 'ok' if all(v.get('status') == 'ok' for v in checks.values()) else 'degraded'
+
+        return {
+            'status': overall,
+            'env': env,
+            'version': os.getenv('APP_VERSION', '1.0.0'),
+            'timestamp': __import__('datetime').datetime.utcnow().isoformat() + 'Z',
+            'checks': checks
+        }, 200 if overall == 'ok' else 207
+
     with app.app_context():
         db.create_all()
         from app.subscription.service import SubscriptionService
         SubscriptionService.initialize_default_plans()
+        from app.support.routes import seed_support_data
+        seed_support_data()
 
     return app

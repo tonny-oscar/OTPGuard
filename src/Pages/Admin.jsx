@@ -12,6 +12,10 @@ import ComplianceAudit from '../Components/admin/ComplianceAudit'
 import FeatureUsage from '../Components/admin/FeatureUsage'
 import LocationMap from '../Components/admin/LocationMap'
 import ContactMessages from '../Components/admin/ContactMessages'
+import SystemHealth from '../Components/admin/SystemHealth'
+import RealtimeMonitoring from '../Components/admin/RealtimeMonitoring'
+import SMSCosts from '../Components/admin/SMSCosts'
+import SupportDashboard from '../Components/admin/SupportDashboard'
 
 const card = {
   background: 'var(--surface)', border: '1px solid var(--border)',
@@ -100,6 +104,7 @@ export default function Admin() {
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState(null)
   const [unreadMessages, setUnreadMessages] = useState(0)
+  const [openTickets, setOpenTickets]       = useState(0)
 
 
   const authHeaders = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token])
@@ -195,6 +200,14 @@ export default function Admin() {
       .catch(() => {})
   }, [authHeaders])
 
+  // Load open support ticket count on mount
+  useEffect(() => {
+    fetch(`${API}/support/admin/tickets?status=open&per_page=1`, { headers: authHeaders })
+      .then(r => r.json())
+      .then(d => setOpenTickets(d.stats?.open || 0))
+      .catch(() => {})
+  }, [authHeaders])
+
 
   async function toggleUserStatus(u) {
     const newStatus = u.is_active ? 'inactive' : 'active'
@@ -234,8 +247,12 @@ export default function Admin() {
     { id: 'lifecycle',     label: 'Lifecycle' },
     { id: 'compliance',    label: 'Compliance' },
     { id: 'feature-usage', label: 'Features' },
+    { id: 'system-health', label: 'System Health' },
+    { id: 'realtime',      label: 'Realtime' },
+    { id: 'sms-costs',     label: 'SMS Costs' },
     { id: 'alerts',        label: 'Alerts', badge: dangerCount || null },
     { id: 'messages',      label: 'Messages', badge: unreadMessages || null },
+    { id: 'support',       label: 'Support',  badge: openTickets || null },
   ]
 
   const churnItems = [
@@ -663,8 +680,20 @@ export default function Admin() {
         {/* ── FEATURE USAGE ANALYTICS ── */}
         {activeTab === 'feature-usage' && <FeatureUsage />}
 
+        {/* ── SYSTEM HEALTH ── */}
+        {activeTab === 'system-health' && <SystemHealth />}
+
+        {/* ── REALTIME MONITORING ── */}
+        {activeTab === 'realtime' && <RealtimeMonitoring />}
+
+        {/* ── SMS COSTS ── */}
+        {activeTab === 'sms-costs' && <SMSCosts />}
+
         {/* ── CONTACT MESSAGES ── */}
         {activeTab === 'messages' && <ContactMessages onUnreadChange={setUnreadMessages} />}
+
+        {/* ── SUPPORT DASHBOARD ── */}
+        {activeTab === 'support' && <SupportDashboard />}
       </div>
 
       {/* Mobile sidebar slide-in */}
